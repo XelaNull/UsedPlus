@@ -27,6 +27,78 @@ VehicleSellingPointExtension.pendingRepairVehicle = nil
 -- Flag to bypass interception for our own finance confirmation
 VehicleSellingPointExtension.bypassInterception = false
 
+-- Debug flags
+VehicleSellingPointExtension.DEBUG_PASSTHROUGH_ALL = false  -- Set to true to disable all interception
+VehicleSellingPointExtension.DEBUG_VERBOSE = true  -- Enable verbose logging
+
+--[[
+    Debug helper to log GUI state
+]]
+function VehicleSellingPointExtension.logGuiState(context)
+    if not VehicleSellingPointExtension.DEBUG_VERBOSE then return end
+
+    local stateInfo = {}
+
+    -- Check g_gui state
+    if g_gui then
+        table.insert(stateInfo, string.format("g_gui exists"))
+
+        -- Check currentGui
+        if g_gui.currentGui then
+            local name = g_gui.currentGui.name or "unknown"
+            table.insert(stateInfo, string.format("currentGui=%s", name))
+        else
+            table.insert(stateInfo, "currentGui=nil")
+        end
+
+        -- Check currentGuiName
+        if g_gui.currentGuiName then
+            table.insert(stateInfo, string.format("currentGuiName=%s", g_gui.currentGuiName))
+        end
+
+        -- Check dialogs
+        if g_gui.dialogs then
+            local dialogCount = 0
+            local dialogNames = {}
+            for name, dialog in pairs(g_gui.dialogs) do
+                dialogCount = dialogCount + 1
+                if dialog.isOpen then
+                    table.insert(dialogNames, name .. "(OPEN)")
+                end
+            end
+            table.insert(stateInfo, string.format("dialogs=%d", dialogCount))
+            if #dialogNames > 0 then
+                table.insert(stateInfo, "openDialogs=" .. table.concat(dialogNames, ","))
+            end
+        end
+
+        -- Check dialogStack
+        if g_gui.dialogStack then
+            table.insert(stateInfo, string.format("dialogStack=%d", #g_gui.dialogStack))
+        end
+
+        -- Check if input is blocked
+        if g_gui.inputDisabled then
+            table.insert(stateInfo, "inputDisabled=true")
+        end
+
+        -- Check guis table for SellItemDialog state
+        if g_gui.guis then
+            local sellDialog = g_gui.guis.SellItemDialog
+            if sellDialog then
+                local isOpen = sellDialog.isOpen
+                local isVisible = sellDialog.visible
+                table.insert(stateInfo, string.format("SellItemDialog(isOpen=%s,visible=%s)",
+                    tostring(isOpen), tostring(isVisible)))
+            end
+        end
+    else
+        table.insert(stateInfo, "g_gui=nil!")
+    end
+
+    UsedPlus.logDebug(string.format("[GUI STATE @ %s] %s", context, table.concat(stateInfo, " | ")))
+end
+
 --[[
     Load and show our custom repair dialog
     @param vehicle - The vehicle to repair/repaint
@@ -113,6 +185,9 @@ function VehicleSellingPointExtension.createSaleListing(vehicle, farmId, saleTie
     end
 
     -- Cleanup: Clear all our stored state to prevent any lingering references
+    UsedPlus.logDebug(">>> SALE COMPLETE - Starting cleanup <<<")
+    VehicleSellingPointExtension.logGuiState("SALE_COMPLETE_BEFORE_CLEANUP")
+
     VehicleSellingPointExtension.currentVehicle = nil
     VehicleSellingPointExtension.currentWorkshopScreen = nil
     VehicleSellingPointExtension.pendingRepairCallback = nil
@@ -124,10 +199,12 @@ function VehicleSellingPointExtension.createSaleListing(vehicle, farmId, saleTie
         if g_gui then
             g_gui:closeDialogByName("SellItemDialog")
             g_gui:closeDialogByName("YesNoDialog")
+            UsedPlus.logDebug(">>> Cleanup: Called closeDialogByName for SellItemDialog and YesNoDialog <<<")
         end
     end)
 
-    UsedPlus.logDebug("Sale listing creation complete, state cleaned up")
+    VehicleSellingPointExtension.logGuiState("SALE_COMPLETE_AFTER_CLEANUP")
+    UsedPlus.logDebug(">>> Sale listing creation complete, state cleaned up <<<")
 end
 
 --[[
@@ -332,6 +409,12 @@ function VehicleSellingPointExtension.hookAllDialogs()
             -- Always log dialog opens for debugging (DEBUG level to appear in log)
             UsedPlus.logDebug(string.format("=== showDialog called: name='%s' ===", tostring(name)))
 
+            -- TEMPORARY DEBUG: Pass through ALL dialogs to test if our hook is causing shop issues
+            -- Comment out to re-enable interception
+            if VehicleSellingPointExtension.DEBUG_PASSTHROUGH_ALL then
+                return VehicleSellingPointExtension.originalShowDialog(guiSelf, name, ...)
+            end
+
             -- Check if we should bypass interception (for our own finance confirmation dialog)
             if VehicleSellingPointExtension.bypassInterception then
                 VehicleSellingPointExtension.bypassInterception = false
@@ -342,7 +425,8 @@ function VehicleSellingPointExtension.hookAllDialogs()
             -- Intercept SellItemDialog (ESC -> Vehicles -> Sell)
             -- This is the vanilla vehicle sell dialog - we replace it with our agent-based system
             if name == "SellItemDialog" then
-                UsedPlus.logTrace("Intercepted SellItemDialog - redirecting to our sell system")
+                UsedPlus.logDebug(">>> INTERCEPTING SellItemDialog <<<")
+                VehicleSellingPointExtension.logGuiState("BEFORE_SELLITEM_INTERCEPT")
 
                 -- Get the vehicle that's being sold from the dialog
                 local sellDialog = g_gui.guis.SellItemDialog
@@ -437,8 +521,13 @@ function VehicleSellingPointExtension.hookAllDialogs()
                     end
 
                     -- Show our custom sell dialog
-                    UsedPlus.logDebug(string.format("Showing SellVehicleDialog for: %s", vehicle:getName()))
+                    UsedPlus.logDebug(string.format(">>> Showing SellVehicleDialog for: %s <<<", vehicle:getName()))
+                    VehicleSellingPointExtension.logGuiState("BEFORE_SHOW_OUR_DIALOG")
+
                     local result = VehicleSellingPointExtension.showSellVehicleDialog(vehicle, farmId)
+
+                    UsedPlus.logDebug(string.format(">>> SellVehicleDialog shown, result=%s <<<", tostring(result)))
+                    VehicleSellingPointExtension.logGuiState("AFTER_SHOW_OUR_DIALOG")
 
                     -- Clear any GUI blocking state that might have been set
                     -- The game may have prepared for SellItemDialog to open
@@ -446,10 +535,14 @@ function VehicleSellingPointExtension.hookAllDialogs()
                         if g_gui then
                             -- Try to close SellItemDialog if it exists in any state
                             g_gui:closeDialogByName("SellItemDialog")
+                            UsedPlus.logDebug(">>> Attempted closeDialogByName(SellItemDialog) <<<")
                         end
                     end)
 
+                    VehicleSellingPointExtension.logGuiState("AFTER_CLEANUP_ATTEMPT")
+
                     -- Return the result to prevent caller from waiting for nil response
+                    UsedPlus.logDebug(string.format(">>> Returning from SellItemDialog intercept with: %s <<<", tostring(result or true)))
                     return result or true
                 else
                     UsedPlus.logTrace("Could not find vehicle for SellItemDialog, showing vanilla")

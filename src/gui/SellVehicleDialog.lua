@@ -523,6 +523,13 @@ end
      Dialog closed - cleanup
 ]]
 function SellVehicleDialog:onClose()
+    UsedPlus.logDebug(">>> SellVehicleDialog:onClose() STARTING <<<")
+
+    -- Log GUI state before cleanup
+    if VehicleSellingPointExtension and VehicleSellingPointExtension.logGuiState then
+        VehicleSellingPointExtension.logGuiState("SELL_DIALOG_ONCLOSE_START")
+    end
+
     self.vehicle = nil
     self.farmId = nil
     self.vanillaSellPrice = 0
@@ -533,11 +540,23 @@ function SellVehicleDialog:onClose()
     pcall(function()
         if g_gui and g_gui.guis and g_gui.guis.SellItemDialog then
             g_gui:closeDialogByName("SellItemDialog")
-            UsedPlus.logTrace("Cleaned up SellItemDialog state on close")
+            UsedPlus.logDebug(">>> Cleaned up SellItemDialog state on close <<<")
         end
     end)
 
+    -- Log GUI state after cleanup
+    if VehicleSellingPointExtension and VehicleSellingPointExtension.logGuiState then
+        VehicleSellingPointExtension.logGuiState("SELL_DIALOG_ONCLOSE_AFTER_CLEANUP")
+    end
+
+    UsedPlus.logDebug(">>> SellVehicleDialog:onClose() calling superclass <<<")
     SellVehicleDialog:superClass().onClose(self)
+
+    -- Log GUI state after superclass close
+    if VehicleSellingPointExtension and VehicleSellingPointExtension.logGuiState then
+        VehicleSellingPointExtension.logGuiState("SELL_DIALOG_ONCLOSE_AFTER_SUPER")
+    end
+    UsedPlus.logDebug(">>> SellVehicleDialog:onClose() COMPLETE <<<")
 end
 
 UsedPlus.logInfo("SellVehicleDialog loaded (dual-tier system)")
