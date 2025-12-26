@@ -97,6 +97,84 @@ function WorkshopScreenExtension.onWorkshopOpen(screen)
 
     -- Try to create inspect button by cloning an existing button
     WorkshopScreenExtension:tryCreateInspectButton(screen)
+
+    -- Hook the sell button to show our dialog instead
+    WorkshopScreenExtension:hookSellButton(screen)
+end
+
+--[[
+    Hook the sell button to show our custom sell dialog
+]]
+function WorkshopScreenExtension:hookSellButton(screen)
+    if screen.sellButton == nil then
+        UsedPlus.logDebug("WorkshopScreenExtension: No sellButton found")
+        return
+    end
+
+    -- Check if already hooked (to avoid double-hooking)
+    if screen.sellButtonHooked then
+        return
+    end
+
+    -- Log what the button currently has
+    UsedPlus.logDebug(string.format("WorkshopScreenExtension: sellButton.onClickCallback type = %s",
+        type(screen.sellButton.onClickCallback)))
+
+    -- Store original callback
+    local originalCallback = screen.sellButton.onClickCallback
+
+    -- Direct property assignment (NOT setCallback which broke the button)
+    screen.sellButton.onClickCallback = function(button, ...)
+        UsedPlus.logDebug(">>> Sell button callback intercepted <<<")
+
+        local vehicle = screen.vehicle
+        if vehicle then
+            local farmId = g_currentMission:getFarmId()
+
+            -- Check ownership
+            if vehicle.propertyState ~= VehiclePropertyState.OWNED then
+                g_currentMission:addIngameNotification(
+                    FSBaseMission.INGAME_NOTIFICATION_INFO,
+                    "Leased vehicles cannot be sold."
+                )
+                return
+            end
+
+            -- Check UsedPlus lease
+            if g_financeManager and g_financeManager:hasActiveLease(vehicle) then
+                g_currentMission:addIngameNotification(
+                    FSBaseMission.INGAME_NOTIFICATION_ERROR,
+                    g_i18n:getText("usedplus_error_cannotSellLeasedVehicle")
+                )
+                return
+            end
+
+            -- Check if already listed
+            if g_vehicleSaleManager and g_vehicleSaleManager:isVehicleListed(vehicle) then
+                g_currentMission:addIngameNotification(
+                    FSBaseMission.INGAME_NOTIFICATION_INFO,
+                    "This vehicle is already listed for sale."
+                )
+                return
+            end
+
+            -- Show our dialog
+            UsedPlus.logDebug(">>> Showing SellVehicleDialog <<<")
+            if VehicleSellingPointExtension and VehicleSellingPointExtension.showSellVehicleDialog then
+                VehicleSellingPointExtension.showSellVehicleDialog(vehicle, farmId)
+            end
+            return
+        end
+
+        -- No vehicle or fallback - call original
+        UsedPlus.logDebug(">>> Calling original callback <<<")
+        if originalCallback then
+            return originalCallback(button, ...)
+        end
+    end
+
+    screen.sellButtonHooked = true
+    UsedPlus.logDebug("WorkshopScreenExtension: Sell button hooked (direct callback)")
 end
 
 --[[
@@ -113,6 +191,9 @@ function WorkshopScreenExtension.onSetVehicle(screen, vehicle)
 
         -- Try to create inspect button
         WorkshopScreenExtension:tryCreateInspectButton(screen)
+
+        -- Hook the sell button (may only exist after vehicle is set)
+        WorkshopScreenExtension:hookSellButton(screen)
     end
 end
 

@@ -527,29 +527,16 @@ end
      This ensures ESC key and all close paths properly decrement dialog count
 ]]
 function SellVehicleDialog:close()
-    -- Guard against multiple close calls
+    -- Guard against multiple close calls (closeDialogByName may call back to close)
     if self.isClosing then
         return
     end
     self.isClosing = true
 
-    UsedPlus.logDebug(">>> SellVehicleDialog:close() <<<")
+    UsedPlus.logDebug(">>> SellVehicleDialog:close() calling closeDialogByName <<<")
 
     -- Use closeDialogByName - this properly decrements the dialog count
     g_gui:closeDialogByName("SellVehicleDialog")
-
-    -- Also reset SellItemDialog state in case it's lingering
-    pcall(function()
-        local sellDialog = g_gui.guis.SellItemDialog
-        if sellDialog then
-            if sellDialog.target then
-                sellDialog.target.visible = false
-                sellDialog.target.isOpen = false
-            end
-            sellDialog.visible = false
-            sellDialog.isOpen = false
-        end
-    end)
 
     -- Log final state
     if VehicleSellingPointExtension and VehicleSellingPointExtension.logGuiState then

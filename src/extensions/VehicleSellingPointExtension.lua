@@ -23,6 +23,9 @@ VehicleSellingPointExtension.originalShowDialog = nil
 -- Tracking for intercepted dialogs
 VehicleSellingPointExtension.pendingRepairCallback = nil
 VehicleSellingPointExtension.pendingRepairVehicle = nil
+VehicleSellingPointExtension.pendingSellCallback = nil
+VehicleSellingPointExtension.sellItemDialogHooked = false
+VehicleSellingPointExtension.sellButtonHooked = false
 
 -- Flag to bypass interception for our own finance confirmation
 VehicleSellingPointExtension.bypassInterception = false
@@ -30,7 +33,6 @@ VehicleSellingPointExtension.bypassInterception = false
 -- Debug flags
 VehicleSellingPointExtension.DEBUG_PASSTHROUGH_ALL = false  -- Set to true to disable all interception
 VehicleSellingPointExtension.DEBUG_VERBOSE = true  -- Enable verbose logging
-VehicleSellingPointExtension.DISABLE_SELL_INTERCEPT = true  -- TEMP: Disable sell dialog interception to test if it fixes shop
 
 --[[
     Debug helper to log GUI state
@@ -75,7 +77,20 @@ function VehicleSellingPointExtension.logGuiState(context)
 
         -- Check dialogStack
         if g_gui.dialogStack then
-            table.insert(stateInfo, string.format("dialogStack=%d", #g_gui.dialogStack))
+            local stackNames = {}
+            for i, d in ipairs(g_gui.dialogStack) do
+                table.insert(stackNames, d.name or "?")
+            end
+            table.insert(stateInfo, string.format("dialogStack=%d [%s]", #g_gui.dialogStack, table.concat(stackNames, ",")))
+        end
+
+        -- Check modal/blocking state
+        if g_gui.isInputDisabledForFocus then
+            table.insert(stateInfo, "inputDisabledForFocus=true")
+        end
+        if g_gui.currentDialog then
+            local cdName = g_gui.currentDialog.name or "?"
+            table.insert(stateInfo, string.format("currentDialog=%s", cdName))
         end
 
         -- Check if input is blocked
@@ -150,6 +165,13 @@ function VehicleSellingPointExtension.showSellVehicleDialog(vehicle, farmId)
         else
             UsedPlus.logDebug("Sale dialog cancelled")
         end
+
+        -- TEMPORARILY DISABLED: Calling the original callback may be causing issues
+        -- Clear the pending callback reference
+        if VehicleSellingPointExtension.pendingSellCallback then
+            UsedPlus.logDebug(">>> NOT calling original callback (disabled for testing) <<<")
+            VehicleSellingPointExtension.pendingSellCallback = nil
+        end
     end
 
     return DialogLoader.show("SellVehicleDialog", "setVehicle", vehicle, farmId, callback)
@@ -185,27 +207,15 @@ function VehicleSellingPointExtension.createSaleListing(vehicle, farmId, saleTie
         )
     end
 
-    -- Cleanup: Clear all our stored state to prevent any lingering references
-    UsedPlus.logDebug(">>> SALE COMPLETE - Starting cleanup <<<")
-    VehicleSellingPointExtension.logGuiState("SALE_COMPLETE_BEFORE_CLEANUP")
+    -- Cleanup: Clear our stored state
+    UsedPlus.logDebug(">>> SALE COMPLETE <<<")
+    VehicleSellingPointExtension.logGuiState("SALE_COMPLETE")
 
     VehicleSellingPointExtension.currentVehicle = nil
-    VehicleSellingPointExtension.currentWorkshopScreen = nil
     VehicleSellingPointExtension.pendingRepairCallback = nil
     VehicleSellingPointExtension.pendingRepairVehicle = nil
+    VehicleSellingPointExtension.pendingSellCallback = nil
     VehicleSellingPointExtension.bypassInterception = false
-
-    -- Try to close any dialogs that might be in a partial state
-    pcall(function()
-        if g_gui then
-            g_gui:closeDialogByName("SellItemDialog")
-            g_gui:closeDialogByName("YesNoDialog")
-            UsedPlus.logDebug(">>> Cleanup: Called closeDialogByName for SellItemDialog and YesNoDialog <<<")
-        end
-    end)
-
-    VehicleSellingPointExtension.logGuiState("SALE_COMPLETE_AFTER_CLEANUP")
-    UsedPlus.logDebug(">>> Sale listing creation complete, state cleaned up <<<")
 end
 
 --[[
@@ -423,141 +433,7 @@ function VehicleSellingPointExtension.hookAllDialogs()
                 return VehicleSellingPointExtension.originalShowDialog(guiSelf, name, ...)
             end
 
-            -- Intercept SellItemDialog (ESC -> Vehicles -> Sell)
-            -- This is the vanilla vehicle sell dialog - we replace it with our agent-based system
-            if name == "SellItemDialog" then
-                -- TEMP: Skip interception to test if it fixes shop
-                if VehicleSellingPointExtension.DISABLE_SELL_INTERCEPT then
-                    UsedPlus.logDebug(">>> SellItemDialog interception DISABLED - passing through <<<")
-                    return VehicleSellingPointExtension.originalShowDialog(guiSelf, name, ...)
-                end
-
-                UsedPlus.logDebug(">>> INTERCEPTING SellItemDialog <<<")
-                VehicleSellingPointExtension.logGuiState("BEFORE_SELLITEM_INTERCEPT")
-
-                -- Get the vehicle that's being sold from the dialog
-                local sellDialog = g_gui.guis.SellItemDialog
-                local vehicle = nil
-
-                if sellDialog and sellDialog.target then
-                    -- The SellItemDialog stores the item/vehicle info
-                    local target = sellDialog.target
-                    if target.vehicle then
-                        vehicle = target.vehicle
-                    elseif target.item then
-                        vehicle = target.item
-                    elseif target.currentVehicle then
-                        vehicle = target.currentVehicle
-                    end
-                end
-
-                -- Try to get from InGameMenu's vehicles frame
-                if vehicle == nil then
-                    local inGameMenu = g_gui.screenControllers[InGameMenu]
-                    if inGameMenu then
-                        -- Try various ways to get the selected vehicle
-                        for pageName, page in pairs(inGameMenu) do
-                            if type(page) == "table" and page.getSelectedVehicle then
-                                vehicle = page:getSelectedVehicle()
-                                if vehicle then
-                                    UsedPlus.logTrace(string.format("Got vehicle from %s.getSelectedVehicle()", pageName))
-                                    break
-                                end
-                            end
-                            if type(page) == "table" and page.selectedVehicle then
-                                vehicle = page.selectedVehicle
-                                if vehicle then
-                                    UsedPlus.logTrace(string.format("Got vehicle from %s.selectedVehicle", pageName))
-                                    break
-                                end
-                            end
-                        end
-                    end
-                end
-
-                -- Also try g_currentMission sources
-                if vehicle == nil and g_currentMission then
-                    if g_currentMission.controlledVehicle then
-                        vehicle = g_currentMission.controlledVehicle
-                        UsedPlus.logTrace("Got vehicle from controlledVehicle")
-                    end
-                end
-
-                if vehicle ~= nil then
-                    local farmId = g_currentMission:getFarmId()
-
-                    -- Check if vehicle is owned (not leased)
-                    if vehicle.propertyState ~= VehiclePropertyState.OWNED then
-                        g_currentMission:addIngameNotification(
-                            FSBaseMission.INGAME_NOTIFICATION_INFO,
-                            "Leased vehicles cannot be sold. Terminate the lease first."
-                        )
-                        return -- Don't show any dialog
-                    end
-
-                    -- Check if vehicle is leased via UsedPlus
-                    if g_financeManager and g_financeManager:hasActiveLease(vehicle) then
-                        g_currentMission:addIngameNotification(
-                            FSBaseMission.INGAME_NOTIFICATION_ERROR,
-                            g_i18n:getText("usedplus_error_cannotSellLeasedVehicle")
-                        )
-                        return -- Don't show any dialog
-                    end
-
-                    -- Check if already listed
-                    if g_vehicleSaleManager and g_vehicleSaleManager:isVehicleListed(vehicle) then
-                        g_currentMission:addIngameNotification(
-                            FSBaseMission.INGAME_NOTIFICATION_INFO,
-                            "This vehicle is already listed for sale."
-                        )
-                        return -- Don't show any dialog
-                    end
-
-                    -- Check if vehicle is pledged as collateral for a cash loan
-                    if CollateralUtils and CollateralUtils.isVehiclePledged then
-                        local isPledged, deal = CollateralUtils.isVehiclePledged(vehicle)
-                        if isPledged then
-                            local loanBalance = deal and deal.currentBalance or 0
-                            g_currentMission:addIngameNotification(
-                                FSBaseMission.INGAME_NOTIFICATION_ERROR,
-                                string.format("This vehicle is pledged as collateral for a %s loan.\nPay off the loan first to sell.",
-                                    g_i18n:formatMoney(loanBalance, 0, true, true))
-                            )
-                            return -- Don't show any dialog
-                        end
-                    end
-
-                    -- CRITICAL: Reset SellItemDialog state BEFORE showing our dialog
-                    -- The game may have set visible=true on SellItemDialog when preparing to show it
-                    pcall(function()
-                        local sellDialog = g_gui.guis.SellItemDialog
-                        if sellDialog then
-                            if sellDialog.target then
-                                sellDialog.target.visible = false
-                                sellDialog.target.isOpen = false
-                            end
-                            sellDialog.visible = false
-                            sellDialog.isOpen = false
-                            UsedPlus.logDebug(">>> Reset SellItemDialog visible/isOpen to false <<<")
-                        end
-                    end)
-
-                    -- Show our custom sell dialog
-                    UsedPlus.logDebug(string.format(">>> Showing SellVehicleDialog for: %s <<<", vehicle:getName()))
-                    VehicleSellingPointExtension.logGuiState("BEFORE_SHOW_OUR_DIALOG")
-
-                    local result = VehicleSellingPointExtension.showSellVehicleDialog(vehicle, farmId)
-
-                    UsedPlus.logDebug(string.format(">>> SellVehicleDialog shown, result=%s <<<", tostring(result)))
-                    VehicleSellingPointExtension.logGuiState("AFTER_SHOW_OUR_DIALOG")
-
-                    -- Return the result to prevent caller from waiting for nil response
-                    UsedPlus.logDebug(string.format(">>> Returning from SellItemDialog intercept with: %s <<<", tostring(result or true)))
-                    return result or true
-                else
-                    UsedPlus.logTrace("Could not find vehicle for SellItemDialog, showing vanilla")
-                end
-            end
+            -- SellItemDialog is now handled by hookSellButton - no interception needed here
 
             -- Check if this is a YesNoDialog (repair/repaint confirmation)
             if name == "YesNoDialog" then
@@ -717,6 +593,68 @@ function VehicleSellingPointExtension.hookAllDialogs()
     end
 end
 
+--[[
+    Hook WorkshopScreen's sell button to show our dialog instead
+]]
+function VehicleSellingPointExtension.hookSellButton()
+    if VehicleSellingPointExtension.sellButtonHooked then
+        return
+    end
+
+    -- Hook WorkshopScreen.onClickSell if it exists
+    if WorkshopScreen ~= nil and WorkshopScreen.onClickSell ~= nil then
+        local originalOnClickSell = WorkshopScreen.onClickSell
+        WorkshopScreen.onClickSell = function(self, ...)
+            UsedPlus.logDebug(">>> WorkshopScreen.onClickSell intercepted <<<")
+
+            local vehicle = self.vehicle
+            if vehicle then
+                local farmId = g_currentMission:getFarmId()
+
+                -- Check ownership
+                if vehicle.propertyState ~= VehiclePropertyState.OWNED then
+                    g_currentMission:addIngameNotification(
+                        FSBaseMission.INGAME_NOTIFICATION_INFO,
+                        "Leased vehicles cannot be sold."
+                    )
+                    return
+                end
+
+                -- Check UsedPlus lease
+                if g_financeManager and g_financeManager:hasActiveLease(vehicle) then
+                    g_currentMission:addIngameNotification(
+                        FSBaseMission.INGAME_NOTIFICATION_ERROR,
+                        g_i18n:getText("usedplus_error_cannotSellLeasedVehicle")
+                    )
+                    return
+                end
+
+                -- Check if already listed
+                if g_vehicleSaleManager and g_vehicleSaleManager:isVehicleListed(vehicle) then
+                    g_currentMission:addIngameNotification(
+                        FSBaseMission.INGAME_NOTIFICATION_INFO,
+                        "This vehicle is already listed for sale."
+                    )
+                    return
+                end
+
+                -- Show OUR dialog instead of calling original
+                UsedPlus.logDebug(">>> Showing our SellVehicleDialog <<<")
+                VehicleSellingPointExtension.showSellVehicleDialog(vehicle, farmId)
+                -- DON'T call original - we handle it completely
+                return
+            end
+
+            -- No vehicle, let original handle it
+            return originalOnClickSell(self, ...)
+        end
+        VehicleSellingPointExtension.sellButtonHooked = true
+        UsedPlus.logDebug(">>> WorkshopScreen.onClickSell hooked <<<")
+    else
+        UsedPlus.logDebug("WorkshopScreen.onClickSell not found")
+    end
+end
+
 -- Install hooks at load time
 if g_gui ~= nil then
     VehicleSellingPointExtension.hookAllDialogs()
@@ -732,12 +670,20 @@ else
     UsedPlus.logDebug("WorkshopScreen not available at load time")
 end
 
+-- Hook the sell button at load time
+if WorkshopScreen ~= nil then
+    VehicleSellingPointExtension.hookSellButton()
+else
+    UsedPlus.logDebug("WorkshopScreen not available for sell button hook")
+end
+
 -- Also register for mission start to ensure hooks are in place
 if Mission00 ~= nil then
     Mission00.onStartMission = Utils.appendedFunction(Mission00.onStartMission,
         function(self)
             UsedPlus.logDebug("Mission started - ensuring hooks are installed")
             VehicleSellingPointExtension.hookAllDialogs()
+            VehicleSellingPointExtension.hookSellButton()
         end
     )
     UsedPlus.logDebug("Mission00.onStartMission hook installed")
