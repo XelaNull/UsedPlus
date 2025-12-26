@@ -161,6 +161,9 @@ end
 function SellVehicleDialog:onOpen()
     SellVehicleDialog:superClass().onOpen(self)
 
+    -- Reset close guard
+    self.isClosing = false
+
     -- Initialize agent tier dropdown
     if self.agentTierSlider then
         local agentTexts = {}
@@ -524,8 +527,26 @@ end
      This ensures ESC key and all close paths properly decrement dialog count
 ]]
 function SellVehicleDialog:close()
+    -- Guard against multiple close calls
+    if self.isClosing then
+        UsedPlus.logDebug(">>> SellVehicleDialog:close() - already closing, skipping <<<")
+        return
+    end
+    self.isClosing = true
+
     UsedPlus.logDebug(">>> SellVehicleDialog:close() - using g_gui:closeDialog() <<<")
+
+    -- Log GUI state before close
+    if VehicleSellingPointExtension and VehicleSellingPointExtension.logGuiState then
+        VehicleSellingPointExtension.logGuiState("CLOSE_BEFORE_GUI_CLOSE")
+    end
+
     g_gui:closeDialog()
+
+    -- Log GUI state after close
+    if VehicleSellingPointExtension and VehicleSellingPointExtension.logGuiState then
+        VehicleSellingPointExtension.logGuiState("CLOSE_AFTER_GUI_CLOSE")
+    end
 end
 
 --[[
