@@ -529,47 +529,31 @@ end
 function SellVehicleDialog:close()
     -- Guard against multiple close calls
     if self.isClosing then
-        UsedPlus.logDebug(">>> SellVehicleDialog:close() - already closing, skipping <<<")
         return
     end
     self.isClosing = true
 
-    UsedPlus.logDebug(">>> SellVehicleDialog:close() - trying multiple close methods <<<")
+    UsedPlus.logDebug(">>> SellVehicleDialog:close() <<<")
 
-    -- Log GUI state before close
-    if VehicleSellingPointExtension and VehicleSellingPointExtension.logGuiState then
-        VehicleSellingPointExtension.logGuiState("CLOSE_BEFORE")
-    end
+    -- Use closeDialogByName - this properly decrements the dialog count
+    g_gui:closeDialogByName("SellVehicleDialog")
 
-    -- Try closeDialogByName with our actual dialog name
-    local closedByName = pcall(function()
-        g_gui:closeDialogByName("SellVehicleDialog")
+    -- Also reset SellItemDialog state in case it's lingering
+    pcall(function()
+        local sellDialog = g_gui.guis.SellItemDialog
+        if sellDialog then
+            if sellDialog.target then
+                sellDialog.target.visible = false
+                sellDialog.target.isOpen = false
+            end
+            sellDialog.visible = false
+            sellDialog.isOpen = false
+        end
     end)
-    UsedPlus.logDebug(string.format(">>> closeDialogByName result: %s <<<", tostring(closedByName)))
-
-    -- Log GUI state after closeDialogByName
-    if VehicleSellingPointExtension and VehicleSellingPointExtension.logGuiState then
-        VehicleSellingPointExtension.logGuiState("CLOSE_AFTER_BY_NAME")
-    end
-
-    -- Also try generic closeDialog as backup
-    local closedGeneric = pcall(function()
-        g_gui:closeDialog()
-    end)
-    UsedPlus.logDebug(string.format(">>> closeDialog result: %s <<<", tostring(closedGeneric)))
-
-    -- Log GUI state after closeDialog
-    if VehicleSellingPointExtension and VehicleSellingPointExtension.logGuiState then
-        VehicleSellingPointExtension.logGuiState("CLOSE_AFTER_GENERIC")
-    end
-
-    -- Final fallback: call superclass close directly
-    UsedPlus.logDebug(">>> Calling superclass close() <<<")
-    SellVehicleDialog:superClass().close(self)
 
     -- Log final state
     if VehicleSellingPointExtension and VehicleSellingPointExtension.logGuiState then
-        VehicleSellingPointExtension.logGuiState("CLOSE_AFTER_SUPER")
+        VehicleSellingPointExtension.logGuiState("CLOSE_COMPLETE")
     end
 end
 

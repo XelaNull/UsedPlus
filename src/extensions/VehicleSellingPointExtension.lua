@@ -520,6 +520,21 @@ function VehicleSellingPointExtension.hookAllDialogs()
                         end
                     end
 
+                    -- CRITICAL: Reset SellItemDialog state BEFORE showing our dialog
+                    -- The game may have set visible=true on SellItemDialog when preparing to show it
+                    pcall(function()
+                        local sellDialog = g_gui.guis.SellItemDialog
+                        if sellDialog then
+                            if sellDialog.target then
+                                sellDialog.target.visible = false
+                                sellDialog.target.isOpen = false
+                            end
+                            sellDialog.visible = false
+                            sellDialog.isOpen = false
+                            UsedPlus.logDebug(">>> Reset SellItemDialog visible/isOpen to false <<<")
+                        end
+                    end)
+
                     -- Show our custom sell dialog
                     UsedPlus.logDebug(string.format(">>> Showing SellVehicleDialog for: %s <<<", vehicle:getName()))
                     VehicleSellingPointExtension.logGuiState("BEFORE_SHOW_OUR_DIALOG")
@@ -528,18 +543,6 @@ function VehicleSellingPointExtension.hookAllDialogs()
 
                     UsedPlus.logDebug(string.format(">>> SellVehicleDialog shown, result=%s <<<", tostring(result)))
                     VehicleSellingPointExtension.logGuiState("AFTER_SHOW_OUR_DIALOG")
-
-                    -- Clear any GUI blocking state that might have been set
-                    -- The game may have prepared for SellItemDialog to open
-                    pcall(function()
-                        if g_gui then
-                            -- Try to close SellItemDialog if it exists in any state
-                            g_gui:closeDialogByName("SellItemDialog")
-                            UsedPlus.logDebug(">>> Attempted closeDialogByName(SellItemDialog) <<<")
-                        end
-                    end)
-
-                    VehicleSellingPointExtension.logGuiState("AFTER_CLEANUP_ATTEMPT")
 
                     -- Return the result to prevent caller from waiting for nil response
                     UsedPlus.logDebug(string.format(">>> Returning from SellItemDialog intercept with: %s <<<", tostring(result or true)))
