@@ -503,7 +503,10 @@ function SellVehicleDialog:onClickConfirm()
 
     UsedPlus.logDebug(string.format("Confirmed %s + %s (Agent %d, Price %d)",
         agentOption.name, priceOption.name, agentOption.tier, priceOption.tier))
-    self:close()
+
+    -- CRITICAL: Use g_gui:closeDialog() to properly decrement dialog count
+    -- self:close() doesn't remove from g_gui's tracking!
+    g_gui:closeDialog()
 end
 
 --[[
@@ -516,45 +519,37 @@ function SellVehicleDialog:onClickCancel()
     end
 
     UsedPlus.logDebug("Sell dialog cancelled")
-    self:close()
+
+    -- CRITICAL: Use g_gui:closeDialog() to properly decrement dialog count
+    -- self:close() doesn't remove from g_gui's tracking!
+    g_gui:closeDialog()
 end
 
 --[[
      Dialog closed - cleanup
+     Note: This is called by g_gui:closeDialog() - we just do cleanup here
 ]]
 function SellVehicleDialog:onClose()
     UsedPlus.logDebug(">>> SellVehicleDialog:onClose() STARTING <<<")
 
-    -- Log GUI state before cleanup
+    -- Log GUI state
     if VehicleSellingPointExtension and VehicleSellingPointExtension.logGuiState then
         VehicleSellingPointExtension.logGuiState("SELL_DIALOG_ONCLOSE_START")
     end
 
+    -- Clear our data
     self.vehicle = nil
     self.farmId = nil
     self.vanillaSellPrice = 0
     self.callback = nil
 
-    -- Try to close SellItemDialog in case game left it partially open
-    -- This helps clear any blocking state from our interception
-    pcall(function()
-        if g_gui and g_gui.guis and g_gui.guis.SellItemDialog then
-            g_gui:closeDialogByName("SellItemDialog")
-            UsedPlus.logDebug(">>> Cleaned up SellItemDialog state on close <<<")
-        end
-    end)
-
-    -- Log GUI state after cleanup
-    if VehicleSellingPointExtension and VehicleSellingPointExtension.logGuiState then
-        VehicleSellingPointExtension.logGuiState("SELL_DIALOG_ONCLOSE_AFTER_CLEANUP")
-    end
-
+    -- Call superclass onClose
     UsedPlus.logDebug(">>> SellVehicleDialog:onClose() calling superclass <<<")
     SellVehicleDialog:superClass().onClose(self)
 
-    -- Log GUI state after superclass close
+    -- Log GUI state after close
     if VehicleSellingPointExtension and VehicleSellingPointExtension.logGuiState then
-        VehicleSellingPointExtension.logGuiState("SELL_DIALOG_ONCLOSE_AFTER_SUPER")
+        VehicleSellingPointExtension.logGuiState("SELL_DIALOG_ONCLOSE_COMPLETE")
     end
     UsedPlus.logDebug(">>> SellVehicleDialog:onClose() COMPLETE <<<")
 end
