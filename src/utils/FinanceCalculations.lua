@@ -10,11 +10,41 @@
     - Residual value calculation for leases
     - Cash back limit calculation
     - Validation functions for input ranges
+    - Minimum financing thresholds
 
     All formulas match the design specification exactly.
 ]]
 
 FinanceCalculations = {}
+
+--[[
+    Minimum Financing Thresholds
+    Banks don't process loans for trivially small amounts - the administrative
+    overhead exceeds the potential profit. These thresholds ensure realistic
+    financing behavior.
+]]
+FinanceCalculations.MINIMUM_AMOUNTS = {
+    VEHICLE_FINANCE = 2500,   -- Minimum for financing vehicles/equipment
+    VEHICLE_LEASE = 5000,     -- Leasing has higher admin overhead
+    CASH_LOAN = 1000,         -- Secured loans can be smaller
+    REPAIR_FINANCE = 500,     -- Emergency repairs need accessibility
+    LAND_FINANCE = 10000,     -- Land purchases are always significant
+}
+
+--[[
+    Check if an amount meets the minimum financing threshold
+    @param amount - The amount to check
+    @param financeType - One of: "VEHICLE_FINANCE", "VEHICLE_LEASE", "CASH_LOAN", "REPAIR_FINANCE", "LAND_FINANCE"
+    @return meetsMinimum (boolean), minimumRequired (number)
+]]
+function FinanceCalculations.meetsMinimumAmount(amount, financeType)
+    local minimum = FinanceCalculations.MINIMUM_AMOUNTS[financeType]
+    if minimum == nil then
+        -- Unknown type - default to vehicle finance minimum
+        minimum = FinanceCalculations.MINIMUM_AMOUNTS.VEHICLE_FINANCE
+    end
+    return amount >= minimum, minimum
+end
 
 --[[
     Calculate final interest rate for vehicle/equipment finance

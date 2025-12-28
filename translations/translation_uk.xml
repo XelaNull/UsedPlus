@@ -477,6 +477,25 @@
         <!--  Попередження про зниження швидкості (v1.4.0) -->
         <e k="usedPlus_speedDegraded" v="Двигун працює з труднощами - макс. швидкість знижена до %d%%!" />
         <e k="usedPlus_speedDegradedReminder" v="Транспорт їде повільно - рекомендується ремонт" />
+        <e k="usedPlus_speedGovernor" v="Двигун не може підтримувати цю швидкість!" />
+        <e k="usedPlus_firstStartStall" v="Двигун не завівся!" />
+        <e k="usedPlus_steeringLoose" v="Кермо здається розхитаним - зношена гідравліка!" />
+        <e k="usedPlus_steeringPull" v="Кермо тягне %s!" />
+        <e k="usedPlus_directionLeft" v="вліво" />
+        <e k="usedPlus_directionRight" v="вправо" />
+
+        <!--  Несправності двигуна (v1.6.0) -->
+        <e k="usedPlus_engineMisfire" v="Двигун троїть!" />
+        <e k="usedPlus_engineOverheating" v="Двигун перегрівається! (%d%%)" />
+        <e k="usedPlus_engineOverheated" v="ДВИГУН ПЕРЕГРІВСЯ! Дайте йому охолонути!" />
+
+        <!--  Несправності обладнання (v1.6.0) -->
+        <e k="usedPlus_implementSurge" v="Гідравлічний стрибок - обладнання підняте!" />
+        <e k="usedPlus_implementDrop" v="Відмова гідравліки - обладнання опущено!" />
+        <e k="usedPlus_ptoToggle" v="Електрична несправність - ВВП %s!" />
+        <e k="usedPlus_ptoOn" v="увімкнено" />
+        <e k="usedPlus_ptoOff" v="вимкнено" />
+        <e k="usedPlus_hitchFailure" v="ВІДМОВА ЗЧІПКИ - Обладнання від'єднано!" />
 
         <!--  Попередження про дрейф гідравліки (v1.4.0) -->
         <e k="usedPlus_hydraulicWeak" v="Слабка гідравліка (%d%%) - обладнання може дрейфувати!" />
@@ -566,6 +585,31 @@
         <e k="usedplus_error_payoffFailed" v="Помилка погашення" />
         <e k="usedplus_error_paymentFailed" v="Помилка платежу" />
         <e k="usedplus_error_eventNotAvailable" v="Помилка: %s недоступний" />
+
+        <!-- Сповіщення про помилки - Вимоги кредитного рейтингу -->
+        <e k="usedplus_error_creditTooLow" v="Занадто низький кредитний рейтинг" />
+        <e k="usedplus_error_creditTooLowDetail" v="Ваш кредитний рейтинг (%d) нижче мінімуму (%d), необхідного для %s." />
+        <e k="usedplus_error_creditTip" v="Порада: Здійснюйте платежі вчасно для покращення кредиту." />
+        <e k="usedplus_error_creditShortfall" v="Дефіцит: %d балів" />
+        <e k="usedplus_finance_repairFinancing" v="фінансування ремонту" />
+        <e k="usedplus_finance_vehicleFinancing" v="фінансування техніки" />
+        <e k="usedplus_finance_vehicleLeasing" v="лізинг техніки" />
+        <e k="usedplus_finance_landFinancing" v="фінансування землі" />
+        <e k="usedplus_finance_cashLoan" v="грошові позики" />
+
+        <!-- Попередження про кредит (UX) -->
+        <e k="usedplus_credit_tooLowForFinancing" v="Кредитний рейтинг занадто низький для фінансування.\nВаш рейтинг: %d | Потрібно: %d\nПокращіть кредит своєчасними платежами." />
+        <e k="usedplus_credit_tooLowForLeasing" v="Кредитний рейтинг занадто низький для лізингу.\nВаш рейтинг: %d | Потрібно: %d\nЛізинг вимагає кращого кредиту, ніж фінансування." />
+        <e k="usedplus_credit_tooLowForLand" v="Кредитний рейтинг занадто низький (%d). Потрібно %d+ для фінансування землі." />
+        <e k="usedplus_credit_tooLowForRepair" v="Кредитний рейтинг занадто низький (%d). Потрібно %d+ для фінансування ремонту." />
+        <e k="usedplus_credit_needScore" v="Кредит: %d (потрібно %d)" />
+
+        <!-- Опції вибору режиму -->
+        <e k="usedplus_mode_cash" v="Купити за готівку" />
+        <e k="usedplus_mode_finance" v="Фінансувати" />
+        <e k="usedplus_mode_lease" v="Лізинг" />
+        <e k="usedplus_mode_financeCredit" v="Фінансувати (Кредит: %d+)" />
+        <e k="usedplus_mode_leaseCredit" v="Лізинг (Кредит: %d+)" />
 
         <!-- Success Notifications - Sales -->
         <e k="usedplus_notify_vehicleSold" v="Продано %s за %s!" />
@@ -1251,5 +1295,132 @@
         <e k="usedplus_tl_fair" v="Задовільно 650-699: 8.5%" />
         <e k="usedplus_tl_poor" v="Погано 600-649: 9.5%" />
         <e k="usedplus_tl_veryPoor" v="Дуже погано &lt;600: 11%" />
+
+        <!-- Search Expired Dialog (v1.5.1) -->
+        <e k="usedplus_searchExpired_title" v="Пошук завершено" />
+        <e k="usedplus_searchExpired_summary" v="ПІДСУМКИ ПОШУКУ" />
+        <e k="usedplus_searchExpired_searchedFor" v="Шукали:" />
+        <e k="usedplus_searchExpired_agentTier" v="Рівень агента:" />
+        <e k="usedplus_searchExpired_quality" v="Якість:" />
+        <e k="usedplus_searchExpired_duration" v="Тривалість:" />
+        <e k="usedplus_searchExpired_results" v="РЕЗУЛЬТАТИ" />
+        <e k="usedplus_searchExpired_vehiclesFound" v="Знайдено %d транспортних засобів" />
+        <e k="usedplus_searchExpired_noVehicles" v="Транспорт не знайдено" />
+        <e k="usedplus_searchExpired_renewSearch" v="ПРОДОВЖИТИ ПОШУК?" />
+        <e k="usedplus_searchExpired_renewCost" v="Вартість продовження:" />
+        <e k="usedplus_searchExpired_renew" v="Продовжити пошук" />
+        <e k="usedplus_searchExpired_renewed" v="Пошук продовжено на %s!" />
+        <e k="usedplus_searchExpired_insufficientFunds" v="Недостатньо коштів для продовження пошуку." />
+
+        <!-- v1.7.0: Попередження системи шин -->
+        <e k="usedplus_warning_tireWorn" v="Увага: Шини зношуються. Розгляньте скору заміну." />
+        <e k="usedplus_warning_tireCritical" v="КРИТИЧНО: Шини критично зношені! Замініть негайно щоб уникнути проколу." />
+        <e k="usedplus_warning_flatTire" v="ПРОКОЛ ШИНИ! Керування серйозно порушено. Потрібна заміна шини." />
+        <e k="usedplus_warning_lowTraction" v="Увага: Низьке зчеплення через зношені шини. Знизьте швидкість у поганих умовах." />
+
+        <!-- v1.7.0: Попередження масляної системи -->
+        <e k="usedplus_warning_oilLow" v="Увага: Низький рівень масла. Незабаром потрібно обслуговування." />
+        <e k="usedplus_warning_oilCritical" v="КРИТИЧНО: Небезпечно низький рівень масла! Відбувається пошкодження двигуна." />
+        <e k="usedplus_warning_oilLeak" v="Увага: Виявлено витік масла. Прискорена втрата рідини." />
+        <e k="usedplus_warning_engineDamage" v="ПОШКОДЖЕННЯ ДВИГУНА: Постійна втрата надійності через нестачу масла!" />
+
+        <!-- v1.7.0: Попередження гідравлічної системи -->
+        <e k="usedplus_warning_hydraulicLow" v="Увага: Низький рівень гідравлічної рідини. Незабаром потрібно обслуговування." />
+        <e k="usedplus_warning_hydraulicCritical" v="КРИТИЧНО: Небезпечно низький рівень рідини! Відбувається пошкодження системи." />
+        <e k="usedplus_warning_hydraulicLeak" v="Увага: Виявлено гідравлічний витік. Прискорена втрата рідини." />
+        <e k="usedplus_warning_hydraulicDamage" v="ПОШКОДЖЕННЯ ГІДРАВЛІКИ: Постійна втрата надійності через нестачу рідини!" />
+
+        <!-- v1.7.0: Попередження про витік пального -->
+        <e k="usedplus_warning_fuelLeak" v="Увага: Виявлено витік пального! Витрата значно збільшена." />
+
+        <!-- v1.7.0: Назви якості шин -->
+        <e k="usedplus_tire_retread" v="Відновлена" />
+        <e k="usedplus_tire_normal" v="Звичайна" />
+        <e k="usedplus_tire_quality" v="Якість" />
+
+        <!-- v1.7.0: Мітки діалогу рідин -->
+        <e k="usedplus_fluids_title" v="ОБСЛУГОВУВАННЯ РІДИН" />
+        <e k="usedplus_fluids_oil" v="Моторне масло" />
+        <e k="usedplus_fluids_hydraulic" v="Гідравлічна рідина" />
+        <e k="usedplus_fluids_level" v="Рівень:" />
+        <e k="usedplus_fluids_status" v="Статус:" />
+        <e k="usedplus_fluids_statusOk" v="ОК" />
+        <e k="usedplus_fluids_statusLow" v="НИЗЬКИЙ" />
+        <e k="usedplus_fluids_statusCritical" v="КРИТИЧНИЙ" />
+        <e k="usedplus_fluids_statusLeaking" v="ВИТІК" />
+        <e k="usedplus_fluids_leakMinor" v="Малий витік" />
+        <e k="usedplus_fluids_leakModerate" v="Середній витік" />
+        <e k="usedplus_fluids_leakSevere" v="Серйозний витік" />
+        <e k="usedplus_fluids_topUp" v="Долити" />
+        <e k="usedplus_fluids_fullChange" v="Повна заміна" />
+        <e k="usedplus_fluids_cost" v="Вартість:" />
+
+        <!-- v1.7.0: Мітки діалогу шин -->
+        <e k="usedplus_tires_title" v="ОБСЛУГОВУВАННЯ ШИН" />
+        <e k="usedplus_tires_condition" v="Стан:" />
+        <e k="usedplus_tires_quality" v="Якість:" />
+        <e k="usedplus_tires_traction" v="Зчеплення:" />
+        <e k="usedplus_tires_flatTire" v="ПРОКОЛ ШИНИ" />
+        <e k="usedplus_tires_replace" v="Замінити шини" />
+        <e k="usedplus_tires_selectQuality" v="Вибрати якість:" />
+        <e k="usedplus_tires_retreadDesc" v="Бюджетний варіант - менше зчеплення, вищий ризик поломки" />
+        <e k="usedplus_tires_normalDesc" v="Стандартні шини - збалансовані характеристики" />
+        <e k="usedplus_tires_qualityDesc" v="Преміум шини - краще зчеплення, нижчий ризик поломки" />
+        <e k="usedplus_tires_cost" v="Вартість:" />
+
+        <!-- v1.7.0: Звіт обслуговування - Секція шини/рідини -->
+        <e k="usedplus_mr_tires" v="ШИНИ" />
+        <e k="usedplus_mr_fluids" v="РІДИНИ" />
+        <e k="usedplus_mr_tireCondition" v="Стан шин:" />
+        <e k="usedplus_mr_tireQuality" v="Якість шин:" />
+        <e k="usedplus_mr_oilLevel" v="Рівень масла:" />
+        <e k="usedplus_mr_hydraulicLevel" v="Гідравлічна рідина:" />
+        <e k="usedplus_mr_fuelLeak" v="Витік пального:" />
+        <e k="usedplus_mr_yes" v="Так" />
+        <e k="usedplus_mr_no" v="Ні" />
+
+        <!-- v1.7.0: Діалог обслуговування шин -->
+        <e k="usedplus_tires_sectionStatus" v="СТАТУС ТЕХНІКИ &amp; ШИН" />
+        <e k="usedplus_tires_sectionSelect" v="ВИБЕРІТЬ ЯКІСТЬ ШИНИ" />
+        <e k="usedplus_tires_sectionPayment" v="ПІДСУМОК ОПЛАТИ" />
+        <e k="usedplus_tires_currentQuality" v="Поточна якість:" />
+        <e k="usedplus_tires_currentCondition" v="Стан шин:" />
+        <e k="usedplus_tires_selectHelp" v="Натисніть на тип шини. Вища якість = кращі характеристики." />
+        <e k="usedplus_tires_retread" v="Відновлена" />
+        <e k="usedplus_tires_normal" v="Звичайна" />
+        <e k="usedplus_tires_retreadInfo" v="85% зчеплення, 3x поломка" />
+        <e k="usedplus_tires_normalInfo" v="100% зчеплення, база" />
+        <e k="usedplus_tires_qualityInfo" v="110% зчеплення, 0.5x поломка" />
+        <e k="usedplus_tires_selectedTire" v="Вибрана шина:" />
+        <e k="usedplus_tires_totalCost" v="Загальна вартість:" />
+        <e k="usedplus_tires_selectOne" v="Виберіть шину..." />
+        <e k="usedplus_tires_infoText" v="Нові шини відновлюють 100%. Відновлені - перероблені каркаси." />
+        <e k="usedplus_tires_flatWarning" v="ПРОКОЛ ШИНИ - Потрібна заміна!" />
+        <e k="usedplus_tires_selectFirst" v="Спочатку виберіть якість шини." />
+        <e k="usedplus_tires_replaced" v="Шини замінено: %s" />
+
+        <!-- v1.7.0: Діалог обслуговування рідин -->
+        <e k="usedplus_fluids_sectionStatus" v="СТАТУС ТЕХНІКИ &amp; РІДИН" />
+        <e k="usedplus_fluids_sectionService" v="ВАРІАНТИ ОБСЛУГОВУВАННЯ" />
+        <e k="usedplus_fluids_sectionPayment" v="ПІДСУМОК ОПЛАТИ" />
+        <e k="usedplus_fluids_oilLevel" v="Моторне масло:" />
+        <e k="usedplus_fluids_hydraulicLevel" v="Гідравлічна рідина:" />
+        <e k="usedplus_fluids_oilRefill" v="Долив моторного масла" />
+        <e k="usedplus_fluids_hydraulicRefill" v="Долив гідравлічної рідини" />
+        <e k="usedplus_fluids_full" v="Повний" />
+        <e k="usedplus_fluids_refillAmount" v="Долити: %.0f%%" />
+        <e k="usedplus_fluids_noRefillNeeded" v="Долив не потрібен" />
+        <e k="usedplus_fluids_selectedServices" v="Вибрані послуги:" />
+        <e k="usedplus_fluids_totalCost" v="Загальна вартість:" />
+        <e k="usedplus_fluids_selectServices" v="Виберіть послуги..." />
+        <e k="usedplus_fluids_infoText" v="Натисніть на послуги. Долив відновлює рівні до 100%." />
+        <e k="usedplus_fluids_oilLeakWarning" v="ВИЯВЛЕНО ВИТІК МАСЛА" />
+        <e k="usedplus_fluids_hydraulicLeakWarning" v="ВИЯВЛЕНО ГІДРАВЛІЧНИЙ ВИТІК" />
+        <e k="usedplus_fluids_selectFirst" v="Виберіть хоча б одну послугу." />
+        <e k="usedplus_fluids_refilled" v="Рідини долито: %s" />
+
+        <!-- v1.7.0: Кредитні повідомлення -->
+        <e k="usedplus_loan_useFinancialDashboard" v="Використовуйте Фінансову панель для кредитів" />
+
     </elements>
 </l10n>

@@ -152,9 +152,6 @@ function InspectionReportDialog:updateDisplay()
         if self.mechanicQuoteText then
             self.mechanicQuoteText:setText('"' .. quote .. '"')
         end
-        if self.mechanicAttribText then
-            self.mechanicAttribText:setText(g_i18n:getText("usedplus_irp_mechanicName"))
-        end
 
         -- Legacy notes elements (keep for compatibility, may be removed later)
         if self.notesText then
@@ -171,9 +168,6 @@ function InspectionReportDialog:updateDisplay()
 
         if self.mechanicQuoteText then
             self.mechanicQuoteText:setText('"' .. g_i18n:getText("usedplus_inspection_noData") .. '"')
-        end
-        if self.mechanicAttribText then
-            self.mechanicAttribText:setText(g_i18n:getText("usedplus_irp_mechanicName"))
         end
     end
 

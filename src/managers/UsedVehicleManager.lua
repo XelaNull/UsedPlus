@@ -209,6 +209,7 @@ end
 --[[
     Notify player that a search has completed
     v1.5.0: Shows summary of what was found
+    v1.5.1: Shows SearchExpiredDialog with renewal option
 ]]
 function UsedVehicleManager:notifySearchComplete(search, farmId)
     -- Only show if game is running
@@ -217,17 +218,108 @@ function UsedVehicleManager:notifySearchComplete(search, farmId)
     end
 
     local foundCount = #(search.foundListings or {})
-    local message = string.format(
-        g_i18n:getText("usedplus_notify_searchComplete") or "Search complete: %d vehicle(s) found for %s",
-        foundCount, search.storeItemName or "vehicle"
+
+    -- Calculate renewal cost (same as original search)
+    local renewCost = self:calculateSearchCost(search.tier, search.storeItemPrice or 0, farmId)
+
+    UsedPlus.logDebug(string.format("Search %s complete with %d vehicles, showing expiration dialog", search.id, foundCount))
+
+    -- Show the SearchExpiredDialog with renewal option
+    if SearchExpiredDialog and SearchExpiredDialog.showWithData then
+        SearchExpiredDialog.showWithData(search, foundCount, renewCost, function(renewChoice)
+            if renewChoice then
+                -- Player chose to renew - create a new search with same parameters
+                self:renewSearch(search, farmId)
+            else
+                -- Player declined - just log it
+                UsedPlus.logDebug(string.format("Player declined to renew search %s", search.id))
+            end
+        end)
+    else
+        -- Fallback to notification if dialog not available
+        local message = string.format(
+            g_i18n:getText("usedplus_notify_searchComplete") or "Search complete: %d vehicle(s) found for %s",
+            foundCount, search.storeItemName or "vehicle"
+        )
+
+        g_currentMission:addIngameNotification(
+            foundCount > 0 and FSBaseMission.INGAME_NOTIFICATION_OK or FSBaseMission.INGAME_NOTIFICATION_INFO,
+            message
+        )
+    end
+end
+
+--[[
+    Renew a search with the same parameters
+    @param oldSearch - The completed search to renew
+    @param farmId - Farm ID
+]]
+function UsedVehicleManager:renewSearch(oldSearch, farmId)
+    -- Calculate cost
+    local cost = self:calculateSearchCost(oldSearch.tier, oldSearch.storeItemPrice or 0, farmId)
+
+    -- Check if player can afford
+    local farm = g_farmManager:getFarmById(farmId)
+    if farm.money < cost then
+        g_currentMission:addIngameNotification(
+            FSBaseMission.INGAME_NOTIFICATION_CRITICAL,
+            "Insufficient funds to renew search."
+        )
+        return false
+    end
+
+    -- Create new search with same parameters
+    local newSearch = UsedVehicleSearch.new(
+        oldSearch.storeItemIndex,
+        oldSearch.storeItemName,
+        oldSearch.storeItemPrice or 0,
+        oldSearch.tier,
+        oldSearch.qualityTier,
+        oldSearch.requestedConfigId
     )
 
+    -- Charge the fee
+    farm:changeBalance(-cost, MoneyType.OTHER)
+
+    -- Add to active searches
+    self.activeSearches[newSearch.id] = newSearch
+    table.insert(farm.usedVehicleSearches, newSearch)
+
+    -- Notify player
     g_currentMission:addIngameNotification(
-        foundCount > 0 and FSBaseMission.INGAME_NOTIFICATION_OK or FSBaseMission.INGAME_NOTIFICATION_INFO,
-        message
+        FSBaseMission.INGAME_NOTIFICATION_OK,
+        string.format("Search renewed for %s!", oldSearch.storeItemName)
     )
 
-    UsedPlus.logDebug(string.format("Notified player: search %s complete with %d vehicles", search.id, foundCount))
+    UsedPlus.logInfo(string.format("Renewed search for %s (Tier %d, Quality %d)",
+        oldSearch.storeItemName, oldSearch.tier, oldSearch.qualityTier))
+
+    return true
+end
+
+--[[
+    Calculate search cost based on tier and vehicle price
+    @param tier - Search tier (1-3)
+    @param vehiclePrice - Base price of vehicle
+    @param farmId - Farm ID for credit modifier
+    @return cost - Total search cost
+]]
+function UsedVehicleManager:calculateSearchCost(tier, vehiclePrice, farmId)
+    local tierInfo = UsedVehicleSearch.SEARCH_TIERS[tier]
+    if not tierInfo then
+        return 0
+    end
+
+    local baseCost = tierInfo.retainerFlat + (vehiclePrice * tierInfo.retainerPercent)
+
+    -- Apply credit score modifier
+    if farmId and CreditScore then
+        local score = CreditScore.calculate(farmId)
+        local modifier = UsedVehicleSearch.getCreditFeeModifier(score)
+        baseCost = baseCost * (1 + modifier)
+    end
+
+    return math.floor(baseCost)
 end
 
 --[[
@@ -547,6 +639,11 @@ function UsedVehicleManager:purchaseUsedVehicle(listing, farmId)
         -- Remove listing from available listings
         self:removeListing(listing, farmId)
 
+        -- v1.7.1: End the search when a vehicle is purchased - player found what they wanted
+        if listing.searchId then
+            self:endSearchAfterPurchase(listing.searchId, farmId)
+        end
+
         -- Track statistics
         if g_financeManager then
             g_financeManager:incrementStatistic(farmId, "usedVehiclesPurchased", 1)
@@ -765,8 +862,86 @@ function UsedVehicleManager:applyUsedConditionToVehicle(vehicle, listing)
         UsedPlus.logDebug("  Applied UsedPlus reliability data")
     end
 
+    -- Apply dirt based on quality tier (v1.5.1)
+    -- Lower quality = dirtier vehicle
+    self:applyDirtBasedOnQuality(vehicle, listing.qualityLevel, listing.damage)
+
     UsedPlus.logDebug(string.format("Applied used condition complete: damage=%.2f, wear=%.2f, hours=%d",
         listing.damage or 0, listing.wear or 0, listing.operatingHours or 0))
+end
+
+--[[
+    Apply dirt to vehicle based on quality level
+    Lower quality levels = more dirt, higher levels = cleaner
+
+    Quality Levels (from UsedVehicleSearch):
+    1 = Any Condition (worst)
+    2 = Poor Condition
+    3 = Fair Condition
+    4 = Good Condition
+    5 = Excellent Condition (best)
+
+    @param vehicle - The spawned vehicle
+    @param qualityLevel - Quality level (1-5)
+    @param damage - Vehicle damage (0-1) used as additional factor
+]]
+function UsedVehicleManager:applyDirtBasedOnQuality(vehicle, qualityLevel, damage)
+    if vehicle == nil then
+        return
+    end
+
+    -- Get spec_washable
+    local washable = vehicle.spec_washable
+    if washable == nil or washable.washableNodes == nil then
+        UsedPlus.logDebug("  No washable nodes found - vehicle will be clean")
+        return
+    end
+
+    -- Calculate dirt amount based on quality tier
+    -- Each tier has a base range, then we add randomness
+    local dirtRanges = {
+        [1] = { min = 0.70, max = 1.00 },  -- Any Condition: 70-100% dirty (filthy)
+        [2] = { min = 0.55, max = 0.85 },  -- Poor Condition: 55-85% dirty (very dirty)
+        [3] = { min = 0.30, max = 0.55 },  -- Fair Condition: 30-55% dirty (moderately dirty)
+        [4] = { min = 0.10, max = 0.30 },  -- Good Condition: 10-30% dirty (light dust)
+        [5] = { min = 0.00, max = 0.10 },  -- Excellent Condition: 0-10% dirty (nearly clean)
+    }
+
+    local tier = qualityLevel or 3  -- Default to Fair
+    local range = dirtRanges[tier] or dirtRanges[3]
+
+    -- Base dirt amount from quality tier
+    local baseDirt = range.min + math.random() * (range.max - range.min)
+
+    -- Add a bit more dirt based on damage (damaged vehicles are often dirtier)
+    local damageBonus = (damage or 0) * 0.15  -- Up to 15% extra dirt from damage
+    local finalDirt = math.min(1.0, baseDirt + damageBonus)
+
+    UsedPlus.logDebug(string.format("  Applying dirt: tier=%d, baseDirt=%.2f, damageBonus=%.2f, finalDirt=%.2f",
+        tier, baseDirt, damageBonus, finalDirt))
+
+    -- Apply dirt to all washable nodes
+    local nodesApplied = 0
+    for i = 1, #washable.washableNodes do
+        local nodeData = washable.washableNodes[i]
+        if nodeData then
+            -- Add some per-node variation for more natural look
+            local nodeVariation = (math.random() - 0.5) * 0.1  -- ±5% variation per node
+            local nodeDirt = math.max(0, math.min(1, finalDirt + nodeVariation))
+
+            -- Use vehicle's setNodeDirtAmount if available
+            if vehicle.setNodeDirtAmount then
+                vehicle:setNodeDirtAmount(nodeData, nodeDirt, true)
+                nodesApplied = nodesApplied + 1
+            else
+                -- Direct assignment fallback
+                nodeData.dirtAmount = nodeDirt
+                nodesApplied = nodesApplied + 1
+            end
+        end
+    end
+
+    UsedPlus.logDebug(string.format("  Applied dirt to %d washable nodes", nodesApplied))
 end
 
 --[[
@@ -1100,6 +1275,53 @@ end
 ]]
 function UsedVehicleManager:getSearchById(searchId)
     return self.activeSearches[searchId]
+end
+
+--[[
+    End a search after a vehicle is purchased from it
+    v1.7.1: Called when player buys from UsedVehiclePreviewDialog (direct purchase path)
+    This ensures the search stops running when the player finds what they wanted
+
+    @param searchId - The search ID to end
+    @param farmId - Farm ID of the buyer
+]]
+function UsedVehicleManager:endSearchAfterPurchase(searchId, farmId)
+    if searchId == nil then
+        return
+    end
+
+    local search = self.activeSearches[searchId]
+    if search == nil then
+        UsedPlus.logDebug(string.format("endSearchAfterPurchase: search %s not found (may already be ended)", searchId))
+        return
+    end
+
+    UsedPlus.logDebug(string.format("endSearchAfterPurchase: Ending search %s after vehicle purchase", searchId))
+
+    -- Mark search as completed
+    search.status = "completed"
+
+    -- Remove from farm's search list
+    local farm = g_farmManager:getFarmById(farmId)
+    if farm and farm.usedVehicleSearches then
+        for i = #farm.usedVehicleSearches, 1, -1 do
+            if farm.usedVehicleSearches[i].id == searchId then
+                table.remove(farm.usedVehicleSearches, i)
+                UsedPlus.logDebug(string.format("Removed search %s from farm %d", searchId, farmId))
+                break
+            end
+        end
+    end
+
+    -- Remove from global registry
+    self.activeSearches[searchId] = nil
+
+    -- Track statistics
+    if g_financeManager then
+        g_financeManager:incrementStatistic(farmId, "searchesSucceeded", 1)
+    end
+
+    UsedPlus.logDebug(string.format("Search %s ended after direct purchase", searchId))
 end
 
 --[[

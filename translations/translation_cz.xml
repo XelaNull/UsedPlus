@@ -477,6 +477,25 @@
         <!--  Varovani o degradaci rychlosti (v1.4.0) -->
         <e k="usedPlus_speedDegraded" v="Motor ma potize - maximalni rychlost snizena na %d%%!" />
         <e k="usedPlus_speedDegradedReminder" v="Vozidlo jede pomalu - doporucena oprava" />
+        <e k="usedPlus_speedGovernor" v="Motor nemuze udrzet tuto rychlost!" />
+        <e k="usedPlus_firstStartStall" v="Motor se nespustil!" />
+        <e k="usedPlus_steeringLoose" v="Volant se zda volny - opotrebovana hydraulika!" />
+        <e k="usedPlus_steeringPull" v="Volant taha do %s!" />
+        <e k="usedPlus_directionLeft" v="leva" />
+        <e k="usedPlus_directionRight" v="prava" />
+
+        <!--  Poruchy motoru (v1.6.0) -->
+        <e k="usedPlus_engineMisfire" v="Motor vynechava!" />
+        <e k="usedPlus_engineOverheating" v="Motor se prehriva! (%d%%)" />
+        <e k="usedPlus_engineOverheated" v="MOTOR PREHRÁTY! Nechte ho vychladnout!" />
+
+        <!--  Poruchy nastaveb (v1.6.0) -->
+        <e k="usedPlus_implementSurge" v="Hydraulicky naraz - nastavba zvednuta!" />
+        <e k="usedPlus_implementDrop" v="Porucha hydrauliky - nastavba spustena!" />
+        <e k="usedPlus_ptoToggle" v="Elektricka zavada - WOM %s!" />
+        <e k="usedPlus_ptoOn" v="zapnuty" />
+        <e k="usedPlus_ptoOff" v="vypnuty" />
+        <e k="usedPlus_hitchFailure" v="PORUCHA ZÁVĚSU - Nastavba odpojena!" />
 
         <!--  Varovani o hydraulickem driftu (v1.4.0) -->
         <e k="usedPlus_hydraulicWeak" v="Slaba hydraulika (%d%%) - nastavby mohou drifrovat!" />
@@ -566,6 +585,31 @@
         <e k="usedplus_error_payoffFailed" v="Splaceni selhalo" />
         <e k="usedplus_error_paymentFailed" v="Platba selhala" />
         <e k="usedplus_error_eventNotAvailable" v="Chyba: %s neni k dispozici" />
+
+        <!-- Chybova oznameni - Pozadavky na kreditni skore -->
+        <e k="usedplus_error_creditTooLow" v="Prilis nizke kreditni skore" />
+        <e k="usedplus_error_creditTooLowDetail" v="Vase kreditni skore (%d) je pod minimem (%d) pozadovanym pro %s." />
+        <e k="usedplus_error_creditTip" v="Tip: Provadejte vcasne platby pro zlepseni kreditu." />
+        <e k="usedplus_error_creditShortfall" v="Deficit: %d bodu" />
+        <e k="usedplus_finance_repairFinancing" v="financovani oprav" />
+        <e k="usedplus_finance_vehicleFinancing" v="financovani vozidla" />
+        <e k="usedplus_finance_vehicleLeasing" v="leasing vozidla" />
+        <e k="usedplus_finance_landFinancing" v="financovani pozemku" />
+        <e k="usedplus_finance_cashLoan" v="hotovostni pujcky" />
+
+        <!-- Varovne zpravy o kreditu (UX) -->
+        <e k="usedplus_credit_tooLowForFinancing" v="Prilis nizke kreditni skore pro financovani.\nVase skore: %d | Pozadovano: %d\nZlepste kredit vcasnymi platbami." />
+        <e k="usedplus_credit_tooLowForLeasing" v="Prilis nizke kreditni skore pro leasing.\nVase skore: %d | Pozadovano: %d\nLeasing vyzaduje lepsi kredit nez financovani." />
+        <e k="usedplus_credit_tooLowForLand" v="Prilis nizke kreditni skore (%d). Pozadovano %d+ pro financovani pozemku." />
+        <e k="usedplus_credit_tooLowForRepair" v="Prilis nizke kreditni skore (%d). Pozadovano %d+ pro financovani oprav." />
+        <e k="usedplus_credit_needScore" v="Kredit: %d (potreba %d)" />
+
+        <!-- Moznosti vyber rezimu -->
+        <e k="usedplus_mode_cash" v="Koupit za hotovost" />
+        <e k="usedplus_mode_finance" v="Financovat" />
+        <e k="usedplus_mode_lease" v="Leasing" />
+        <e k="usedplus_mode_financeCredit" v="Financovat (Kredit: %d+)" />
+        <e k="usedplus_mode_leaseCredit" v="Leasing (Kredit: %d+)" />
 
         <!-- Success Notifications - Sales -->
         <e k="usedplus_notify_vehicleSold" v="Prodano %s za %s!" />
@@ -1251,5 +1295,132 @@
         <e k="usedplus_tl_fair" v="Prumerny 650-699: 8,5%" />
         <e k="usedplus_tl_poor" v="Spatny 600-649: 9,5%" />
         <e k="usedplus_tl_veryPoor" v="Velmi spatny &lt;600: 11%" />
+
+        <!-- Search Expired Dialog (v1.5.1) -->
+        <e k="usedplus_searchExpired_title" v="Hledani dokonceno" />
+        <e k="usedplus_searchExpired_summary" v="SOUHRN HLEDANI" />
+        <e k="usedplus_searchExpired_searchedFor" v="Hledano:" />
+        <e k="usedplus_searchExpired_agentTier" v="Uroven agenta:" />
+        <e k="usedplus_searchExpired_quality" v="Kvalita:" />
+        <e k="usedplus_searchExpired_duration" v="Trvani:" />
+        <e k="usedplus_searchExpired_results" v="VYSLEDKY" />
+        <e k="usedplus_searchExpired_vehiclesFound" v="Nalezeno %d vozidel" />
+        <e k="usedplus_searchExpired_noVehicles" v="Zadna vozidla nenalezena" />
+        <e k="usedplus_searchExpired_renewSearch" v="OBNOVIT HLEDANI?" />
+        <e k="usedplus_searchExpired_renewCost" v="Naklady na obnoveni:" />
+        <e k="usedplus_searchExpired_renew" v="Obnovit hledani" />
+        <e k="usedplus_searchExpired_renewed" v="Hledani obnoveno na %s!" />
+        <e k="usedplus_searchExpired_insufficientFunds" v="Nedostatek prostredku pro obnoveni hledani." />
+
+        <!-- v1.7.0: Varovani systemu pneumatik -->
+        <e k="usedplus_warning_tireWorn" v="Varovani: Pneumatiky se opotrebovavaji. Zvazujte brzy vymenu." />
+        <e k="usedplus_warning_tireCritical" v="KRITICKE: Pneumatiky kriticky opotrebene! Vymente ihned abyste predeslipichnutí." />
+        <e k="usedplus_warning_flatTire" v="PICHNUTA PNEUMATIKA! Ovladani vazne naruseno. Vyzadovana vymena pneumatiky." />
+        <e k="usedplus_warning_lowTraction" v="Varovani: Nizka adheze kvuli opotrebovanym pneumatikam. Zpomalte ve spatnych podminkach." />
+
+        <!-- v1.7.0: Varovani systemu oleje -->
+        <e k="usedplus_warning_oilLow" v="Varovani: Nizka hladina oleje. Brzy vyzadovan servis." />
+        <e k="usedplus_warning_oilCritical" v="KRITICKE: Nebezpecne nizka hladina oleje! Poskozeni motoru probiha." />
+        <e k="usedplus_warning_oilLeak" v="Varovani: Zjisten unik oleje. Zrychlena ztrata kapaliny." />
+        <e k="usedplus_warning_engineDamage" v="POSKOZENI MOTORU: Trvala ztrata spolehlivosti kvuli nedostatku oleje!" />
+
+        <!-- v1.7.0: Varovani hydraulickeho systemu -->
+        <e k="usedplus_warning_hydraulicLow" v="Varovani: Nizka hladina hydraulicke kapaliny. Brzy vyzadovan servis." />
+        <e k="usedplus_warning_hydraulicCritical" v="KRITICKE: Nebezpecne nizka hladina kapaliny! Poskozeni systemu probiha." />
+        <e k="usedplus_warning_hydraulicLeak" v="Varovani: Zjisten hydraulicky unik. Zrychlena ztrata kapaliny." />
+        <e k="usedplus_warning_hydraulicDamage" v="POSKOZENI HYDRAULIKY: Trvala ztrata spolehlivosti kvuli nedostatku kapaliny!" />
+
+        <!-- v1.7.0: Varovani pred unikem paliva -->
+        <e k="usedplus_warning_fuelLeak" v="Varovani: Zjisten unik paliva! Spotreba vyznamne zvysena." />
+
+        <!-- v1.7.0: Nazvy kvality pneumatik -->
+        <e k="usedplus_tire_retread" v="Protektovana" />
+        <e k="usedplus_tire_normal" v="Normalni" />
+        <e k="usedplus_tire_quality" v="Kvalitni" />
+
+        <!-- v1.7.0: Stitky dialogu kapalin -->
+        <e k="usedplus_fluids_title" v="SERVIS KAPALIN" />
+        <e k="usedplus_fluids_oil" v="Motorovy olej" />
+        <e k="usedplus_fluids_hydraulic" v="Hydraulicka kapalina" />
+        <e k="usedplus_fluids_level" v="Hladina:" />
+        <e k="usedplus_fluids_status" v="Stav:" />
+        <e k="usedplus_fluids_statusOk" v="OK" />
+        <e k="usedplus_fluids_statusLow" v="NIZKA" />
+        <e k="usedplus_fluids_statusCritical" v="KRITICKA" />
+        <e k="usedplus_fluids_statusLeaking" v="UNIK" />
+        <e k="usedplus_fluids_leakMinor" v="Maly unik" />
+        <e k="usedplus_fluids_leakModerate" v="Stredni unik" />
+        <e k="usedplus_fluids_leakSevere" v="Vazny unik" />
+        <e k="usedplus_fluids_topUp" v="Doplnit" />
+        <e k="usedplus_fluids_fullChange" v="Kompletni vymena" />
+        <e k="usedplus_fluids_cost" v="Cena:" />
+
+        <!-- v1.7.0: Stitky dialogu pneumatik -->
+        <e k="usedplus_tires_title" v="SERVIS PNEUMATIK" />
+        <e k="usedplus_tires_condition" v="Stav:" />
+        <e k="usedplus_tires_quality" v="Kvalita:" />
+        <e k="usedplus_tires_traction" v="Adheze:" />
+        <e k="usedplus_tires_flatTire" v="PICHNUTA PNEUMATIKA" />
+        <e k="usedplus_tires_replace" v="Vymente pneumatiky" />
+        <e k="usedplus_tires_selectQuality" v="Vyberte kvalitu:" />
+        <e k="usedplus_tires_retreadDesc" v="Ekonomicka moznost - nizsi adheze, vyssi riziko poruchy" />
+        <e k="usedplus_tires_normalDesc" v="Standardni pneumatiky - vyvazeny vykon" />
+        <e k="usedplus_tires_qualityDesc" v="Premium pneumatiky - lepsi adheze, nizsi riziko poruchy" />
+        <e k="usedplus_tires_cost" v="Cena:" />
+
+        <!-- v1.7.0: Servisni zprava - Sekce pneumatiky/kapaliny -->
+        <e k="usedplus_mr_tires" v="PNEUMATIKY" />
+        <e k="usedplus_mr_fluids" v="KAPALINY" />
+        <e k="usedplus_mr_tireCondition" v="Stav pneumatik:" />
+        <e k="usedplus_mr_tireQuality" v="Kvalita pneumatik:" />
+        <e k="usedplus_mr_oilLevel" v="Hladina oleje:" />
+        <e k="usedplus_mr_hydraulicLevel" v="Hydraulicka kapalina:" />
+        <e k="usedplus_mr_fuelLeak" v="Unik paliva:" />
+        <e k="usedplus_mr_yes" v="Ano" />
+        <e k="usedplus_mr_no" v="Ne" />
+
+        <!-- v1.7.0: Dialog servisu pneumatik -->
+        <e k="usedplus_tires_sectionStatus" v="STAV VOZIDLA &amp; PNEUMATIK" />
+        <e k="usedplus_tires_sectionSelect" v="VYBERTE KVALITU PNEUMATIKY" />
+        <e k="usedplus_tires_sectionPayment" v="SOUHRN PLATBY" />
+        <e k="usedplus_tires_currentQuality" v="Aktualni kvalita:" />
+        <e k="usedplus_tires_currentCondition" v="Stav pneumatik:" />
+        <e k="usedplus_tires_selectHelp" v="Kliknete na typ pneumatiky. Vyssi kvalita = lepsi vykon." />
+        <e k="usedplus_tires_retread" v="Protektovana" />
+        <e k="usedplus_tires_normal" v="Normalni" />
+        <e k="usedplus_tires_retreadInfo" v="85% adheze, 3x porucha" />
+        <e k="usedplus_tires_normalInfo" v="100% adheze, zaklad" />
+        <e k="usedplus_tires_qualityInfo" v="110% adheze, 0.5x porucha" />
+        <e k="usedplus_tires_selectedTire" v="Vybrana pneumatika:" />
+        <e k="usedplus_tires_totalCost" v="Celkova cena:" />
+        <e k="usedplus_tires_selectOne" v="Vyberte pneumatiku..." />
+        <e k="usedplus_tires_infoText" v="Nove pneumatiky obnovi 100%. Protektovane jsou recyklovane kostry." />
+        <e k="usedplus_tires_flatWarning" v="PICHNUTA PNEUMATIKA - Vyzadovana vymena!" />
+        <e k="usedplus_tires_selectFirst" v="Prosim nejprve vyberte kvalitu pneumatiky." />
+        <e k="usedplus_tires_replaced" v="Pneumatiky vymeneny: %s" />
+
+        <!-- v1.7.0: Dialog servisu kapalin -->
+        <e k="usedplus_fluids_sectionStatus" v="STAV VOZIDLA &amp; KAPALIN" />
+        <e k="usedplus_fluids_sectionService" v="MOZNOSTI SERVISU" />
+        <e k="usedplus_fluids_sectionPayment" v="SOUHRN PLATBY" />
+        <e k="usedplus_fluids_oilLevel" v="Motorovy olej:" />
+        <e k="usedplus_fluids_hydraulicLevel" v="Hydraulicka kapalina:" />
+        <e k="usedplus_fluids_oilRefill" v="Doplneni motoroveho oleje" />
+        <e k="usedplus_fluids_hydraulicRefill" v="Doplneni hydraulicke kapaliny" />
+        <e k="usedplus_fluids_full" v="Plny" />
+        <e k="usedplus_fluids_refillAmount" v="Doplnit: %.0f%%" />
+        <e k="usedplus_fluids_noRefillNeeded" v="Doplneni neni potreba" />
+        <e k="usedplus_fluids_selectedServices" v="Vybrane sluzby:" />
+        <e k="usedplus_fluids_totalCost" v="Celkova cena:" />
+        <e k="usedplus_fluids_selectServices" v="Vyberte sluzby..." />
+        <e k="usedplus_fluids_infoText" v="Kliknete na sluzby. Doplneni obnovi hladiny na 100%." />
+        <e k="usedplus_fluids_oilLeakWarning" v="ZJISTEN UNIK OLEJE" />
+        <e k="usedplus_fluids_hydraulicLeakWarning" v="ZJISTEN HYDRAULICKY UNIK" />
+        <e k="usedplus_fluids_selectFirst" v="Prosim vyberte alespon jednu sluzbu." />
+        <e k="usedplus_fluids_refilled" v="Kapaliny doplneny: %s" />
+
+        <!-- v1.7.0: Kreditni zpravy -->
+        <e k="usedplus_loan_useFinancialDashboard" v="Pouzijte Financni panel pro uvery zalozene na kreditu" />
+
     </elements>
 </l10n>

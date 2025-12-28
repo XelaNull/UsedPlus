@@ -137,10 +137,57 @@ function RepairFinanceDialog:setData(vehicle, farmId, repairCost, repairPercent,
 end
 
 --[[
+     Check credit qualification and minimum amount, update UI
+]]
+function RepairFinanceDialog:updateCreditStatus()
+    self.canFinanceRepair = true
+    local warningMsg = nil
+
+    -- Check minimum financing amount first
+    if FinanceCalculations and FinanceCalculations.meetsMinimumAmount then
+        local meetsMinimum, minRequired = FinanceCalculations.meetsMinimumAmount(self.repairCost or 0, "REPAIR_FINANCE")
+        if not meetsMinimum then
+            self.canFinanceRepair = false
+            warningMsg = string.format(g_i18n:getText("usedplus_repair_amountTooSmall") or "Amount too small for financing. Minimum: %s",
+                g_i18n:formatMoney(minRequired, 0, true, true))
+        end
+    end
+
+    -- Then check credit score (only if amount check passed)
+    if self.canFinanceRepair and CreditScore and CreditScore.canFinance then
+        local canFinance, minRequired, currentScore = CreditScore.canFinance(self.farmId, "REPAIR")
+        if not canFinance then
+            self.canFinanceRepair = false
+            local template = g_i18n:getText("usedplus_credit_tooLowForRepair")
+            warningMsg = string.format(template, currentScore, minRequired)
+        end
+    end
+
+    -- Show/hide warning
+    if self.creditWarningText then
+        if warningMsg then
+            self.creditWarningText:setText(warningMsg)
+            self.creditWarningText:setVisible(true)
+            self.creditWarningText:setTextColor(1, 0.3, 0.3, 1)
+        else
+            self.creditWarningText:setVisible(false)
+        end
+    end
+
+    -- Disable accept button if cannot finance
+    if self.acceptButton then
+        self.acceptButton:setDisabled(not self.canFinanceRepair)
+    end
+end
+
+--[[
      Update live preview when options change
 ]]
 function RepairFinanceDialog:updatePreview()
     if not self.isDataSet then return end
+
+    -- Update credit status
+    self:updateCreditStatus()
 
     -- Get term from slider
     local termIndex = 2  -- Default
@@ -220,6 +267,16 @@ function RepairFinanceDialog:onAcceptFinance()
     if not self.vehicle or self.repairCost <= 0 then
         UsedPlus.logWarn("RepairFinanceDialog: No valid repair data")
         return
+    end
+
+    -- Credit score check - repair financing has lowest bar but still requires minimum
+    if CreditScore and CreditScore.canFinance then
+        local canFinance, minRequired, currentScore, message = CreditScore.canFinance(self.farmId, "REPAIR")
+        if not canFinance then
+            g_currentMission:addIngameNotification(FSBaseMission.INGAME_NOTIFICATION_CRITICAL, message)
+            UsedPlus.logInfo(string.format("Repair finance rejected: credit %d < %d required", currentScore, minRequired))
+            return
+        end
     end
 
     -- Calculate down payment

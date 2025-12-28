@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="utf-8" standalone="no" ?>
+<!--
+    FS25_UsedPlus - Fluids Service Dialog
+
+    Allows player to refill engine oil and hydraulic fluid.
+    Shows current levels and calculated refill costs.
+
+    v1.7.0 - Tire and Fluid System
+-->
+<GUI onOpen="onOpen" onClose="onClose" onCreate="onCreate">
+    <GuiElement profile="newLayer" />
+    <Bitmap profile="dialogFullscreenBg" id="dialogBg" />
+
+    <GuiElement profile="dialogBg" id="dialogElement" size="720px 480px">
+        <ThreePartBitmap profile="fs25_dialogBgMiddle" />
+        <ThreePartBitmap profile="fs25_dialogBgTop" />
+        <ThreePartBitmap profile="fs25_dialogBgBottom" />
+
+        <GuiElement profile="fs25_dialogContentContainer">
+
+            <!-- Title -->
+            <Text profile="fs25_dialogTitle" id="dialogTitleElement" position="0px -25px" text="$l10n_usedplus_fluids_title"/>
+
+            <!-- ========== SECTION 1: Vehicle Status ========== -->
+            <GuiElement profile="fluidsStatusSection" position="0px -60px">
+                <Bitmap profile="fluidsStatusSectionBg" position="0px 0px"/>
+                <Text profile="fluidsSectionHeader" position="0px -5px" text="$l10n_usedplus_fluids_sectionStatus"/>
+
+                <!-- Two-column layout: image left, info right -->
+                <GuiElement profile="fluidsVehicleRow" position="0px -28px">
+                    <!-- Vehicle Image -->
+                    <Bitmap profile="fluidsVehicleImage" id="vehicleImageElement" position="-185px 42px"/>
+
+                    <!-- Vehicle Info -->
+                    <Text profile="fluidsVehicleName" id="vehicleNameText" position="120px -5px" text=""/>
+
+                    <!-- Current Fluid Levels -->
+                    <Text profile="fluidsStatusLabel" position="70px -30px" text="$l10n_usedplus_fluids_oilLevel"/>
+                    <Text profile="fluidsLevelValue" id="oilLevelText" position="210px -30px" text=""/>
+
+                    <Text profile="fluidsStatusLabel" position="70px -52px" text="$l10n_usedplus_fluids_hydraulicLevel"/>
+                    <Text profile="fluidsLevelValue" id="hydraulicLevelText" position="210px -52px" text=""/>
+
+                    <!-- Leak Warnings -->
+                    <Text profile="fluidsWarningText" id="oilLeakWarningText" position="120px -75px" text=""/>
+                </GuiElement>
+            </GuiElement>
+
+            <!-- ========== SECTION 2: Service Options ========== -->
+            <!-- After Status (130px) + gap = -60 - 130 - 15 = -205 -->
+            <GuiElement profile="fluidsServiceSection" position="0px -205px">
+                <Bitmap profile="fluidsServiceSectionBg" position="0px 0px"/>
+                <Text profile="fluidsSectionHeader" position="0px -5px" text="$l10n_usedplus_fluids_sectionService"/>
+
+                <!-- Two service options side by side -->
+                <GuiElement profile="fluidsServiceRow" position="0px -32px">
+                    <!-- Oil Refill -->
+                    <GuiElement profile="fluidsServiceCard" position="-160px 0px">
+                        <Bitmap profile="fluidsServiceCardBg" id="oilCardBg" position="0px 0px"/>
+                        <Button profile="fluidsServiceCardHit" id="oilButton" onClick="onClickOil" position="0px 0px"/>
+                        <Text profile="fluidsServiceTitle" position="0px -8px" text="$l10n_usedplus_fluids_oilRefill"/>
+                        <Text profile="fluidsServiceCost" id="oilCostText" position="0px -32px" text=""/>
+                        <Text profile="fluidsServiceStatus" id="oilStatusText" position="0px -52px" text=""/>
+                    </GuiElement>
+
+                    <!-- Hydraulic Fluid Refill -->
+                    <GuiElement profile="fluidsServiceCard" position="160px 0px">
+                        <Bitmap profile="fluidsServiceCardBg" id="hydraulicCardBg" position="0px 0px"/>
+                        <Button profile="fluidsServiceCardHit" id="hydraulicButton" onClick="onClickHydraulic" position="0px 0px"/>
+                        <Text profile="fluidsServiceTitle" position="0px -8px" text="$l10n_usedplus_fluids_hydraulicRefill"/>
+                        <Text profile="fluidsServiceCost" id="hydraulicCostText" position="0px -32px" text=""/>
+                        <Text profile="fluidsServiceStatus" id="hydraulicStatusText" position="0px -52px" text=""/>
+                    </GuiElement>
+                </GuiElement>
+            </GuiElement>
+
+            <!-- ========== SECTION 3: Payment Summary ========== -->
+            <!-- After Service (115px) + gap = -205 - 115 - 15 = -335 -->
+            <GuiElement profile="fluidsPaymentSection" position="0px -335px">
+                <Bitmap profile="fluidsPaymentSectionBg" position="0px 0px"/>
+                <Text profile="fluidsSectionHeader" position="0px -5px" text="$l10n_usedplus_fluids_sectionPayment"/>
+
+                <Text profile="fluidsPaymentLabel" position="-100px -35px" text="$l10n_usedplus_fluids_selectedServices"/>
+                <Text profile="fluidsPaymentValue" id="selectedServicesText" position="-100px -55px" text=""/>
+
+                <Text profile="fluidsPaymentLabel" position="100px -35px" text="$l10n_usedplus_fluids_totalCost"/>
+                <Text profile="fluidsCostValue" id="totalCostText" position="100px -55px" text=""/>
+            </GuiElement>
+
+            <!-- Info Text -->
+            <!-- After Payment (85px) + gap = -335 - 85 - 10 = -430 -->
+            <Text profile="fluidsInfoText" position="0px -430px" text="$l10n_usedplus_fluids_infoText"/>
+
+        </GuiElement>
+
+        <BoxLayout profile="fs25_dialogButtonBox">
+            <Button profile="buttonOK" id="confirmButton" text="$l10n_usedplus_button_confirm" onClick="onConfirm"/>
+            <Bitmap profile="fs25_dialogButtonBoxSeparator"/>
+            <Button profile="buttonBack" id="cancelButton" text="$l10n_button_cancel" onClick="onCancel"/>
+        </BoxLayout>
+
+    </GuiElement>
+
+    <GUIProfiles>
+        <!-- ========== SECTION CONTAINERS ========== -->
+        <Profile name="fluidsStatusSection" extends="emptyPanel" with="anchorTopCenter">
+            <size value="660px 130px"/>
+        </Profile>
+
+        <Profile name="fluidsServiceSection" extends="emptyPanel" with="anchorTopCenter">
+            <size value="660px 115px"/>
+        </Profile>
+
+        <Profile name="fluidsPaymentSection" extends="emptyPanel" with="anchorTopCenter">
+            <size value="660px 85px"/>
+        </Profile>
+
+        <!-- ========== SECTION BACKGROUNDS ========== -->
+        <Profile name="fluidsStatusSectionBg" extends="baseReference" with="anchorTopCenter">
+            <size value="660px 130px"/>
+            <imageColor value="0.08 0.08 0.12 0.9"/>
+        </Profile>
+
+        <Profile name="fluidsServiceSectionBg" extends="baseReference" with="anchorTopCenter">
+            <size value="660px 115px"/>
+            <imageColor value="0.06 0.08 0.12 0.9"/>
+        </Profile>
+
+        <Profile name="fluidsPaymentSectionBg" extends="baseReference" with="anchorTopCenter">
+            <size value="660px 85px"/>
+            <imageColor value="0.12 0.1 0.06 0.9"/>
+        </Profile>
+
+        <!-- ========== SECTION HEADER ========== -->
+        <Profile name="fluidsSectionHeader" extends="fs25_textDefault" with="anchorTopCenter">
+            <size value="640px 22px"/>
+            <textSize value="14px"/>
+            <textBold value="true"/>
+            <textColor value="1 0.8 0.2 1"/>
+            <textAlignment value="center"/>
+        </Profile>
+
+        <!-- ========== VEHICLE ROW ========== -->
+        <Profile name="fluidsVehicleRow" extends="emptyPanel" with="anchorTopCenter">
+            <size value="660px 100px"/>
+        </Profile>
+
+        <Profile name="fluidsVehicleImage" extends="fs25_vehiclesDetailsImage" with="anchorTopCenter">
+            <size value="180px 120px"/>
+        </Profile>
+
+        <Profile name="fluidsVehicleName" extends="fs25_textDefault" with="anchorTopCenter">
+            <size value="300px 22px"/>
+            <textSize value="16px"/>
+            <textBold value="true"/>
+            <textColor value="1 1 1 1"/>
+            <textAlignment value="left"/>
+        </Profile>
+
+        <Profile name="fluidsStatusLabel" extends="fs25_textDefault" with="anchorTopCenter">
+            <size value="130px 20px"/>
+            <textSize value="12px"/>
+            <textColor value="0.6 0.6 0.6 1"/>
+            <textAlignment value="left"/>
+        </Profile>
+
+        <Profile name="fluidsLevelValue" extends="fs25_textDefault" with="anchorTopCenter">
+            <size value="80px 20px"/>
+            <textSize value="14px"/>
+            <textBold value="true"/>
+            <textColor value="0.3 1 0.4 1"/>
+            <textAlignment value="left"/>
+        </Profile>
+
+        <Profile name="fluidsWarningText" extends="fs25_textDefault" with="anchorTopCenter">
+            <size value="300px 18px"/>
+            <textSize value="12px"/>
+            <textBold value="true"/>
+            <textColor value="1 0.4 0.4 1"/>
+            <textAlignment value="left"/>
+        </Profile>
+
+        <!-- ========== SERVICE CARDS ========== -->
+        <Profile name="fluidsServiceRow" extends="emptyPanel" with="anchorTopCenter">
+            <size value="620px 75px"/>
+        </Profile>
+
+        <Profile name="fluidsServiceCard" extends="emptyPanel" with="anchorTopCenter">
+            <size value="280px 72px"/>
+        </Profile>
+
+        <Profile name="fluidsServiceCardBg" extends="baseReference" with="anchorTopCenter">
+            <size value="280px 72px"/>
+            <imageColor value="0.12 0.12 0.15 1"/>
+        </Profile>
+
+        <Profile name="fluidsServiceCardHit" extends="emptyPanel" with="anchorTopCenter">
+            <size value="280px 72px"/>
+            <isFocusable value="true"/>
+        </Profile>
+
+        <Profile name="fluidsServiceTitle" extends="fs25_textDefault" with="anchorTopCenter">
+            <size value="260px 20px"/>
+            <textSize value="14px"/>
+            <textBold value="true"/>
+            <textColor value="1 1 1 1"/>
+            <textAlignment value="center"/>
+        </Profile>
+
+        <Profile name="fluidsServiceCost" extends="fs25_textDefault" with="anchorTopCenter">
+            <size value="260px 18px"/>
+            <textSize value="13px"/>
+            <textBold value="true"/>
+            <textColor value="1 0.6 0.3 1"/>
+            <textAlignment value="center"/>
+        </Profile>
+
+        <Profile name="fluidsServiceStatus" extends="fs25_textDefault" with="anchorTopCenter">
+            <size value="260px 16px"/>
+            <textSize value="11px"/>
+            <textColor value="0.6 0.6 0.6 1"/>
+            <textAlignment value="center"/>
+        </Profile>
+
+        <!-- ========== PAYMENT SECTION ========== -->
+        <Profile name="fluidsPaymentLabel" extends="fs25_textDefault" with="anchorTopCenter">
+            <size value="140px 18px"/>
+            <textSize value="13px"/>
+            <textBold value="true"/>
+            <textColor value="1 0.85 0.2 1"/>
+            <textAlignment value="center"/>
+        </Profile>
+
+        <Profile name="fluidsPaymentValue" extends="fs25_textDefault" with="anchorTopCenter">
+            <size value="140px 20px"/>
+            <textSize value="12px"/>
+            <textBold value="true"/>
+            <textColor value="0.4 0.85 1 1"/>
+            <textAlignment value="center"/>
+        </Profile>
+
+        <Profile name="fluidsCostValue" extends="fs25_textDefault" with="anchorTopCenter">
+            <size value="140px 22px"/>
+            <textSize value="16px"/>
+            <textBold value="true"/>
+            <textColor value="1 0.6 0.3 1"/>
+            <textAlignment value="center"/>
+        </Profile>
+
+        <!-- ========== INFO TEXT ========== -->
+        <Profile name="fluidsInfoText" extends="fs25_textDefault" with="anchorTopCenter">
+            <size value="640px 16px"/>
+            <textSize value="11px"/>
+            <textColor value="0.5 0.7 0.5 1"/>
+            <textAlignment value="center"/>
+        </Profile>
+    </GUIProfiles>
+</GUI>

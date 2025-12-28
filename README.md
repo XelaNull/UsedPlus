@@ -287,6 +287,8 @@ UsedPlus was built on the shoulders of giants. The FS25 modding community genero
 | **FS25_FarmlandOverview** | Farmland data display, land value calculations |
 | **FS25_Employment** | Shop hooks, event system patterns |
 | **MobileServiceKit** (w33zl) | VehicleSellingPoint on vehicle type, portable workshop detection |
+| **FS25_useYourTyres** (50keda) | Per-wheel tracking, distance-based wear, friction modification, workshop button injection |
+| **FS25_Real_Vehicle_Breakdowns** (MathiasHun) | Part-based failure system, battery drain mechanics, component managers, thermostat/temperature tracking |
 
 ### Documentation References
 

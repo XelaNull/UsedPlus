@@ -39,6 +39,7 @@
 
             <!-- ========== SECTION 2: Sales Options ========== -->
             <!-- After Vehicle (145px) + 10px gap = -60 - 145 - 10 = -215 -->
+            <!-- Section height: 130px (added 10px bottom padding) -->
             <GuiElement profile="svOptionsSection" position="0px -215px">
                 <Bitmap profile="svOptionsSectionBg" position="0px 0px"/>
                 <Text profile="svSectionHeader" position="0px -5px" text="$l10n_usedplus_sv_sectionOptions"/>
@@ -62,8 +63,9 @@
             </GuiElement>
 
             <!-- ========== SECTION 3: Expected Outcome ========== -->
-            <!-- After Options (120px) + 10px gap = -215 - 120 - 10 = -345 -->
-            <GuiElement profile="svOutcomeSection" position="0px -345px">
+            <!-- After Options (130px) + 10px gap = -215 - 130 - 10 = -355 -->
+            <!-- Section height: 155px (added 10px bottom padding) -->
+            <GuiElement profile="svOutcomeSection" position="0px -355px">
                 <Bitmap profile="svOutcomeSectionBg" position="0px 0px"/>
                 <Text profile="svSectionHeader" position="0px -5px" text="$l10n_usedplus_sv_sectionOutcome"/>
 
@@ -103,8 +105,9 @@
             </GuiElement>
 
             <!-- ========== SECTION 4: Trade-In Comparison ========== -->
-            <!-- After Outcome (145px) + 10px gap = -345 - 145 - 10 = -500 -->
-            <GuiElement profile="svCompareSection" position="0px -500px">
+            <!-- After Outcome (155px) + 10px gap = -355 - 155 - 10 = -520 -->
+            <!-- Section height: 95px (reduced bottom padding) -->
+            <GuiElement profile="svCompareSection" position="0px -520px">
                 <Bitmap profile="svCompareSectionBg" position="0px 0px"/>
                 <Text profile="svSectionHeader" position="0px -5px" text="$l10n_usedplus_sv_sectionCompare"/>
 
@@ -115,9 +118,9 @@
             </GuiElement>
 
             <!-- Info Text (below sections) -->
-            <!-- After Compare (110px) + 10px gap = -500 - 110 - 10 = -620 -->
-            <Text profile="svInfoText" position="0px -620px" text="$l10n_usedplus_sv_infoText"/>
-            <Text profile="svWarningText" position="0px -640px" text="$l10n_usedplus_sv_warningText"/>
+            <!-- After Compare (95px) + 10px gap = -520 - 95 - 10 = -625 -->
+            <Text profile="svInfoText" position="0px -625px" text="$l10n_usedplus_sv_infoText"/>
+            <Text profile="svWarningText" position="0px -645px" text="$l10n_usedplus_sv_warningText"/>
 
         </GuiElement>
 
@@ -137,15 +140,15 @@
         </Profile>
 
         <Profile name="svOptionsSection" extends="emptyPanel" with="anchorTopCenter">
-            <size value="800px 120px"/>
+            <size value="800px 130px"/>
         </Profile>
 
         <Profile name="svOutcomeSection" extends="emptyPanel" with="anchorTopCenter">
-            <size value="800px 145px"/>
+            <size value="800px 155px"/>
         </Profile>
 
         <Profile name="svCompareSection" extends="emptyPanel" with="anchorTopCenter">
-            <size value="800px 110px"/>
+            <size value="800px 95px"/>
         </Profile>
 
         <!-- ========== SECTION BACKGROUNDS ========== -->
@@ -155,17 +158,17 @@
         </Profile>
 
         <Profile name="svOptionsSectionBg" extends="baseReference" with="anchorTopCenter">
-            <size value="800px 120px"/>
+            <size value="800px 130px"/>
             <imageColor value="0.06 0.08 0.12 0.9"/>
         </Profile>
 
         <Profile name="svOutcomeSectionBg" extends="baseReference" with="anchorTopCenter">
-            <size value="800px 145px"/>
+            <size value="800px 155px"/>
             <imageColor value="0.08 0.1 0.08 0.9"/>
         </Profile>
 
         <Profile name="svCompareSectionBg" extends="baseReference" with="anchorTopCenter">
-            <size value="800px 110px"/>
+            <size value="800px 95px"/>
             <imageColor value="0.1 0.08 0.06 0.9"/>
         </Profile>
 
@@ -192,9 +195,9 @@
         </Profile>
 
         <!-- ========== VEHICLE IMAGE (centered in left column) ========== -->
-        <!-- EMPIRICALLY TESTED: 210x140px displays store images without stretching -->
+        <!-- 10% larger than standard 210x140px -->
         <Profile name="svVehicleImage" extends="fs25_vehiclesDetailsImage" with="anchorTopCenter">
-            <size value="210px 140px"/>
+            <size value="230px 154px"/>
         </Profile>
 
         <!-- ========== VEHICLE INFO (left-aligned in right column) ========== -->

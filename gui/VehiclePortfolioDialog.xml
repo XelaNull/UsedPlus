@@ -17,12 +17,18 @@
         <ThreePartBitmap profile="fs25_dialogBgBottom" />
 
         <GuiElement profile="fs25_dialogContentContainer">
-            <!-- Title with counter -->
+            <!-- Title -->
             <Text profile="vpfTitle" id="titleText" position="0px -25px" text="Found Vehicles"/>
-            <Text profile="vpfNavCounter" id="navCounterText" position="0px -50px" text="1 of 3"/>
+
+            <!-- Navigation Bar with Prev/Next buttons -->
+            <GuiElement profile="vpfNavBar" position="0px -55px">
+                <Button profile="vpfNavButton" id="prevButton" position="-120px 0px" text="&lt; Prev" onClick="onClickPrev"/>
+                <Text profile="vpfNavCounter" id="navCounterText" position="0px -8px" text="1 of 3"/>
+                <Button profile="vpfNavButton" id="nextButton" position="120px 0px" text="Next &gt;" onClick="onClickNext"/>
+            </GuiElement>
 
             <!-- ========== VEHICLE INFO SECTION ========== -->
-            <GuiElement profile="vpfSectionContainer" position="0px -75px">
+            <GuiElement profile="vpfSectionContainer" position="0px -90px">
                 <Bitmap profile="vpfSectionBg" position="0px 0px"/>
                 <Text profile="vpfSectionHeader" position="0px -5px" text="VEHICLE"/>
 
@@ -49,7 +55,7 @@
             </GuiElement>
 
             <!-- ========== PRICING SECTION ========== -->
-            <GuiElement profile="vpfSectionContainerMed" position="0px -220px">
+            <GuiElement profile="vpfSectionContainerMed" position="0px -235px">
                 <Bitmap profile="vpfSectionBgGreen" position="0px 0px"/>
                 <Text profile="vpfSectionHeader" position="0px -5px" text="PRICING"/>
 
@@ -65,26 +71,22 @@
             </GuiElement>
 
             <!-- ========== EXPIRATION WARNING ========== -->
-            <GuiElement profile="vpfWarningSection" id="expirationSection" position="0px -325px">
+            <GuiElement profile="vpfWarningSection" id="expirationSection" position="0px -340px">
                 <Bitmap profile="vpfWarningBg" position="0px 0px"/>
                 <Text profile="vpfWarningIcon" position="-280px -22px" text="!"/>
                 <Text profile="vpfWarningText" id="expirationText" position="0px -22px" text="Offer expires in 2 months"/>
             </GuiElement>
 
             <!-- ========== INFO TEXT ========== -->
-            <Text profile="vpfInfoText" id="infoText" position="0px -390px" text="View details to inspect. Decline to remove from portfolio."/>
+            <Text profile="vpfInfoText" id="infoText" position="0px -400px" text="View details to inspect. Decline to remove from portfolio."/>
 
         </GuiElement>
 
-        <!-- Button Box - Prev/Next moved here to match other dialogs -->
+        <!-- Button Box - Action buttons only (Prev/Next moved to nav bar above) -->
         <BoxLayout profile="fs25_dialogButtonBox">
-            <Button id="prevButton" profile="buttonActivate" text="$l10n_usedplus_button_prev" onClick="onClickPrev"/>
-            <Bitmap profile="fs25_dialogButtonBoxSeparator"/>
             <Button id="viewDetailsButton" profile="buttonOK" text="View Details" onClick="onClickViewDetails"/>
             <Bitmap profile="fs25_dialogButtonBoxSeparator"/>
             <Button id="declineButton" profile="buttonActivate" text="Decline Offer" onClick="onClickDecline"/>
-            <Bitmap profile="fs25_dialogButtonBoxSeparator"/>
-            <Button id="nextButton" profile="buttonActivate" text="$l10n_usedplus_button_next" onClick="onClickNext"/>
             <Bitmap profile="fs25_dialogButtonBoxSeparator"/>
             <Button id="closeButton" profile="buttonBack" text="$l10n_button_close" onClick="onClickClose"/>
         </BoxLayout>
@@ -100,9 +102,17 @@
             <textAlignment value="center"/>
         </Profile>
 
-        <!-- ========== NAVIGATION COUNTER (below title) ========== -->
+        <!-- ========== NAVIGATION BAR ========== -->
+        <Profile name="vpfNavBar" extends="emptyPanel" with="anchorTopCenter">
+            <size value="400px 30px"/>
+        </Profile>
+
+        <Profile name="vpfNavButton" extends="buttonActivate" with="anchorTopCenter">
+            <size value="100px 28px"/>
+        </Profile>
+
         <Profile name="vpfNavCounter" extends="fs25_textDefault" with="anchorTopCenter">
-            <size value="200px 20px"/>
+            <size value="100px 20px"/>
             <textSize value="14px"/>
             <textBold value="true"/>
             <textColor value="1 0.9 0.5 1"/>

@@ -21,6 +21,10 @@ InGameMenuVehiclesFrameExtension.originalOnClickSell = nil
 InGameMenuVehiclesFrameExtension.originalGetDisplayName = nil
 InGameMenuVehiclesFrameExtension.isInitialized = false
 
+-- Store selected vehicle for cross-extension access
+InGameMenuVehiclesFrameExtension.lastSelectedVehicle = nil
+InGameMenuVehiclesFrameExtension.lastSelectedFrame = nil
+
 --[[
     Initialize the extension
     Called from main.lua after mission starts
@@ -40,60 +44,251 @@ function InGameMenuVehiclesFrameExtension:init()
     -- Hook menu buttons to add "Maintenance" button
     self:hookMenuButtons()
 
+    -- Hook YesNoDialog to intercept vehicle sell confirmations
+    self:hookYesNoDialog()
+
     self.isInitialized = true
     UsedPlus.logDebug("InGameMenuVehiclesFrameExtension initialized")
 end
 
 --[[
-    Hook menu buttons to add Maintenance Report button
-    Appends to the frame's menu button info
+    Hook YesNoDialog.show to intercept vehicle sell confirmations
+    This is the most reliable way to catch sell actions
 ]]
-function InGameMenuVehiclesFrameExtension:hookMenuButtons()
-    if InGameMenuVehiclesFrame == nil then
-        UsedPlus.logDebug("InGameMenuVehiclesFrame not found, cannot hook menu buttons")
+function InGameMenuVehiclesFrameExtension:hookYesNoDialog()
+    if self.originalYesNoDialogShow then
+        UsedPlus.logDebug("YesNoDialog already hooked")
         return
     end
 
-    -- Store original getMenuButtonInfo if it exists
-    self.originalGetMenuButtonInfo = InGameMenuVehiclesFrame.getMenuButtonInfo
-
-    -- Hook getMenuButtonInfo to add our button
-    InGameMenuVehiclesFrame.getMenuButtonInfo = function(frame)
-        local buttons = {}
-
-        -- Get original buttons first
-        if InGameMenuVehiclesFrameExtension.originalGetMenuButtonInfo then
-            buttons = InGameMenuVehiclesFrameExtension.originalGetMenuButtonInfo(frame) or {}
-        end
-
-        -- Add our Maintenance button if a vehicle is selected
-        local vehicle = nil
-        if frame and frame.getSelectedVehicle then
-            vehicle = frame:getSelectedVehicle()
-        end
-
-        if vehicle then
-            -- Check if vehicle has maintenance data worth showing
-            local hasMaintenanceData = false
-            if UsedPlusMaintenance and UsedPlusMaintenance.getReliabilityData then
-                local data = UsedPlusMaintenance.getReliabilityData(vehicle)
-                hasMaintenanceData = (data ~= nil)
-            end
-
-            -- Add button (show for all vehicles, but especially useful for used)
-            table.insert(buttons, {
-                inputAction = InputAction.MENU_EXTRA_1,
-                text = "Maintenance",
-                callback = function()
-                    InGameMenuVehiclesFrameExtension.showMaintenanceReport(vehicle)
-                end
-            })
-        end
-
-        return buttons
+    if YesNoDialog == nil or YesNoDialog.show == nil then
+        UsedPlus.logWarn("YesNoDialog not found, cannot hook")
+        return
     end
 
-    UsedPlus.logDebug("Hooked InGameMenuVehiclesFrame.getMenuButtonInfo for Maintenance button")
+    self.originalYesNoDialogShow = YesNoDialog.show
+
+    YesNoDialog.show = function(callback, target, text, ...)
+        -- Check if this is a vehicle sell confirmation
+        local isSellConfirmation = false
+        local sellText1 = g_i18n:getText("ui_youWantToSellVehicle")
+        local sellText2 = g_i18n:getText("shop_doYouWantToSellItem")
+
+        if text and (text == sellText1 or text == sellText2 or
+                     string.find(text:lower(), "sell") or
+                     string.find(text:lower(), "verkauf")) then
+            isSellConfirmation = true
+        end
+
+        UsedPlus.logDebug(string.format("YesNoDialog.show intercepted: text='%s', isSell=%s",
+            tostring(text):sub(1, 50), tostring(isSellConfirmation)))
+
+        if isSellConfirmation and g_vehicleSaleManager and UsedPlus and UsedPlus.instance then
+            -- Try to get the vehicle from the current context
+            local vehicle = nil
+
+            -- Method 1: Check if we're on the Vehicles page
+            if g_currentMission and g_currentMission.inGameMenu then
+                local inGameMenu = g_currentMission.inGameMenu
+                if inGameMenu.pageVehicles and inGameMenu.pageVehicles.getSelectedVehicle then
+                    vehicle = inGameMenu.pageVehicles:getSelectedVehicle()
+                end
+            end
+
+            -- Method 2: Try g_inGameMenu
+            if vehicle == nil and g_inGameMenu and g_inGameMenu.pageVehicles then
+                if g_inGameMenu.pageVehicles.getSelectedVehicle then
+                    vehicle = g_inGameMenu.pageVehicles:getSelectedVehicle()
+                end
+            end
+
+            -- Method 3: Check target for vehicle reference
+            if vehicle == nil and target then
+                if target.selectedVehicle then
+                    vehicle = target.selectedVehicle
+                elseif target.items and target.itemsList and target.itemsList.selectedIndex then
+                    vehicle = target.items[target.itemsList.selectedIndex]
+                end
+            end
+
+            if vehicle then
+                UsedPlus.logInfo("Intercepted vehicle sell - showing UsedPlus dialog instead")
+                local farmId = g_currentMission:getFarmId()
+                InGameMenuVehiclesFrameExtension:showSellDialog(vehicle, farmId, nil)
+                return  -- Don't show the vanilla YesNoDialog
+            else
+                UsedPlus.logDebug("Could not find vehicle for sell intercept, falling back to vanilla")
+            end
+        end
+
+        -- Call original for non-sell dialogs or if we couldn't intercept
+        return InGameMenuVehiclesFrameExtension.originalYesNoDialogShow(callback, target, text, ...)
+    end
+
+    UsedPlus.logInfo("Hooked YesNoDialog.show for vehicle sell intercept")
+end
+
+--[[
+    Hook menu buttons - append to updateMenuButtons to swap sell callback
+    Same pattern as ShopConfigScreenExtension.updateButtonsHook
+]]
+function InGameMenuVehiclesFrameExtension:hookMenuButtons()
+    -- Already hooked?
+    if self.menuButtonsHooked then
+        UsedPlus.logDebug("Menu buttons already hooked, skipping")
+        return true
+    end
+
+    local targetClass = InGameMenuVehiclesFrame
+
+    if targetClass == nil then
+        UsedPlus.logWarn("InGameMenuVehiclesFrame not found")
+        return false
+    end
+
+    -- Hook onFrameOpen to capture frame reference when page opens
+    if targetClass.onFrameOpen then
+        targetClass.onFrameOpen = Utils.appendedFunction(
+            targetClass.onFrameOpen,
+            function(frame, ...)
+                InGameMenuVehiclesFrameExtension.lastSelectedFrame = frame
+                if frame and frame.getSelectedVehicle then
+                    InGameMenuVehiclesFrameExtension.lastSelectedVehicle = frame:getSelectedVehicle()
+                    UsedPlus.logDebug("Vehicles page opened - stored frame and vehicle")
+                end
+            end
+        )
+        UsedPlus.logInfo("Hooked InGameMenuVehiclesFrame.onFrameOpen")
+    end
+
+    -- Hook updateMenuButtons - this is called when selection changes
+    if targetClass.updateMenuButtons then
+        targetClass.updateMenuButtons = Utils.appendedFunction(
+            targetClass.updateMenuButtons,
+            InGameMenuVehiclesFrameExtension.updateMenuButtonsHook
+        )
+        UsedPlus.logInfo("Hooked InGameMenuVehiclesFrame.updateMenuButtons")
+        self.menuButtonsHooked = true
+        return true
+    end
+
+    -- Also hook onListSelectionChanged to capture vehicle on selection
+    if targetClass.onListSelectionChanged then
+        targetClass.onListSelectionChanged = Utils.appendedFunction(
+            targetClass.onListSelectionChanged,
+            function(frame, ...)
+                -- Store selected vehicle whenever selection changes
+                if frame and frame.getSelectedVehicle then
+                    InGameMenuVehiclesFrameExtension.lastSelectedVehicle = frame:getSelectedVehicle()
+                    InGameMenuVehiclesFrameExtension.lastSelectedFrame = frame
+                    if InGameMenuVehiclesFrameExtension.lastSelectedVehicle then
+                        UsedPlus.logDebug("Selection changed - stored vehicle: " .. tostring(InGameMenuVehiclesFrameExtension.lastSelectedVehicle.configFileName))
+                    end
+                end
+                InGameMenuVehiclesFrameExtension.updateMenuButtonsHook(frame)
+            end
+        )
+        UsedPlus.logInfo("Hooked InGameMenuVehiclesFrame.onListSelectionChanged")
+    end
+
+    -- If we couldn't hook updateMenuButtons, use onListSelectionChanged as primary
+    if not self.menuButtonsHooked and targetClass.onListSelectionChanged then
+        self.menuButtonsHooked = true
+        return true
+    end
+
+    UsedPlus.logWarn("Could not find updateMenuButtons or onListSelectionChanged to hook")
+    return false
+end
+
+--[[
+    Hook that runs after updateMenuButtons - swaps sell button callback
+    Same pattern as ShopConfigScreenExtension.updateButtonsHook
+]]
+function InGameMenuVehiclesFrameExtension.updateMenuButtonsHook(frame)
+    -- Store frame and selected vehicle for cross-extension access
+    InGameMenuVehiclesFrameExtension.lastSelectedFrame = frame
+    if frame and frame.getSelectedVehicle then
+        InGameMenuVehiclesFrameExtension.lastSelectedVehicle = frame:getSelectedVehicle()
+        if InGameMenuVehiclesFrameExtension.lastSelectedVehicle then
+            UsedPlus.logDebug("Stored lastSelectedVehicle: " .. tostring(InGameMenuVehiclesFrameExtension.lastSelectedVehicle.configFileName))
+        end
+    end
+
+    -- Find and override the sell button callback directly
+    local success, err = pcall(function()
+        -- Look for sellButton on the frame
+        if frame.sellButton then
+            -- Store original callback ONCE
+            if not frame.usedPlusOriginalSellCallback then
+                frame.usedPlusOriginalSellCallback = frame.sellButton.onClickCallback
+                UsedPlus.logDebug("Stored original sellButton.onClickCallback")
+            end
+
+            -- Replace callback with our override
+            frame.sellButton.onClickCallback = function()
+                local vehicle = nil
+                if frame.getSelectedVehicle then
+                    vehicle = frame:getSelectedVehicle()
+                end
+
+                if vehicle and g_vehicleSaleManager and UsedPlus and UsedPlus.instance then
+                    UsedPlus.logDebug("Sell button clicked - showing UsedPlus dialog")
+                    InGameMenuVehiclesFrameExtension:onClickSellOverride(frame)
+                elseif frame.usedPlusOriginalSellCallback then
+                    UsedPlus.logDebug("Sell button - falling back to vanilla")
+                    frame.usedPlusOriginalSellCallback()
+                end
+            end
+        end
+
+        -- Also check for button in menuButtons array
+        if frame.menuButtons then
+            for i, button in ipairs(frame.menuButtons) do
+                local buttonText = ""
+                if button.text then
+                    buttonText = button.text
+                elseif button.getText then
+                    buttonText = button:getText() or ""
+                end
+
+                local isSellButton = string.find(buttonText:lower(), "sell") ~= nil
+                                  or string.find(buttonText:lower(), "verkauf") ~= nil
+                                  or buttonText == g_i18n:getText("ui_sellItem")
+
+                if isSellButton then
+                    -- Store original
+                    if not button.usedPlusOriginalCallback then
+                        button.usedPlusOriginalCallback = button.onClickCallback or button.callback
+                    end
+
+                    -- Replace callback
+                    local originalCallback = button.usedPlusOriginalCallback
+                    local newCallback = function()
+                        local vehicle = nil
+                        if frame.getSelectedVehicle then
+                            vehicle = frame:getSelectedVehicle()
+                        end
+
+                        if vehicle and g_vehicleSaleManager and UsedPlus and UsedPlus.instance then
+                            UsedPlus.logDebug("Sell menu button clicked - showing UsedPlus dialog")
+                            InGameMenuVehiclesFrameExtension:onClickSellOverride(frame)
+                        elseif originalCallback then
+                            originalCallback()
+                        end
+                    end
+
+                    button.onClickCallback = newCallback
+                    button.callback = newCallback
+                    UsedPlus.logDebug("Swapped callback for sell button in menuButtons array")
+                end
+            end
+        end
+    end)
+
+    if not success then
+        UsedPlus.logError("updateMenuButtonsHook error: " .. tostring(err))
+    end
 end
 
 --[[
@@ -142,23 +337,118 @@ end
 --[[
     Hook the sell button in InGameMenuVehiclesFrame
     Replaces onClickSell with our custom version
+    Tries multiple approaches: global class, InGameMenu screen controller, g_inGameMenu
+    Also hooks onButtonSell and inputEvent for keybind handling
 ]]
 function InGameMenuVehiclesFrameExtension:hookSellButton()
-    -- Find InGameMenuVehiclesFrame class
-    if InGameMenuVehiclesFrame == nil then
-        UsedPlus.logWarn("InGameMenuVehiclesFrame not found, cannot hook sell button")
-        return
+    -- Already hooked?
+    if self.originalOnClickSell then
+        UsedPlus.logDebug("Sell button already hooked, skipping")
+        return true
     end
 
-    -- Store original function
-    self.originalOnClickSell = InGameMenuVehiclesFrame.onClickSell
+    -- Try 1: Global InGameMenuVehiclesFrame class - check multiple method names
+    if InGameMenuVehiclesFrame ~= nil then
+        -- Try onClickSell
+        if InGameMenuVehiclesFrame.onClickSell ~= nil then
+            self.originalOnClickSell = InGameMenuVehiclesFrame.onClickSell
 
-    -- Replace with our version
-    InGameMenuVehiclesFrame.onClickSell = function(frame)
-        InGameMenuVehiclesFrameExtension:onClickSellOverride(frame)
+            InGameMenuVehiclesFrame.onClickSell = function(frame)
+                InGameMenuVehiclesFrameExtension:onClickSellOverride(frame)
+            end
+
+            UsedPlus.logInfo("Hooked InGameMenuVehiclesFrame.onClickSell")
+        end
+
+        -- Also try onButtonSell (some FS versions use this)
+        if InGameMenuVehiclesFrame.onButtonSell ~= nil then
+            self.originalOnButtonSell = InGameMenuVehiclesFrame.onButtonSell
+
+            InGameMenuVehiclesFrame.onButtonSell = function(frame)
+                if g_vehicleSaleManager and UsedPlus and UsedPlus.instance then
+                    InGameMenuVehiclesFrameExtension:onClickSellOverride(frame)
+                elseif InGameMenuVehiclesFrameExtension.originalOnButtonSell then
+                    InGameMenuVehiclesFrameExtension.originalOnButtonSell(frame)
+                end
+            end
+
+            UsedPlus.logInfo("Hooked InGameMenuVehiclesFrame.onButtonSell")
+        end
+
+        -- Hook inputEvent to catch keybind presses
+        if InGameMenuVehiclesFrame.inputEvent ~= nil then
+            self.originalInputEvent = InGameMenuVehiclesFrame.inputEvent
+
+            InGameMenuVehiclesFrame.inputEvent = function(frame, action, value, eventUsed)
+                -- Check for sell-related input actions
+                if action == InputAction.MENU_CANCEL or action == InputAction.MENU_EXTRA_2 then
+                    -- This might be the sell keybind - check if we should intercept
+                    local vehicle = nil
+                    if frame and frame.getSelectedVehicle then
+                        vehicle = frame:getSelectedVehicle()
+                    end
+
+                    if vehicle and g_vehicleSaleManager and UsedPlus and UsedPlus.instance then
+                        UsedPlus.logDebug("Intercepted sell keybind via inputEvent")
+                        InGameMenuVehiclesFrameExtension:onClickSellOverride(frame)
+                        return true  -- Consume the event
+                    end
+                end
+
+                -- Call original
+                if InGameMenuVehiclesFrameExtension.originalInputEvent then
+                    return InGameMenuVehiclesFrameExtension.originalInputEvent(frame, action, value, eventUsed)
+                end
+            end
+
+            UsedPlus.logInfo("Hooked InGameMenuVehiclesFrame.inputEvent")
+        end
+
+        self.isInitialized = true
+        return true
     end
 
-    UsedPlus.logDebug("Hooked InGameMenuVehiclesFrame.onClickSell")
+    -- Try 2: Via g_gui.screenControllers[InGameMenu]
+    if g_gui and g_gui.screenControllers and InGameMenu then
+        local inGameMenu = g_gui.screenControllers[InGameMenu]
+        if inGameMenu and inGameMenu.pageVehicles and inGameMenu.pageVehicles.onClickSell then
+            local frame = inGameMenu.pageVehicles
+            self.originalOnClickSell = frame.onClickSell
+
+            frame.onClickSell = function(self)
+                if g_vehicleSaleManager and UsedPlus and UsedPlus.instance then
+                    InGameMenuVehiclesFrameExtension:onClickSellOverride(self)
+                elseif InGameMenuVehiclesFrameExtension.originalOnClickSell then
+                    InGameMenuVehiclesFrameExtension.originalOnClickSell(self)
+                end
+            end
+
+            self.isInitialized = true
+            UsedPlus.logInfo("Hooked InGameMenuVehiclesFrame.onClickSell via g_gui.screenControllers")
+            return true
+        end
+    end
+
+    -- Try 3: Via g_inGameMenu global
+    if g_inGameMenu and g_inGameMenu.pageVehicles and g_inGameMenu.pageVehicles.onClickSell then
+        local frame = g_inGameMenu.pageVehicles
+        self.originalOnClickSell = frame.onClickSell
+
+        frame.onClickSell = function(self)
+            if g_vehicleSaleManager and UsedPlus and UsedPlus.instance then
+                InGameMenuVehiclesFrameExtension:onClickSellOverride(self)
+            elseif InGameMenuVehiclesFrameExtension.originalOnClickSell then
+                InGameMenuVehiclesFrameExtension.originalOnClickSell(self)
+            end
+        end
+
+        self.isInitialized = true
+        UsedPlus.logInfo("Hooked InGameMenuVehiclesFrame.onClickSell via g_inGameMenu")
+        return true
+    end
+
+    UsedPlus.logWarn("InGameMenuVehiclesFrame not found, cannot hook sell button (will retry on menu open)")
+    return false
 end
 
 --[[
@@ -251,10 +541,11 @@ end
 ]]
 function InGameMenuVehiclesFrameExtension:showSellDialog(vehicle, farmId, frame)
     -- Use DialogLoader with callback
-    local callback = function(selectedTier)
-        if selectedTier then
-            -- Player selected a tier - create listing
-            self:createSaleListing(vehicle, farmId, selectedTier, frame)
+    -- Callback receives BOTH agentTier and priceTier from dual-tier system
+    local callback = function(agentTier, priceTier)
+        if agentTier ~= nil then
+            -- Player selected tiers - create listing
+            self:createSaleListing(vehicle, farmId, agentTier, priceTier, frame)
         else
             -- Player cancelled
             UsedPlus.logDebug("Sale dialog cancelled")
@@ -268,10 +559,11 @@ end
     Create a sale listing through the VehicleSaleManager
     @param vehicle - The vehicle to sell
     @param farmId - The owning farm
-    @param saleTier - Selected agent tier (1-3)
+    @param agentTier - Selected agent tier (0=Private, 1=Local, 2=Regional, 3=National)
+    @param priceTier - Selected price tier (1=Quick, 2=Market, 3=Premium)
     @param frame - The vehicles frame (to refresh)
 ]]
-function InGameMenuVehiclesFrameExtension:createSaleListing(vehicle, farmId, saleTier, frame)
+function InGameMenuVehiclesFrameExtension:createSaleListing(vehicle, farmId, agentTier, priceTier, frame)
     if g_vehicleSaleManager == nil then
         UsedPlus.logError("VehicleSaleManager not initialized")
         g_currentMission:addIngameNotification(
@@ -281,21 +573,120 @@ function InGameMenuVehiclesFrameExtension:createSaleListing(vehicle, farmId, sal
         return
     end
 
-    -- Create listing through manager
-    local listing = g_vehicleSaleManager:createSaleListing(farmId, vehicle, saleTier)
+    -- Default priceTier if not provided (legacy compatibility)
+    priceTier = priceTier or 2
+
+    -- Create listing through manager (passes agent tier, priceTier is stored in listing)
+    local listing = g_vehicleSaleManager:createSaleListing(farmId, vehicle, agentTier, priceTier)
 
     if listing then
-        UsedPlus.logDebug(string.format("Created sale listing: %s (Tier %d, ID: %s)",
-            listing.vehicleName, saleTier, listing.id))
+        UsedPlus.logDebug(string.format("Created sale listing: %s (Agent %d, Price %d, ID: %s)",
+            listing.vehicleName, agentTier, priceTier, listing.id))
 
-        -- Close the InGameMenu to return to game
-        -- The notification will already be shown by VehicleSaleManager
+        -- Show styled confirmation dialog
+        self:showSaleListingConfirmation(vehicle, agentTier, priceTier)
     else
         g_currentMission:addIngameNotification(
             FSBaseMission.INGAME_NOTIFICATION_INFO,
             "Failed to create sale listing. Please try again."
         )
     end
+end
+
+--[[
+    Show the SaleListingInitiatedDialog with listing details
+    @param vehicle - The vehicle being sold
+    @param agentTier - Agent tier (0=Private, 1=Local, 2=Regional, 3=National)
+    @param priceTier - Price tier (1=Quick, 2=Market, 3=Premium)
+]]
+function InGameMenuVehiclesFrameExtension:showSaleListingConfirmation(vehicle, agentTier, priceTier)
+    -- Get tier definitions from SellVehicleDialog or VehicleSaleListing
+    local agentOptions = SellVehicleDialog and SellVehicleDialog.AGENT_OPTIONS
+    local priceOptions = SellVehicleDialog and SellVehicleDialog.PRICE_OPTIONS
+
+    -- Fallback to VehicleSaleListing if SellVehicleDialog not available
+    if not agentOptions then
+        agentOptions = VehicleSaleListing and VehicleSaleListing.AGENT_TIERS
+    end
+    if not priceOptions then
+        priceOptions = VehicleSaleListing and VehicleSaleListing.PRICE_TIERS
+    end
+
+    if not agentOptions or not priceOptions then
+        UsedPlus.logError("Cannot show confirmation - tier definitions not found")
+        return
+    end
+
+    -- Find agent option (array for SellVehicleDialog, keyed for VehicleSaleListing)
+    local agentOption = nil
+    if agentOptions[1] and agentOptions[1].tier ~= nil then
+        -- SellVehicleDialog format (array with tier field)
+        for _, opt in ipairs(agentOptions) do
+            if opt.tier == agentTier then
+                agentOption = opt
+                break
+            end
+        end
+    else
+        -- VehicleSaleListing format (keyed by tier)
+        agentOption = agentOptions[agentTier]
+    end
+
+    local priceOption = priceOptions[priceTier]
+
+    if not agentOption or not priceOption then
+        UsedPlus.logError(string.format("Invalid tier values: agent=%s, price=%s", tostring(agentTier), tostring(priceTier)))
+        return
+    end
+
+    -- Get vanilla sell price
+    local vanillaSellPrice = 0
+    if vehicle and vehicle.getSellPrice then
+        vanillaSellPrice = vehicle:getSellPrice()
+    end
+
+    -- Calculate expected price range
+    local minPrice = math.floor(vanillaSellPrice * priceOption.priceMultiplierMin)
+    local maxPrice = math.floor(vanillaSellPrice * priceOption.priceMultiplierMax)
+
+    -- Calculate agent fee (percentage of expected mid-price)
+    local expectedMid = (minPrice + maxPrice) / 2
+    local agentFee = 0
+    local isPrivateSale = (agentOption.feePercent == 0) or (agentTier == 0)
+    if not isPrivateSale then
+        agentFee = math.max(50, math.floor(expectedMid * agentOption.feePercent))
+    end
+
+    -- Calculate combined success rate
+    local successRate = math.max(0.10, math.min(0.98,
+        agentOption.baseSuccessRate + (priceOption.successModifier or 0)))
+
+    -- Get vehicle name
+    local vehicleName = "Unknown Vehicle"
+    if vehicle and vehicle.configFileName then
+        local storeItem = g_storeManager:getItemByXMLFilename(vehicle.configFileName)
+        if UIHelper and UIHelper.Vehicle and UIHelper.Vehicle.getFullName then
+            vehicleName = UIHelper.Vehicle.getFullName(storeItem)
+        elseif storeItem and storeItem.name then
+            vehicleName = storeItem.name
+        end
+    end
+
+    -- Show dialog with details
+    local details = {
+        vehicleName = vehicleName,
+        agentName = agentOption.name,
+        agentFee = agentFee,
+        isPrivateSale = isPrivateSale,
+        priceTierName = priceOption.name,
+        minPrice = minPrice,
+        maxPrice = maxPrice,
+        minMonths = agentOption.minMonths,
+        maxMonths = agentOption.maxMonths,
+        successRate = successRate
+    }
+
+    SaleListingInitiatedDialog.showWithDetails(details)
 end
 
 --[[
@@ -502,12 +893,60 @@ function InGameMenuVehiclesFrameExtension:restore()
         UsedPlus.logDebug("Restored original Vehicle.getName")
     end
 
-    if self.originalGetMenuButtonInfo and InGameMenuVehiclesFrame then
-        InGameMenuVehiclesFrame.getMenuButtonInfo = self.originalGetMenuButtonInfo
-        UsedPlus.logDebug("Restored original InGameMenuVehiclesFrame.getMenuButtonInfo")
+    if self.originalYesNoDialogShow and YesNoDialog then
+        YesNoDialog.show = self.originalYesNoDialogShow
+        UsedPlus.logDebug("Restored original YesNoDialog.show")
     end
 
+    -- Note: Utils.appendedFunction hooks cannot be cleanly restored
+    -- The menuButtonsHooked flag prevents re-hooking
+
     self.isInitialized = false
+    self.menuButtonsHooked = false
+end
+
+-- Track if we've hooked InGameMenu.onOpen
+InGameMenuVehiclesFrameExtension.inGameMenuHooked = false
+
+--[[
+    Try to install the hook dynamically when InGameMenu opens
+    This catches the frame after it's actually created
+]]
+function InGameMenuVehiclesFrameExtension.onInGameMenuOpen(inGameMenu, superFunc)
+    -- Call original first
+    if superFunc then
+        superFunc(inGameMenu)
+    end
+
+    -- Try to install our hook if not already done
+    if not InGameMenuVehiclesFrameExtension.isInitialized then
+        -- Check if InGameMenuVehiclesFrame now exists
+        if InGameMenuVehiclesFrame and InGameMenuVehiclesFrame.onClickSell then
+            InGameMenuVehiclesFrameExtension:hookSellButton()
+            InGameMenuVehiclesFrameExtension:hookVehicleDisplayName()
+            InGameMenuVehiclesFrameExtension:hookMenuButtons()
+        else
+            -- Try to find it via the inGameMenu's pages
+            if inGameMenu and inGameMenu.pageVehicles and inGameMenu.pageVehicles.onClickSell then
+                -- The frame exists as a page - hook it directly
+                local frame = inGameMenu.pageVehicles
+                if not InGameMenuVehiclesFrameExtension.originalOnClickSell then
+                    InGameMenuVehiclesFrameExtension.originalOnClickSell = frame.onClickSell
+
+                    frame.onClickSell = function(self)
+                        if g_vehicleSaleManager and UsedPlus and UsedPlus.instance then
+                            InGameMenuVehiclesFrameExtension:onClickSellOverride(self)
+                        elseif InGameMenuVehiclesFrameExtension.originalOnClickSell then
+                            InGameMenuVehiclesFrameExtension.originalOnClickSell(self)
+                        end
+                    end
+
+                    InGameMenuVehiclesFrameExtension.isInitialized = true
+                    UsedPlus.logInfo("Hooked InGameMenuVehiclesFrame.onClickSell via InGameMenu.pageVehicles")
+                end
+            end
+        end
+    end
 end
 
 -- Try to install hook at load time
@@ -529,7 +968,17 @@ if InGameMenuVehiclesFrame and InGameMenuVehiclesFrame.onClickSell then
     InGameMenuVehiclesFrameExtension.isInitialized = true
     UsedPlus.logDebug("InGameMenuVehiclesFrameExtension: Sell button hook installed at load time")
 else
-    UsedPlus.logDebug("InGameMenuVehiclesFrameExtension: Hook will be installed after mission loads")
+    UsedPlus.logDebug("InGameMenuVehiclesFrameExtension: Hook will be installed after mission loads or menu opens")
+
+    -- Hook InGameMenu.onOpen to install hooks when menu first opens
+    if InGameMenu and InGameMenu.onOpen then
+        InGameMenu.onOpen = Utils.overwrittenFunction(
+            InGameMenu.onOpen,
+            InGameMenuVehiclesFrameExtension.onInGameMenuOpen
+        )
+        InGameMenuVehiclesFrameExtension.inGameMenuHooked = true
+        UsedPlus.logDebug("InGameMenuVehiclesFrameExtension: InGameMenu.onOpen hooked")
+    end
 end
 
 UsedPlus.logInfo("InGameMenuVehiclesFrameExtension loaded")

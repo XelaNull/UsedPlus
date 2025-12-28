@@ -477,6 +477,25 @@
         <!--  Ostrzezenia o degradacji predkosci (v1.4.0) -->
         <e k="usedPlus_speedDegraded" v="Silnik ma problemy - maksymalna predkosc zredukowana do %d%%!" />
         <e k="usedPlus_speedDegradedReminder" v="Pojazd jedzie wolno - zalecana naprawa" />
+        <e k="usedPlus_speedGovernor" v="Silnik nie moze utrzymac tej predkosci!" />
+        <e k="usedPlus_firstStartStall" v="Silnik nie uruchomil sie!" />
+        <e k="usedPlus_steeringLoose" v="Kierownica wydaje sie luzna - zuzyty uklad hydrauliczny!" />
+        <e k="usedPlus_steeringPull" v="Kierownica ciagnie w %s!" />
+        <e k="usedPlus_directionLeft" v="lewo" />
+        <e k="usedPlus_directionRight" v="prawo" />
+
+        <!--  Awarie silnika (v1.6.0) -->
+        <e k="usedPlus_engineMisfire" v="Silnik traci zaplony!" />
+        <e k="usedPlus_engineOverheating" v="Silnik sie przegrzewa! (%d%%)" />
+        <e k="usedPlus_engineOverheated" v="SILNIK PRZEGRZANY! Pozwól mu ostygnac!" />
+
+        <!--  Awarie narzedzi (v1.6.0) -->
+        <e k="usedPlus_implementSurge" v="Skok hydrauliczny - narzedzie podniesione!" />
+        <e k="usedPlus_implementDrop" v="Awaria hydrauliki - narzedzie opuszczone!" />
+        <e k="usedPlus_ptoToggle" v="Awaria elektryczna - WOM %s!" />
+        <e k="usedPlus_ptoOn" v="wlaczony" />
+        <e k="usedPlus_ptoOff" v="wylaczony" />
+        <e k="usedPlus_hitchFailure" v="AWARIA ZACZEPU - Narzedzie odlaczone!" />
 
         <!--  Ostrzezenia o dryfie hydraulicznym (v1.4.0) -->
         <e k="usedPlus_hydraulicWeak" v="Slaba hydraulika (%d%%) - narzedzia moga dryfowac!" />
@@ -566,6 +585,31 @@
         <e k="usedplus_error_payoffFailed" v="Splata nie powiodla sie" />
         <e k="usedplus_error_paymentFailed" v="Platnosc nie powiodla sie" />
         <e k="usedplus_error_eventNotAvailable" v="Blad: %s niedostepne" />
+
+        <!-- Powiadomienia o bledach - Wymagania zdolnosci kredytowej -->
+        <e k="usedplus_error_creditTooLow" v="Zbyt niska zdolnosc kredytowa" />
+        <e k="usedplus_error_creditTooLowDetail" v="Twoja zdolnosc kredytowa (%d) jest ponizej minimum (%d) wymaganego dla %s." />
+        <e k="usedplus_error_creditTip" v="Wskazowka: Dokonuj platnosci na czas, aby poprawic zdolnosc kredytowa." />
+        <e k="usedplus_error_creditShortfall" v="Brak: %d punktow" />
+        <e k="usedplus_finance_repairFinancing" v="finansowanie napraw" />
+        <e k="usedplus_finance_vehicleFinancing" v="finansowanie pojazdu" />
+        <e k="usedplus_finance_vehicleLeasing" v="leasing pojazdu" />
+        <e k="usedplus_finance_landFinancing" v="finansowanie ziemi" />
+        <e k="usedplus_finance_cashLoan" v="pozyczki gotowkowe" />
+
+        <!-- Komunikaty ostrzezenia kredytowego (UX) -->
+        <e k="usedplus_credit_tooLowForFinancing" v="Zbyt niska zdolnosc kredytowa na finansowanie.\nTwoj wynik: %d | Wymagane: %d\nPopraw kredyt terminowymi platnosci." />
+        <e k="usedplus_credit_tooLowForLeasing" v="Zbyt niska zdolnosc kredytowa na leasing.\nTwoj wynik: %d | Wymagane: %d\nLeasing wymaga lepszej zdolnosci niz finansowanie." />
+        <e k="usedplus_credit_tooLowForLand" v="Zbyt niska zdolnosc kredytowa (%d). Wymagane %d+ na finansowanie ziemi." />
+        <e k="usedplus_credit_tooLowForRepair" v="Zbyt niska zdolnosc kredytowa (%d). Wymagane %d+ na finansowanie napraw." />
+        <e k="usedplus_credit_needScore" v="Kredyt: %d (potrzeba %d)" />
+
+        <!-- Opcje wyboru trybu -->
+        <e k="usedplus_mode_cash" v="Kup za gotowke" />
+        <e k="usedplus_mode_finance" v="Finansuj" />
+        <e k="usedplus_mode_lease" v="Leasinguj" />
+        <e k="usedplus_mode_financeCredit" v="Finansuj (Kredyt: %d+)" />
+        <e k="usedplus_mode_leaseCredit" v="Leasinguj (Kredyt: %d+)" />
 
         <!-- Success Notifications - Sales -->
         <e k="usedplus_notify_vehicleSold" v="Sprzedano %s za %s!" />
@@ -1251,5 +1295,132 @@
         <e k="usedplus_tl_fair" v="Przecietna 650-699: 8.5%" />
         <e k="usedplus_tl_poor" v="Slaba 600-649: 9.5%" />
         <e k="usedplus_tl_veryPoor" v="Bardzo slaba &lt;600: 11%" />
+
+        <!-- Search Expired Dialog (v1.5.1) -->
+        <e k="usedplus_searchExpired_title" v="Wyszukiwanie zakonczone" />
+        <e k="usedplus_searchExpired_summary" v="PODSUMOWANIE WYSZUKIWANIA" />
+        <e k="usedplus_searchExpired_searchedFor" v="Szukano:" />
+        <e k="usedplus_searchExpired_agentTier" v="Poziom agenta:" />
+        <e k="usedplus_searchExpired_quality" v="Jakosc:" />
+        <e k="usedplus_searchExpired_duration" v="Czas trwania:" />
+        <e k="usedplus_searchExpired_results" v="WYNIKI" />
+        <e k="usedplus_searchExpired_vehiclesFound" v="Znaleziono %d pojazd(ow)" />
+        <e k="usedplus_searchExpired_noVehicles" v="Nie znaleziono pojazdow" />
+        <e k="usedplus_searchExpired_renewSearch" v="ODNOWIC WYSZUKIWANIE?" />
+        <e k="usedplus_searchExpired_renewCost" v="Koszt odnowienia:" />
+        <e k="usedplus_searchExpired_renew" v="Odnow wyszukiwanie" />
+        <e k="usedplus_searchExpired_renewed" v="Wyszukiwanie odnowione na %s!" />
+        <e k="usedplus_searchExpired_insufficientFunds" v="Niewystarczajace srodki na odnowienie wyszukiwania." />
+
+        <!-- v1.7.0: Ostrzezenia systemu opon -->
+        <e k="usedplus_warning_tireWorn" v="Ostrzezenie: Opony sie zuzywaja. Rozważ wymiane wkrotce." />
+        <e k="usedplus_warning_tireCritical" v="KRYTYCZNE: Opony krytycznie zuźyte! Wymien natychmiast aby uniknac przebicia." />
+        <e k="usedplus_warning_flatTire" v="PRZEBITA OPONA! Prowadzenie powaznie utrudnione. Wymagana wymiana opony." />
+        <e k="usedplus_warning_lowTraction" v="Ostrzezenie: Niska przyczepnosc z powodu zuzytych opon. Zwolnij w zlych warunkach." />
+
+        <!-- v1.7.0: Ostrzezenia systemu oleju -->
+        <e k="usedplus_warning_oilLow" v="Ostrzezenie: Niski poziom oleju. Wkrotce wymagany serwis." />
+        <e k="usedplus_warning_oilCritical" v="KRYTYCZNE: Niebezpiecznie niski poziom oleju! Uszkodzenie silnika w toku." />
+        <e k="usedplus_warning_oilLeak" v="Ostrzezenie: Wykryto wyciek oleju. Przyspieszona utrata plynu." />
+        <e k="usedplus_warning_engineDamage" v="USZKODZENIE SILNIKA: Trwala utrata niezawodnosci z powodu braku oleju!" />
+
+        <!-- v1.7.0: Ostrzezenia systemu hydraulicznego -->
+        <e k="usedplus_warning_hydraulicLow" v="Ostrzezenie: Niski poziom plynu hydraulicznego. Wkrotce wymagany serwis." />
+        <e k="usedplus_warning_hydraulicCritical" v="KRYTYCZNE: Niebezpiecznie niski poziom plynu! Uszkodzenie systemu w toku." />
+        <e k="usedplus_warning_hydraulicLeak" v="Ostrzezenie: Wykryto wyciek hydrauliczny. Przyspieszona utrata plynu." />
+        <e k="usedplus_warning_hydraulicDamage" v="USZKODZENIE HYDRAULIKI: Trwala utrata niezawodnosci z powodu braku plynu!" />
+
+        <!-- v1.7.0: Ostrzezenie o wycieku paliwa -->
+        <e k="usedplus_warning_fuelLeak" v="Ostrzezenie: Wykryto wyciek paliwa! Znacznie zwiekszone zuzycie." />
+
+        <!-- v1.7.0: Nazwy jakosci opon -->
+        <e k="usedplus_tire_retread" v="Bieznikowana" />
+        <e k="usedplus_tire_normal" v="Normalna" />
+        <e k="usedplus_tire_quality" v="Jakosc" />
+
+        <!-- v1.7.0: Etykiety dialogu plynow -->
+        <e k="usedplus_fluids_title" v="SERWIS PLYNOW" />
+        <e k="usedplus_fluids_oil" v="Olej silnikowy" />
+        <e k="usedplus_fluids_hydraulic" v="Plyn hydrauliczny" />
+        <e k="usedplus_fluids_level" v="Poziom:" />
+        <e k="usedplus_fluids_status" v="Status:" />
+        <e k="usedplus_fluids_statusOk" v="OK" />
+        <e k="usedplus_fluids_statusLow" v="NISKI" />
+        <e k="usedplus_fluids_statusCritical" v="KRYTYCZNY" />
+        <e k="usedplus_fluids_statusLeaking" v="WYCIEK" />
+        <e k="usedplus_fluids_leakMinor" v="Maly wyciek" />
+        <e k="usedplus_fluids_leakModerate" v="Sredni wyciek" />
+        <e k="usedplus_fluids_leakSevere" v="Powazny wyciek" />
+        <e k="usedplus_fluids_topUp" v="Uzupelnienie" />
+        <e k="usedplus_fluids_fullChange" v="Pelna wymiana" />
+        <e k="usedplus_fluids_cost" v="Koszt:" />
+
+        <!-- v1.7.0: Etykiety dialogu opon -->
+        <e k="usedplus_tires_title" v="SERWIS OPON" />
+        <e k="usedplus_tires_condition" v="Stan:" />
+        <e k="usedplus_tires_quality" v="Jakosc:" />
+        <e k="usedplus_tires_traction" v="Przyczepnosc:" />
+        <e k="usedplus_tires_flatTire" v="PRZEBITA OPONA" />
+        <e k="usedplus_tires_replace" v="Wymien opony" />
+        <e k="usedplus_tires_selectQuality" v="Wybierz jakosc:" />
+        <e k="usedplus_tires_retreadDesc" v="Opcja ekonomiczna - mniejsza przyczepnosc, wieksze ryzyko awarii" />
+        <e k="usedplus_tires_normalDesc" v="Opony standardowe - zrownowazonia wydajnosc" />
+        <e k="usedplus_tires_qualityDesc" v="Opony premium - lepsza przyczepnosc, mniejsze ryzyko awarii" />
+        <e k="usedplus_tires_cost" v="Koszt:" />
+
+        <!-- v1.7.0: Raport serwisowy - Sekcja opony/plyny -->
+        <e k="usedplus_mr_tires" v="OPONY" />
+        <e k="usedplus_mr_fluids" v="PLYNY" />
+        <e k="usedplus_mr_tireCondition" v="Stan opon:" />
+        <e k="usedplus_mr_tireQuality" v="Jakosc opon:" />
+        <e k="usedplus_mr_oilLevel" v="Poziom oleju:" />
+        <e k="usedplus_mr_hydraulicLevel" v="Plyn hydrauliczny:" />
+        <e k="usedplus_mr_fuelLeak" v="Wyciek paliwa:" />
+        <e k="usedplus_mr_yes" v="Tak" />
+        <e k="usedplus_mr_no" v="Nie" />
+
+        <!-- v1.7.0: Dialog serwisu opon -->
+        <e k="usedplus_tires_sectionStatus" v="STATUS POJAZDU &amp; OPON" />
+        <e k="usedplus_tires_sectionSelect" v="WYBIERZ JAKOSC OPONY" />
+        <e k="usedplus_tires_sectionPayment" v="PODSUMOWANIE PLATNOSCI" />
+        <e k="usedplus_tires_currentQuality" v="Aktualna jakosc:" />
+        <e k="usedplus_tires_currentCondition" v="Stan opon:" />
+        <e k="usedplus_tires_selectHelp" v="Kliknij typ opony. Wyższa jakość = lepsza wydajnosc." />
+        <e k="usedplus_tires_retread" v="Bieznikowana" />
+        <e k="usedplus_tires_normal" v="Normalna" />
+        <e k="usedplus_tires_retreadInfo" v="85% przyczepnosc, 3x awaria" />
+        <e k="usedplus_tires_normalInfo" v="100% przyczepnosc, baza" />
+        <e k="usedplus_tires_qualityInfo" v="110% przyczepnosc, 0.5x awaria" />
+        <e k="usedplus_tires_selectedTire" v="Wybrana opona:" />
+        <e k="usedplus_tires_totalCost" v="Calkowity koszt:" />
+        <e k="usedplus_tires_selectOne" v="Wybierz opone..." />
+        <e k="usedplus_tires_infoText" v="Nowe opony przywracaja 100%. Bieznikowane to przetworzone karkasy." />
+        <e k="usedplus_tires_flatWarning" v="PRZEBITA OPONA - Wymagana wymiana!" />
+        <e k="usedplus_tires_selectFirst" v="Prosze najpierw wybrac jakosc opony." />
+        <e k="usedplus_tires_replaced" v="Opony wymienione: %s" />
+
+        <!-- v1.7.0: Dialog serwisu plynow -->
+        <e k="usedplus_fluids_sectionStatus" v="STATUS POJAZDU &amp; PLYNOW" />
+        <e k="usedplus_fluids_sectionService" v="OPCJE SERWISU" />
+        <e k="usedplus_fluids_sectionPayment" v="PODSUMOWANIE PLATNOSCI" />
+        <e k="usedplus_fluids_oilLevel" v="Olej silnikowy:" />
+        <e k="usedplus_fluids_hydraulicLevel" v="Plyn hydrauliczny:" />
+        <e k="usedplus_fluids_oilRefill" v="Uzupelnienie oleju silnikowego" />
+        <e k="usedplus_fluids_hydraulicRefill" v="Uzupelnienie plynu hydraulicznego" />
+        <e k="usedplus_fluids_full" v="Pelny" />
+        <e k="usedplus_fluids_refillAmount" v="Uzupelnienie: %.0f%%" />
+        <e k="usedplus_fluids_noRefillNeeded" v="Uzupelnienie niepotrzebne" />
+        <e k="usedplus_fluids_selectedServices" v="Wybrane uslugi:" />
+        <e k="usedplus_fluids_totalCost" v="Calkowity koszt:" />
+        <e k="usedplus_fluids_selectServices" v="Wybierz uslugi..." />
+        <e k="usedplus_fluids_infoText" v="Kliknij uslugi. Uzupelnienie przywraca poziomy do 100%." />
+        <e k="usedplus_fluids_oilLeakWarning" v="WYKRYTO WYCIEK OLEJU" />
+        <e k="usedplus_fluids_hydraulicLeakWarning" v="WYKRYTO WYCIEK HYDRAULICZNY" />
+        <e k="usedplus_fluids_selectFirst" v="Prosze wybrac przynajmniej jedna usluge." />
+        <e k="usedplus_fluids_refilled" v="Plyny uzupelnione: %s" />
+
+        <!-- v1.7.0: Komunikaty kredytowe -->
+        <e k="usedplus_loan_useFinancialDashboard" v="Uzyj Panelu Finansowego dla pozyczek opartych na zdolnosci kredytowej" />
+
     </elements>
 </l10n>

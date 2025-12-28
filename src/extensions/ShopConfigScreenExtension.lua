@@ -46,6 +46,8 @@ end
 
 --[[
     Apply our customizations (separated to allow pcall wrapping)
+    v1.7.1: This now only handles button CREATION (Search Used, Inspect).
+    Button callback overrides are handled in updateButtonsHook where we have vehicle context.
 ]]
 function ShopConfigScreenExtension.applyCustomizations(self, storeItem)
     local buyButton = self.buyButton
@@ -54,36 +56,45 @@ function ShopConfigScreenExtension.applyCustomizations(self, storeItem)
     ShopConfigScreenExtension.currentStoreItem = storeItem
     ShopConfigScreenExtension.currentShopScreen = self
 
-    -- Override the game's Buy button to open our UnifiedPurchaseDialog
-    if buyButton and ShopConfigScreenExtension.canFinanceItem(storeItem) then
-        -- Store original callback on first run
-        if not self.usedPlusOriginalBuyCallback then
-            self.usedPlusOriginalBuyCallback = buyButton.onClickCallback
-        end
-        -- Override callback to show our unified dialog (default to Cash mode)
-        buyButton.onClickCallback = function()
-            ShopConfigScreenExtension.onUnifiedBuyClick(self, storeItem, UnifiedPurchaseDialog.MODE_CASH)
-        end
-    end
+    -- Create Finance button (between Buy and Search Used)
+    if not self.usedPlusFinanceButton and buyButton then
+        local parent = buyButton.parent
+        self.usedPlusFinanceButton = buyButton:clone(parent)
+        self.usedPlusFinanceButton.name = "usedPlusFinanceButton"
+        self.usedPlusFinanceButton.inputActionName = "MENU_EXTRA_2"
+        self.usedPlusFinanceButton:setText(g_i18n:getText("usedplus_button_finance") or "Finance")
+        self.usedPlusFinanceButton:setVisible(false)  -- Hidden by default, shown for new items
 
-    -- Override the game's Lease button to open our UnifiedPurchaseDialog
-    if self.leaseButton then
-        -- Store original callback on first run
-        if not self.usedPlusOriginalLeaseCallback then
-            self.usedPlusOriginalLeaseCallback = self.leaseButton.onClickCallback
-        end
-        -- Override callback to show our unified dialog in Lease mode
-        self.leaseButton.onClickCallback = function()
-            if ShopConfigScreenExtension.canLeaseItem(storeItem) then
-                ShopConfigScreenExtension.onUnifiedBuyClick(self, storeItem, UnifiedPurchaseDialog.MODE_LEASE)
-            elseif self.usedPlusOriginalLeaseCallback then
-                -- Fallback to original if we can't handle it
-                self.usedPlusOriginalLeaseCallback()
+        -- Position Finance button right after Buy in the array
+        if parent and parent.elements then
+            -- Find and remove from current position
+            for i = #parent.elements, 1, -1 do
+                if parent.elements[i] == self.usedPlusFinanceButton then
+                    table.remove(parent.elements, i)
+                    break
+                end
+            end
+
+            -- Find Buy button position
+            local buyIndex = nil
+            for i, elem in ipairs(parent.elements) do
+                if elem == buyButton then
+                    buyIndex = i
+                    break
+                end
+            end
+
+            if buyIndex then
+                -- Insert right after Buy (display: Buy | Finance)
+                table.insert(parent.elements, buyIndex + 1, self.usedPlusFinanceButton)
+                UsedPlus.logDebug(string.format("Inserted Finance at index %d (after Buy)", buyIndex + 1))
             end
         end
+
+        UsedPlus.logDebug("Finance button created with inputActionName: MENU_EXTRA_2")
     end
 
-    -- Create Search Used button
+    -- Create Search Used button (after Finance)
     if not self.usedPlusSearchButton and buyButton then
         local parent = buyButton.parent
 
@@ -94,10 +105,9 @@ function ShopConfigScreenExtension.applyCustomizations(self, storeItem)
         self.usedPlusSearchButton.name = "usedPlusSearchButton"
         self.usedPlusSearchButton.inputActionName = "MENU_EXTRA_1"
 
-        -- Try to reorder: move our button to appear just before Buy button
-        -- The keybind bar might show buttons in element order
+        -- Position Search Used after Finance in the array
         if parent and parent.elements then
-            -- Find and remove our button from its current position
+            -- Find and remove from current position
             for i = #parent.elements, 1, -1 do
                 if parent.elements[i] == self.usedPlusSearchButton then
                     table.remove(parent.elements, i)
@@ -105,19 +115,20 @@ function ShopConfigScreenExtension.applyCustomizations(self, storeItem)
                 end
             end
 
-            -- Find Buy button position and insert just before it
-            local buyIndex = nil
+            -- Find Finance button position (or Buy if Finance doesn't exist)
+            local insertAfter = self.usedPlusFinanceButton or buyButton
+            local insertIndex = nil
             for i, elem in ipairs(parent.elements) do
-                if elem == buyButton then
-                    buyIndex = i
+                if elem == insertAfter then
+                    insertIndex = i
                     break
                 end
             end
 
-            if buyIndex then
-                -- Insert AFTER Buy in array (display is reversed, so this appears BEFORE Buy)
-                table.insert(parent.elements, buyIndex + 1, self.usedPlusSearchButton)
-                UsedPlus.logDebug(string.format("Inserted Search Used at index %d (after Buy in array)", buyIndex + 1))
+            if insertIndex then
+                -- Insert after Finance (display: Buy | Finance | Search Used)
+                table.insert(parent.elements, insertIndex + 1, self.usedPlusSearchButton)
+                UsedPlus.logDebug(string.format("Inserted Search Used at index %d (after Finance)", insertIndex + 1))
             else
                 -- Fallback: add to end
                 table.insert(parent.elements, self.usedPlusSearchButton)
@@ -169,6 +180,12 @@ end
 --[[
     Hook updateButtons to show/hide Inspect button for owned vehicles
     updateButtons(storeItem, vehicle, saleItem) - vehicle is set when viewing owned vehicle
+
+    v1.7.2: SIMPLE CALLBACK SWAP APPROACH
+    For each update, we ACTIVELY SET the callback based on context:
+    - Owned vehicle: Restore original callback (let game handle customization natively)
+    - New item: Set our UnifiedPurchaseDialog callback
+    This is cleaner than a wrapper because we explicitly control what happens.
 ]]
 function ShopConfigScreenExtension.updateButtonsHook(self, storeItem, vehicle, saleItem)
     -- Wrap in pcall to prevent breaking the shop if something errors
@@ -176,10 +193,83 @@ function ShopConfigScreenExtension.updateButtonsHook(self, storeItem, vehicle, s
         -- Store current vehicle for inspect handler
         ShopConfigScreenExtension.currentVehicle = vehicle
 
+        local isOwnedVehicle = vehicle ~= nil
+
+        -- Store original callbacks ONCE (before we ever override)
+        -- These are the VANILLA game callbacks we want to restore for owned vehicles
+        if self.buyButton and not self.usedPlusOriginalBuyCallback then
+            self.usedPlusOriginalBuyCallback = self.buyButton.onClickCallback
+            self.usedPlusOriginalBuyOnClick = self.buyButton.onClick  -- String method name
+            UsedPlus.logDebug("Stored original Buy button callback")
+        end
+        if self.leaseButton and not self.usedPlusOriginalLeaseCallback then
+            self.usedPlusOriginalLeaseCallback = self.leaseButton.onClickCallback
+            UsedPlus.logDebug("Stored original Lease button callback")
+        end
+
+        -- v1.7.2: ACTIVE CALLBACK SWAP (every update, not a one-time wrapper)
+        if self.buyButton then
+            if isOwnedVehicle then
+                -- OWNED VEHICLE: Restore original game callback completely
+                -- Don't touch it - let the game handle customization natively
+                self.buyButton.onClickCallback = self.usedPlusOriginalBuyCallback
+                UsedPlus.logDebug("Buy button: restored original callback for owned vehicle")
+            else
+                -- NEW ITEM: Set our UnifiedPurchaseDialog callback
+                local shopScreen = self
+                local currentStoreItem = storeItem
+                self.buyButton.onClickCallback = function()
+                    UsedPlus.logDebug("Buy button clicked - new item: " .. tostring(currentStoreItem and currentStoreItem.name or "nil"))
+                    if currentStoreItem and ShopConfigScreenExtension.canFinanceItem(currentStoreItem) then
+                        ShopConfigScreenExtension.onUnifiedBuyClick(shopScreen, currentStoreItem, UnifiedPurchaseDialog.MODE_CASH)
+                    elseif shopScreen.usedPlusOriginalBuyCallback then
+                        -- Fallback to original for non-financeable items
+                        shopScreen.usedPlusOriginalBuyCallback()
+                    end
+                end
+                UsedPlus.logDebug("Buy button: set UsedPlus callback for new item")
+            end
+        end
+
+        if self.leaseButton then
+            if isOwnedVehicle then
+                -- OWNED VEHICLE: Restore original game callback
+                self.leaseButton.onClickCallback = self.usedPlusOriginalLeaseCallback
+                UsedPlus.logDebug("Lease button: restored original callback for owned vehicle")
+            else
+                -- NEW ITEM: Set our UnifiedPurchaseDialog callback
+                local shopScreen = self
+                local currentStoreItem = storeItem
+                self.leaseButton.onClickCallback = function()
+                    UsedPlus.logDebug("Lease button clicked - new item: " .. tostring(currentStoreItem and currentStoreItem.name or "nil"))
+                    if currentStoreItem and ShopConfigScreenExtension.canLeaseItem(currentStoreItem) then
+                        ShopConfigScreenExtension.onUnifiedBuyClick(shopScreen, currentStoreItem, UnifiedPurchaseDialog.MODE_LEASE)
+                    elseif shopScreen.usedPlusOriginalLeaseCallback then
+                        -- Fallback to original for non-leaseable items
+                        shopScreen.usedPlusOriginalLeaseCallback()
+                    end
+                end
+                UsedPlus.logDebug("Lease button: set UsedPlus callback for new item")
+            end
+        end
+
+        -- Update Finance button visibility and callback (button created in applyCustomizations)
+        if self.usedPlusFinanceButton then
+            local showFinanceButton = not isOwnedVehicle and ShopConfigScreenExtension.canFinanceItem(storeItem)
+            self.usedPlusFinanceButton:setVisible(showFinanceButton)
+            self.usedPlusFinanceButton:setDisabled(not showFinanceButton)
+
+            if showFinanceButton then
+                self.usedPlusFinanceButton.onClickCallback = function()
+                    ShopConfigScreenExtension.onUnifiedBuyClick(self, storeItem, UnifiedPurchaseDialog.MODE_FINANCE)
+                end
+            end
+        end
+
         -- Show/hide Inspect button based on whether this is an owned vehicle
         if self.usedPlusInspectButton then
-            local isOwnedVehicle = vehicle ~= nil
             self.usedPlusInspectButton:setVisible(isOwnedVehicle)
+            self.usedPlusInspectButton:setDisabled(not isOwnedVehicle)  -- Enable for owned vehicles
 
             if isOwnedVehicle then
                 -- Set the click callback with the current vehicle
@@ -230,7 +320,21 @@ function ShopConfigScreenExtension.canFinanceItem(storeItem)
     local isVehicle = storeItem.species == StoreSpecies.VEHICLE
     local isPlaceable = storeItem.categoryName == "PLACEABLES"
 
-    return isVehicle or isPlaceable
+    if not (isVehicle or isPlaceable) then
+        return false
+    end
+
+    -- Check minimum financing amount
+    -- Banks don't process loans for trivially small amounts
+    local price = storeItem.price or 0
+    if FinanceCalculations and FinanceCalculations.meetsMinimumAmount then
+        local meetsMinimum, _ = FinanceCalculations.meetsMinimumAmount(price, "VEHICLE_FINANCE")
+        if not meetsMinimum then
+            return false
+        end
+    end
+
+    return true
 end
 
 function ShopConfigScreenExtension.canSearchItem(storeItem)
@@ -245,6 +349,7 @@ end
 --[[
     Can this item be leased?
     Leasing is vehicles only (not land, not placeables)
+    Also requires minimum value threshold
 ]]
 function ShopConfigScreenExtension.canLeaseItem(storeItem)
     if storeItem == nil then
@@ -252,7 +357,21 @@ function ShopConfigScreenExtension.canLeaseItem(storeItem)
     end
 
     -- Can only lease vehicles (not placeables or land)
-    return storeItem.species == StoreSpecies.VEHICLE
+    if storeItem.species ~= StoreSpecies.VEHICLE then
+        return false
+    end
+
+    -- Check minimum lease amount
+    -- Leasing has higher administrative overhead than financing
+    local price = storeItem.price or 0
+    if FinanceCalculations and FinanceCalculations.meetsMinimumAmount then
+        local meetsMinimum, _ = FinanceCalculations.meetsMinimumAmount(price, "VEHICLE_LEASE")
+        if not meetsMinimum then
+            return false
+        end
+    end
+
+    return true
 end
 
 --[[

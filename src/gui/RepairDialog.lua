@@ -317,9 +317,34 @@ function RepairDialog:updateDisplay()
         self.payCashButton:setDisabled(not canAfford)
     end
 
-    -- Finance button - enabled if there's a cost
+    -- Finance button - enabled if there's a cost AND player qualifies for financing
     if self.financeButton then
-        self.financeButton:setDisabled(self.totalCost <= 0)
+        local canFinanceRepair = true
+        local financeDisabledReason = nil
+
+        -- Check credit qualification
+        if CreditScore and CreditScore.canFinance then
+            local canFinance, minRequired, currentScore = CreditScore.canFinance(self.farmId, "REPAIR")
+            if not canFinance then
+                canFinanceRepair = false
+                local template = g_i18n:getText("usedplus_credit_needScore")
+                financeDisabledReason = string.format(template, currentScore, minRequired)
+            end
+        end
+
+        -- Disable if no cost or can't qualify
+        local shouldDisable = (self.totalCost <= 0) or (not canFinanceRepair)
+        self.financeButton:setDisabled(shouldDisable)
+
+        -- Show tooltip/reason if disabled due to credit
+        if self.financeDisabledText then
+            if financeDisabledReason then
+                self.financeDisabledText:setText(financeDisabledReason)
+                self.financeDisabledText:setVisible(true)
+            else
+                self.financeDisabledText:setVisible(false)
+            end
+        end
     end
 end
 

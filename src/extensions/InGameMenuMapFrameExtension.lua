@@ -18,16 +18,20 @@ InGameMenuMapFrameExtension = {}
 
 --[[
     Hook onLoadMapFinished to register new actions
-    Only register REPAIR_VEHICLE, NOT Finance/Lease Land (those are handled by intercepting Buy)
+    Register REPAIR_VEHICLE, FINANCE_LAND, and LEASE_LAND actions
+    Also intercept BUY to open our unified dialog
 ]]
 function InGameMenuMapFrameExtension.onLoadMapFinished(self, superFunc)
-    -- Count existing actions to get next ID
+    -- Call original function FIRST so base game contextActions are set up
+    superFunc(self)
+
+    -- Count existing actions to get next ID for vehicle-related actions
     local count = 0
     for _ in pairs(InGameMenuMapFrame.ACTIONS) do
         count = count + 1
     end
 
-    -- Register REPAIR_VEHICLE action if not already added
+    -- Register REPAIR_VEHICLE action if not already added (at end, for vehicles)
     if InGameMenuMapFrame.ACTIONS.REPAIR_VEHICLE == nil then
         InGameMenuMapFrame.ACTIONS["REPAIR_VEHICLE"] = count + 1
         count = count + 1
@@ -38,29 +42,52 @@ function InGameMenuMapFrameExtension.onLoadMapFinished(self, superFunc)
             ["isActive"] = false
         }
 
-        UsedPlus.logDebug("Registered REPAIR_VEHICLE action in InGameMenuMapFrame")
+        UsedPlus.logDebug("Registered REPAIR_VEHICLE action in InGameMenuMapFrame (ID=" .. tostring(InGameMenuMapFrame.ACTIONS.REPAIR_VEHICLE) .. ")")
     end
 
-    -- Call original function FIRST so contextActions are set up
-    superFunc(self)
-
     -- Override the BUY action callback to open our dialog for farmland
-    -- The action is called "BUY" not "BUY_FARMLAND" in FS25
-    -- Must be AFTER superFunc because contextActions are set up there
+    -- BUY is typically ID 11 in FS25
     if InGameMenuMapFrame.ACTIONS.BUY and self.contextActions[InGameMenuMapFrame.ACTIONS.BUY] then
         -- Store original callback
         InGameMenuMapFrameExtension.originalBuyCallback = self.contextActions[InGameMenuMapFrame.ACTIONS.BUY].callback
         -- Replace with our callback
         self.contextActions[InGameMenuMapFrame.ACTIONS.BUY].callback = InGameMenuMapFrameExtension.onBuyFarmland
         UsedPlus.logDebug("Intercepted BUY action callback (ID=" .. tostring(InGameMenuMapFrame.ACTIONS.BUY) .. ")")
+
+        -- Register FINANCE and LEASE right after BUY
+        -- Use IDs 12 and 13 to appear immediately after BUY (ID 11)
+        local buyId = InGameMenuMapFrame.ACTIONS.BUY
+
+        if InGameMenuMapFrame.ACTIONS.FINANCE_LAND == nil then
+            InGameMenuMapFrame.ACTIONS["FINANCE_LAND"] = buyId + 1
+
+            self.contextActions[InGameMenuMapFrame.ACTIONS.FINANCE_LAND] = {
+                ["title"] = g_i18n:getText("usedplus_action_financeLand") or "Finance",
+                ["callback"] = InGameMenuMapFrameExtension.onFinanceLand,
+                ["isActive"] = false
+            }
+
+            UsedPlus.logDebug("Registered FINANCE_LAND action (ID=" .. tostring(buyId + 1) .. ")")
+        end
+
+        if InGameMenuMapFrame.ACTIONS.LEASE_LAND == nil then
+            InGameMenuMapFrame.ACTIONS["LEASE_LAND"] = buyId + 2
+
+            self.contextActions[InGameMenuMapFrame.ACTIONS.LEASE_LAND] = {
+                ["title"] = g_i18n:getText("usedplus_action_leaseLand") or "Lease",
+                ["callback"] = InGameMenuMapFrameExtension.onLeaseLand,
+                ["isActive"] = false
+            }
+
+            UsedPlus.logDebug("Registered LEASE_LAND action (ID=" .. tostring(buyId + 2) .. ")")
+        end
     else
         UsedPlus.logWarn("Could not intercept BUY action")
     end
 end
 
 --[[
-    Hook setMapInputContext to show Repair option
-    Removed Finance/Lease Land since Buy now opens our unified dialog
+    Hook setMapInputContext to show Repair, Finance Land, and Lease Land options
 ]]
 function InGameMenuMapFrameExtension.setMapInputContext(self, superFunc, enterVehicleActive, resetVehicleActive, sellVehicleActive, visitPlaceActive, setMarkerActive, removeMarkerActive, buyFarmlandActive, sellFarmlandActive, manageActive)
 
@@ -69,6 +96,20 @@ function InGameMenuMapFrameExtension.setMapInputContext(self, superFunc, enterVe
         self.contextActions[InGameMenuMapFrame.ACTIONS.REPAIR_VEHICLE].isActive = true
     elseif self.contextActions[InGameMenuMapFrame.ACTIONS.REPAIR_VEHICLE] then
         self.contextActions[InGameMenuMapFrame.ACTIONS.REPAIR_VEHICLE].isActive = false
+    end
+
+    -- Show "Finance Land" when "Buy Farmland" is available (unowned farmland selected)
+    if buyFarmlandActive and self.contextActions[InGameMenuMapFrame.ACTIONS.FINANCE_LAND] then
+        self.contextActions[InGameMenuMapFrame.ACTIONS.FINANCE_LAND].isActive = true
+    elseif self.contextActions[InGameMenuMapFrame.ACTIONS.FINANCE_LAND] then
+        self.contextActions[InGameMenuMapFrame.ACTIONS.FINANCE_LAND].isActive = false
+    end
+
+    -- Show "Lease Land" when "Buy Farmland" is available (unowned farmland selected)
+    if buyFarmlandActive and self.contextActions[InGameMenuMapFrame.ACTIONS.LEASE_LAND] then
+        self.contextActions[InGameMenuMapFrame.ACTIONS.LEASE_LAND].isActive = true
+    elseif self.contextActions[InGameMenuMapFrame.ACTIONS.LEASE_LAND] then
+        self.contextActions[InGameMenuMapFrame.ACTIONS.LEASE_LAND].isActive = false
     end
 
     -- Call original function
@@ -103,15 +144,17 @@ end
 
 --[[
     Callback when "Finance Land" is clicked
-    Refactored to use DialogLoader for centralized loading
+    Opens UnifiedLandPurchaseDialog in Finance mode
 ]]
 function InGameMenuMapFrameExtension.onFinanceLand(inGameMenuMapFrame, element)
+    UsedPlus.logDebug("onFinanceLand called")
     if inGameMenuMapFrame.selectedFarmland == nil then
+        UsedPlus.logWarn("onFinanceLand: No farmland selected")
         return true
     end
 
     local selectedFarmland = inGameMenuMapFrame.selectedFarmland
-    local farmId = g_currentMission:getFarmId()
+    UsedPlus.logDebug("onFinanceLand: Farmland ID=" .. tostring(selectedFarmland.id) .. ", Price=" .. tostring(selectedFarmland.price))
 
     -- Check if there's a mission running on this farmland
     if g_missionManager:getIsMissionRunningOnFarmland(selectedFarmland) then
@@ -119,14 +162,25 @@ function InGameMenuMapFrameExtension.onFinanceLand(inGameMenuMapFrame, element)
         return false
     end
 
-    -- Use DialogLoader for centralized lazy loading
-    local shown = DialogLoader.show("LandFinanceDialog", "setData", selectedFarmland.id, selectedFarmland.price, farmId)
+    -- Load dialog if needed and set data
+    if not DialogLoader.ensureLoaded("UnifiedLandPurchaseDialog") then
+        UsedPlus.logError("onFinanceLand: Failed to load UnifiedLandPurchaseDialog")
+        return true
+    end
 
-    if shown then
+    local dialog = DialogLoader.getDialog("UnifiedLandPurchaseDialog")
+    if dialog then
+        dialog:setLandData(selectedFarmland.id, selectedFarmland, selectedFarmland.price)
+        dialog:setInitialMode(UnifiedLandPurchaseDialog.MODE_FINANCE)
+        g_gui:showDialog("UnifiedLandPurchaseDialog")
+
         -- Hide context boxes after opening dialog
         InGameMenuMapUtil.hideContextBox(inGameMenuMapFrame.contextBox)
         InGameMenuMapUtil.hideContextBox(inGameMenuMapFrame.contextBoxPlayer)
         InGameMenuMapUtil.hideContextBox(inGameMenuMapFrame.contextBoxFarmland)
+        UsedPlus.logDebug("onFinanceLand: Dialog shown")
+    else
+        UsedPlus.logError("onFinanceLand: Dialog not found")
     end
 
     return true
@@ -134,15 +188,17 @@ end
 
 --[[
     Callback when "Lease Land" is clicked
-    Refactored to use DialogLoader for centralized loading
+    Opens UnifiedLandPurchaseDialog in Lease mode
 ]]
 function InGameMenuMapFrameExtension.onLeaseLand(inGameMenuMapFrame, element)
+    UsedPlus.logDebug("onLeaseLand called")
     if inGameMenuMapFrame.selectedFarmland == nil then
+        UsedPlus.logWarn("onLeaseLand: No farmland selected")
         return true
     end
 
     local selectedFarmland = inGameMenuMapFrame.selectedFarmland
-    local farmId = g_currentMission:getFarmId()
+    UsedPlus.logDebug("onLeaseLand: Farmland ID=" .. tostring(selectedFarmland.id) .. ", Price=" .. tostring(selectedFarmland.price))
 
     -- Check if there's a mission running on this farmland
     if g_missionManager:getIsMissionRunningOnFarmland(selectedFarmland) then
@@ -150,14 +206,25 @@ function InGameMenuMapFrameExtension.onLeaseLand(inGameMenuMapFrame, element)
         return false
     end
 
-    -- Use DialogLoader for centralized lazy loading
-    local shown = DialogLoader.show("LandLeaseDialog", "setData", selectedFarmland.id, selectedFarmland.price, farmId)
+    -- Load dialog if needed and set data
+    if not DialogLoader.ensureLoaded("UnifiedLandPurchaseDialog") then
+        UsedPlus.logError("onLeaseLand: Failed to load UnifiedLandPurchaseDialog")
+        return true
+    end
 
-    if shown then
+    local dialog = DialogLoader.getDialog("UnifiedLandPurchaseDialog")
+    if dialog then
+        dialog:setLandData(selectedFarmland.id, selectedFarmland, selectedFarmland.price)
+        dialog:setInitialMode(UnifiedLandPurchaseDialog.MODE_LEASE)
+        g_gui:showDialog("UnifiedLandPurchaseDialog")
+
         -- Hide context boxes after opening dialog
         InGameMenuMapUtil.hideContextBox(inGameMenuMapFrame.contextBox)
         InGameMenuMapUtil.hideContextBox(inGameMenuMapFrame.contextBoxPlayer)
         InGameMenuMapUtil.hideContextBox(inGameMenuMapFrame.contextBoxFarmland)
+        UsedPlus.logDebug("onLeaseLand: Dialog shown")
+    else
+        UsedPlus.logError("onLeaseLand: Dialog not found")
     end
 
     return true
@@ -218,14 +285,17 @@ end
 
 --[[
     Callback when "Buy" farmland is clicked
-    Refactored to use DialogLoader for centralized loading
+    Opens UnifiedLandPurchaseDialog in Cash mode (default)
 ]]
 function InGameMenuMapFrameExtension.onBuyFarmland(inGameMenuMapFrame, element)
+    UsedPlus.logDebug("onBuyFarmland called - intercepted Buy action")
     if inGameMenuMapFrame.selectedFarmland == nil then
+        UsedPlus.logWarn("onBuyFarmland: No farmland selected")
         return true
     end
 
     local selectedFarmland = inGameMenuMapFrame.selectedFarmland
+    UsedPlus.logDebug("onBuyFarmland: Farmland ID=" .. tostring(selectedFarmland.id) .. ", Price=" .. tostring(selectedFarmland.price))
 
     -- Check if there's a mission running on this farmland
     if g_missionManager:getIsMissionRunningOnFarmland(selectedFarmland) then
@@ -233,14 +303,25 @@ function InGameMenuMapFrameExtension.onBuyFarmland(inGameMenuMapFrame, element)
         return false
     end
 
-    -- Use DialogLoader for centralized lazy loading
-    local shown = DialogLoader.show("UnifiedLandPurchaseDialog", "setLandData", selectedFarmland.id, selectedFarmland, selectedFarmland.price)
+    -- Load dialog if needed and set data
+    if not DialogLoader.ensureLoaded("UnifiedLandPurchaseDialog") then
+        UsedPlus.logError("onBuyFarmland: Failed to load UnifiedLandPurchaseDialog")
+        return true
+    end
 
-    if shown then
+    local dialog = DialogLoader.getDialog("UnifiedLandPurchaseDialog")
+    if dialog then
+        dialog:setLandData(selectedFarmland.id, selectedFarmland, selectedFarmland.price)
+        dialog:setInitialMode(UnifiedLandPurchaseDialog.MODE_CASH)  -- Default to cash mode
+        g_gui:showDialog("UnifiedLandPurchaseDialog")
+
         -- Hide context boxes after opening dialog
         InGameMenuMapUtil.hideContextBox(inGameMenuMapFrame.contextBox)
         InGameMenuMapUtil.hideContextBox(inGameMenuMapFrame.contextBoxPlayer)
         InGameMenuMapUtil.hideContextBox(inGameMenuMapFrame.contextBoxFarmland)
+        UsedPlus.logDebug("onBuyFarmland: Dialog shown")
+    else
+        UsedPlus.logError("onBuyFarmland: Dialog not found")
     end
 
     return true

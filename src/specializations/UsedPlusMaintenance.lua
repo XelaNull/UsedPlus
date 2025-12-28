@@ -65,6 +65,138 @@ UsedPlusMaintenance.CONFIG = {
 
     -- v1.5.1: Stall recovery settings
     stallRecoveryDurationMs = 5000,   -- 5 seconds before engine can restart after stall
+
+    -- v1.6.0: Steering pull settings (worn vehicles pull to one side)
+    steeringPullThreshold = 0.7,          -- Pull starts when hydraulic reliability drops below 70%
+    steeringPullMax = 0.15,               -- Max 15% steering bias at lowest reliability
+    steeringPullSpeedMin = 5,             -- No pull below 5 km/h
+    steeringPullSpeedMax = 25,            -- Full pull effect at 25+ km/h
+    steeringPullSurgeIntervalMin = 30000, -- Minimum 30 seconds between surge events
+    steeringPullSurgeIntervalMax = 90000, -- Maximum 90 seconds between surge events
+    steeringPullSurgeDuration = 3000,     -- Surge lasts 3 seconds
+    steeringPullSurgeMultiplier = 1.5,    -- Pull is 50% stronger during surge
+
+    -- v1.6.0: Engine misfiring settings (worn engine stutters/hiccups)
+    enableMisfiring = true,
+    misfireThreshold = 0.6,               -- Misfires start below 60% engine reliability
+    misfireCheckIntervalMs = 500,         -- Check for misfire every 500ms
+    misfireMaxChancePerCheck = 0.15,      -- Max 15% chance per check at 0% reliability
+    misfireDurationMin = 100,             -- Minimum 100ms per misfire
+    misfireDurationMax = 300,             -- Maximum 300ms per misfire
+    misfireBurstChance = 0.3,             -- 30% chance of burst (multiple quick misfires)
+    misfireBurstCount = 3,                -- Up to 3 misfires in a burst
+
+    -- v1.6.0: Engine overheating settings (worn engine builds heat)
+    enableOverheating = true,
+    overheatThreshold = 0.5,              -- Overheating effects start below 50% engine reliability
+    overheatHeatRateBase = 0.002,         -- Base heat gain per second when running
+    overheatHeatRateLoad = 0.008,         -- Additional heat per second at full load
+    overheatCoolRateOff = 0.015,          -- Cool rate when engine off
+    overheatCoolRateIdle = 0.005,         -- Cool rate when idling
+    overheatWarningTemp = 0.7,            -- Show warning at 70% temperature
+    overheatStallTemp = 0.95,             -- Force stall at 95% temperature
+    overheatRestartTemp = 0.4,            -- Must cool to 40% to restart
+    overheatCooldownMs = 20000,           -- Minimum 20 second cooldown after overheat
+
+    -- v1.6.0: Implement surge settings (implements randomly lift)
+    enableImplementSurge = true,
+    implementSurgeThreshold = 0.4,        -- Surge starts below 40% hydraulic reliability
+    implementSurgeChance = 0.002,         -- 0.2% chance per check when lowered
+
+    -- v1.6.0: Implement drop settings (implements suddenly drop)
+    enableImplementDrop = true,
+    implementDropThreshold = 0.35,        -- Drop starts below 35% hydraulic reliability
+    implementDropChance = 0.001,          -- 0.1% chance per check when raised
+
+    -- v1.6.0: PTO toggle settings (power randomly turns on/off)
+    enablePTOToggle = true,
+    ptoToggleThreshold = 0.4,             -- Toggle starts below 40% electrical reliability
+    ptoToggleChance = 0.003,              -- 0.3% chance per check
+
+    -- v1.6.0: Hitch failure settings (implement detaches - VERY RARE)
+    enableHitchFailure = true,
+    hitchFailureThreshold = 0.15,         -- Only below 15% hydraulic reliability
+    hitchFailureChance = 0.0001,          -- 0.01% chance per check (VERY rare)
+
+    -- v1.7.0: Tire System Settings
+    enableTireWear = true,
+    tireWearRatePerKm = 0.001,            -- 0.1% condition loss per km
+    tireWarnThreshold = 0.3,              -- Warn when tires below 30%
+    tireCriticalThreshold = 0.15,         -- Critical warning below 15%
+
+    -- Tire quality tiers (Retread = 1, Normal = 2, Quality = 3)
+    tireRetreadCostMult = 0.40,           -- 40% of normal cost
+    tireRetreadTractionMult = 0.85,       -- 85% traction
+    tireRetreadFailureMult = 3.0,         -- 3x failure chance
+    tireNormalCostMult = 1.0,             -- 100% cost (baseline)
+    tireNormalTractionMult = 1.0,         -- 100% traction (baseline)
+    tireNormalFailureMult = 1.0,          -- 1x failure chance (baseline)
+    tireQualityCostMult = 1.50,           -- 150% of normal cost
+    tireQualityTractionMult = 1.10,       -- 110% traction
+    tireQualityFailureMult = 0.5,         -- 0.5x failure chance
+
+    -- v1.7.0: Flat tire malfunction
+    enableFlatTire = true,
+    flatTireThreshold = 0.2,              -- Flat tire possible below 20% condition
+    flatTireBaseChance = 0.0005,          -- 0.05% chance per check
+    flatTireSpeedReduction = 0.5,         -- 50% max speed with flat
+    flatTirePullStrength = 0.25,          -- Steering pull strength (0-1)
+    flatTireFrictionMult = 0.3,           -- 30% friction with flat tire
+
+    -- v1.7.0: Tire friction physics hook
+    enableTireFriction = true,            -- Hook into WheelPhysics for friction reduction
+
+    -- v1.7.0: Low traction malfunction (weather-aware)
+    enableLowTraction = true,
+    lowTractionThreshold = 0.25,          -- Low traction warnings below 25% condition
+    lowTractionWetMultiplier = 1.5,       -- 50% worse in rain
+    lowTractionSnowMultiplier = 2.0,      -- 100% worse in snow
+
+    -- v1.7.0: Friction reduction based on tire condition
+    enableTireFriction = true,
+    tireFrictionMinMultiplier = 0.6,      -- Minimum 60% friction at 0% condition
+    tireFrictionWetPenalty = 0.15,        -- Additional 15% loss when wet
+    tireFrictionSnowPenalty = 0.25,       -- Additional 25% loss in snow
+
+    -- v1.7.0: Oil System Settings
+    enableOilSystem = true,
+    oilDepletionRatePerHour = 0.01,       -- 1% per operating hour (100 hours to empty)
+    oilWarnThreshold = 0.25,              -- Warn when oil below 25%
+    oilCriticalThreshold = 0.10,          -- Critical warning below 10%
+    oilLowDamageMultiplier = 2.0,         -- 2x engine wear when low on oil
+    oilPermanentDamageOnFailure = 0.10,   -- 10% permanent ceiling drop if failure while low
+
+    -- v1.7.0: Oil leak malfunction
+    enableOilLeak = true,
+    oilLeakThreshold = 0.4,               -- Leaks possible below 40% engine reliability
+    oilLeakBaseChance = 0.0003,           -- 0.03% chance per check
+    oilLeakMinorMult = 2.0,               -- Minor leak: 2x depletion
+    oilLeakModerateMult = 5.0,            -- Moderate leak: 5x depletion
+    oilLeakSevereMult = 10.0,             -- Severe leak: 10x depletion
+
+    -- v1.7.0: Hydraulic Fluid System Settings
+    enableHydraulicFluidSystem = true,
+    hydraulicFluidDepletionPerAction = 0.002, -- 0.2% per hydraulic action
+    hydraulicFluidWarnThreshold = 0.25,   -- Warn when below 25%
+    hydraulicFluidCriticalThreshold = 0.10, -- Critical warning below 10%
+    hydraulicFluidLowDamageMultiplier = 2.0, -- 2x hydraulic wear when low
+    hydraulicFluidPermanentDamageOnFailure = 0.10, -- 10% permanent ceiling drop
+
+    -- v1.7.0: Hydraulic leak malfunction
+    enableHydraulicLeak = true,
+    hydraulicLeakThreshold = 0.4,         -- Leaks possible below 40% hydraulic reliability
+    hydraulicLeakBaseChance = 0.0003,     -- 0.03% chance per check
+    hydraulicLeakMinorMult = 2.0,         -- Minor leak: 2x depletion
+    hydraulicLeakModerateMult = 5.0,      -- Moderate leak: 5x depletion
+    hydraulicLeakSevereMult = 10.0,       -- Severe leak: 10x depletion
+
+    -- v1.7.0: Fuel leak malfunction (engine issue)
+    enableFuelLeak = true,
+    fuelLeakThreshold = 0.35,             -- Fuel leaks possible below 35% engine reliability
+    fuelLeakBaseChance = 0.0002,          -- 0.02% chance per check
+    fuelLeakMinMult = 2.0,                -- Minimum 2x fuel consumption
+    fuelLeakMaxMult = 5.0,                -- Maximum 5x fuel consumption
+    fuelLeakBaseDrainRate = 0.5,          -- Base leak rate: 0.5 L/s when engine running
 }
 
 --[[
@@ -208,6 +340,71 @@ function UsedPlusMaintenance.getInspectorQuote(workhorseLemonScale)
 end
 
 --[[
+    v1.6.0: Check if warnings should be shown for this vehicle
+    Warnings should ONLY show when:
+    1. Player is actively controlling THIS vehicle (isActiveForInput)
+    2. Startup grace period has expired (not immediately after load/purchase)
+
+    This prevents phantom warnings when standing outside vehicles or on game start.
+    @param vehicle - The vehicle to check
+    @return boolean - true if warnings can be shown, false otherwise
+]]
+function UsedPlusMaintenance.shouldShowWarning(vehicle)
+    local spec = vehicle.spec_usedPlusMaintenance
+    if spec == nil then return false end
+
+    -- Check startup grace period - no warnings during first few seconds
+    if spec.startupGracePeriod and spec.startupGracePeriod > 0 then
+        return false
+    end
+
+    -- v1.7.3: Use multiple methods to check if player is in/controlling this vehicle
+    -- Method 1: Check if player has entered this vehicle
+    if vehicle.getIsEntered and vehicle:getIsEntered() then
+        return true
+    end
+
+    -- Method 2: Check if this is the HUD's controlled vehicle
+    if g_currentMission and g_currentMission.controlledVehicle then
+        local rootVehicle = vehicle:getRootVehicle()
+        if rootVehicle == g_currentMission.controlledVehicle then
+            return true
+        end
+    end
+
+    -- Method 3: Check stored isActiveForInput from last onUpdate frame
+    if spec.lastIsActiveForInput then
+        return true
+    end
+
+    -- Method 4: Fallback to getIsControlled
+    if vehicle.getIsControlled and vehicle:getIsControlled() then
+        return true
+    end
+
+    return false
+end
+
+--[[
+    Show a blinking warning message to the player
+    Only shows if shouldShowWarning returns true
+    @param vehicle - The vehicle triggering the warning
+    @param message - The warning text to display
+    @param duration - Optional duration in ms (default 2500)
+]]
+function UsedPlusMaintenance.showWarning(vehicle, message, duration)
+    if not UsedPlusMaintenance.shouldShowWarning(vehicle) then
+        return
+    end
+
+    duration = duration or 2500
+
+    if g_currentMission and g_currentMission.showBlinkingWarning then
+        g_currentMission:showBlinkingWarning(message, duration)
+    end
+end
+
+--[[
     Generate workhorse/lemon scale for a NEW vehicle (from dealership)
     New vehicles have slight quality bias - dealerships don't sell obvious lemons
     Range: 0.3 to 1.0, average ~0.6
@@ -308,7 +505,32 @@ function UsedPlusMaintenance.initSpecialization()
     schemaSavegame:register(XMLValueType.FLOAT, key .. ".inspectionCacheDamage", "Damage level at inspection", 0)
     schemaSavegame:register(XMLValueType.FLOAT, key .. ".inspectionCacheWear", "Wear/paint level at inspection", 0)
 
-    UsedPlus.logDebug("UsedPlusMaintenance schema registration complete")
+    -- v1.7.0: Tire System
+    schemaSavegame:register(XMLValueType.FLOAT, key .. ".tireCondition", "Tire tread condition (0-1)", 1.0)
+    schemaSavegame:register(XMLValueType.INT,   key .. ".tireQuality", "Tire quality tier (1=Retread, 2=Normal, 3=Quality)", 2)
+    schemaSavegame:register(XMLValueType.FLOAT, key .. ".distanceTraveled", "Distance traveled for tire wear", 0)
+    schemaSavegame:register(XMLValueType.BOOL,  key .. ".hasFlatTire", "Does vehicle have a flat tire?", false)
+    schemaSavegame:register(XMLValueType.STRING, key .. ".flatTireSide", "Which side has flat tire (left/right)", "")
+
+    -- v1.7.0: Oil System
+    schemaSavegame:register(XMLValueType.FLOAT, key .. ".oilLevel", "Engine oil level (0-1)", 1.0)
+    schemaSavegame:register(XMLValueType.BOOL,  key .. ".wasLowOil", "Was low oil warning shown?", false)
+    schemaSavegame:register(XMLValueType.BOOL,  key .. ".hasOilLeak", "Does engine have oil leak?", false)
+    schemaSavegame:register(XMLValueType.FLOAT, key .. ".oilLeakSeverity", "Oil leak severity multiplier", 1.0)
+    schemaSavegame:register(XMLValueType.FLOAT, key .. ".engineReliabilityCeiling", "Max engine reliability due to oil damage", 1.0)
+
+    -- v1.7.0: Hydraulic Fluid System
+    schemaSavegame:register(XMLValueType.FLOAT, key .. ".hydraulicFluidLevel", "Hydraulic fluid level (0-1)", 1.0)
+    schemaSavegame:register(XMLValueType.BOOL,  key .. ".wasLowHydraulicFluid", "Was low hydraulic fluid warning shown?", false)
+    schemaSavegame:register(XMLValueType.BOOL,  key .. ".hasHydraulicLeak", "Does hydraulic system have leak?", false)
+    schemaSavegame:register(XMLValueType.FLOAT, key .. ".hydraulicLeakSeverity", "Hydraulic leak severity multiplier", 1.0)
+    schemaSavegame:register(XMLValueType.FLOAT, key .. ".hydraulicReliabilityCeiling", "Max hydraulic reliability due to fluid damage", 1.0)
+
+    -- v1.7.0: Fuel Leak System
+    schemaSavegame:register(XMLValueType.BOOL,  key .. ".hasFuelLeak", "Does fuel tank have leak?", false)
+    schemaSavegame:register(XMLValueType.FLOAT, key .. ".fuelLeakMultiplier", "Fuel leak rate multiplier", 1.0)
+
+    UsedPlus.logDebug("UsedPlusMaintenance schema registration complete (v1.7.0 with tire/fluid fields)")
 end
 
 --[[
@@ -365,6 +587,16 @@ function UsedPlusMaintenance:getCanMotorRun(superFunc)
         end
     end
 
+    -- v1.6.0: Check for engine overheat - can't run until cooled
+    if spec.isOverheated then
+        return false
+    end
+
+    -- v1.6.0: Check for active misfire - brief power cut
+    if spec.misfireActive then
+        return false
+    end
+
     -- v1.5.1: Speed governor - cut motor when significantly over reliability-based max speed
     -- This acts like a speed limiter/rev limiter - power cuts when you exceed what the worn engine can sustain
     -- NOTE: Skip governor check during stall recovery (engine is already off, no need for governor warning)
@@ -391,7 +623,8 @@ function UsedPlusMaintenance:getCanMotorRun(superFunc)
             spec.governorPulseTimer = (spec.governorPulseTimer or 0) + 1
             if spec.governorPulseTimer % 3 ~= 0 then  -- Cut 2 out of every 3 frames
                 -- Show warning first time
-                if not spec.hasShownGovernorWarning then
+                -- v1.6.0: Only show if player is controlling this vehicle
+                if not spec.hasShownGovernorWarning and UsedPlusMaintenance.shouldShowWarning(self) then
                     g_currentMission:showBlinkingWarning(
                         g_i18n:getText("usedPlus_speedGovernor") or "Engine struggling at this speed!",
                         2000
@@ -413,41 +646,148 @@ end
 --[[
     v1.5.1: Override setSteeringInput for steering degradation
     Poor hydraulic reliability causes "loose" steering - the vehicle doesn't hold straight
+    v1.7.0: Added flat tire steering pull (stronger, more consistent)
     Pattern from: HeadlandManagement setSteeringInput
 ]]
 function UsedPlusMaintenance:setSteeringInput(superFunc, inputValue, isAnalog, deviceCategory)
     local spec = self.spec_usedPlusMaintenance
 
-    -- If no maintenance data or steering degradation disabled, pass through
-    if spec == nil or not UsedPlusMaintenance.CONFIG.enableSteeringDegradation then
+    -- If no maintenance data, pass through
+    if spec == nil then
         return superFunc(self, inputValue, isAnalog, deviceCategory)
     end
 
-    -- Only apply steering degradation if hydraulic reliability is below threshold
+    local config = UsedPlusMaintenance.CONFIG
     local hydraulicReliability = spec.hydraulicReliability or 1.0
-    if hydraulicReliability >= 0.7 then
-        -- Good hydraulics, no degradation
-        return superFunc(self, inputValue, isAnalog, deviceCategory)
-    end
 
-    -- Only when moving (steering wander at standstill would be weird)
+    -- Get current speed (used by multiple effects)
     local speed = 0
     if self.getLastSpeed then
         speed = self:getLastSpeed()
     end
+
+    -- ========== v1.7.0: FLAT TIRE STEERING PULL ==========
+    -- Flat tire causes strong, consistent pull to one side
+    -- This applies REGARDLESS of hydraulic state
+
+    if spec.hasFlatTire and config.enableFlatTire then
+        -- Flat tire pull is strong and constant
+        local flatTirePullStrength = config.flatTirePullStrength  -- 0.25 = 25% steering bias
+
+        -- Speed factor - more noticeable at speed, but still present at low speed
+        local flatSpeedFactor = 0.3  -- Minimum 30% effect even at low speed
+        if speed > 3 then
+            flatSpeedFactor = math.min(0.3 + (speed / 40) * 0.7, 1.0)  -- Scales up to 100% at 40 km/h
+        end
+
+        -- Apply flat tire pull
+        local flatPullAmount = flatTirePullStrength * flatSpeedFactor * spec.flatTireSide
+        inputValue = inputValue + flatPullAmount
+
+        -- Clamp to valid range
+        inputValue = math.max(-1, math.min(1, inputValue))
+    end
+
+    -- ========== HYDRAULIC STEERING DEGRADATION ==========
+    -- Only apply if enabled and hydraulics are degraded
+
+    if not config.enableSteeringDegradation then
+        return superFunc(self, inputValue, isAnalog, deviceCategory)
+    end
+
+    if hydraulicReliability >= config.steeringPullThreshold then
+        -- Good hydraulics, no additional degradation - reset pull state
+        -- (but flat tire pull already applied above if present)
+        spec.steeringPullDirection = 0
+        spec.steeringPullInitialized = false
+        spec.hasShownPullWarning = false
+        return superFunc(self, inputValue, isAnalog, deviceCategory)
+    end
+
+    -- ========== v1.6.0: STEERING PULL (consistent bias to one side) ==========
+
+    -- Initialize pull direction once (vehicle develops a "personality")
+    if not spec.steeringPullInitialized then
+        spec.steeringPullDirection = math.random() < 0.5 and -1 or 1  -- Left or right
+        spec.steeringPullInitialized = true
+        -- Set initial surge timer
+        local surgeInterval = math.random(config.steeringPullSurgeIntervalMin, config.steeringPullSurgeIntervalMax)
+        spec.steeringPullSurgeTimer = surgeInterval
+        UsedPlus.logDebug(string.format("Steering pull initialized: direction=%d, nextSurge=%dms",
+            spec.steeringPullDirection, surgeInterval))
+    end
+
+    -- Calculate base pull strength based on reliability
+    -- 70% reliability = 0% pull, 0% reliability = max pull (15%)
+    local pullFactor = (config.steeringPullThreshold - hydraulicReliability) / config.steeringPullThreshold
+    local basePullStrength = pullFactor * config.steeringPullMax
+
+    -- Speed factor - pull is more noticeable at higher speeds
+    -- Below min speed: no pull (safety at low speed maneuvering)
+    -- Above max speed: full pull effect
+    local speedFactor = 0
+    if speed > config.steeringPullSpeedMin then
+        speedFactor = math.min((speed - config.steeringPullSpeedMin) / (config.steeringPullSpeedMax - config.steeringPullSpeedMin), 1.0)
+    end
+
+    -- Check for surge event (temporary intensification)
+    local currentTime = g_currentMission.time or 0
+    local surgeMultiplier = 1.0
+
+    if spec.steeringPullSurgeActive then
+        -- Currently in a surge
+        if currentTime >= spec.steeringPullSurgeEndTime then
+            -- Surge ended
+            spec.steeringPullSurgeActive = false
+            -- Schedule next surge
+            local surgeInterval = math.random(config.steeringPullSurgeIntervalMin, config.steeringPullSurgeIntervalMax)
+            spec.steeringPullSurgeTimer = surgeInterval
+        else
+            -- Still surging - apply multiplier
+            surgeMultiplier = config.steeringPullSurgeMultiplier
+        end
+    end
+
+    -- Calculate final pull amount
+    local pullAmount = basePullStrength * speedFactor * surgeMultiplier * spec.steeringPullDirection
+
+    -- Apply pull to steering input (before wander)
+    if speedFactor > 0 then
+        inputValue = inputValue + pullAmount
+
+        -- Show one-time warning when pull first manifests
+        if not spec.hasShownPullWarning and UsedPlusMaintenance.shouldShowWarning(self) then
+            local directionText = spec.steeringPullDirection < 0 and
+                (g_i18n:getText("usedPlus_directionLeft") or "left") or
+                (g_i18n:getText("usedPlus_directionRight") or "right")
+            g_currentMission:showBlinkingWarning(
+                string.format(g_i18n:getText("usedPlus_steeringPull") or "Steering pulling to the %s!", directionText),
+                3000
+            )
+            spec.hasShownPullWarning = true
+        end
+
+        -- Show surge warning (if during surge and significant)
+        if spec.steeringPullSurgeActive and surgeMultiplier > 1.0 then
+            -- Could add a brief warning here, but might be too spammy
+            -- The intensification itself is the feedback
+        end
+    end
+
+    -- ========== STEERING WANDER (random micro-adjustments) ==========
 
     if speed > 3 then  -- Above 3 km/h
         -- Calculate slop factor (how loose the steering is)
         -- 70% reliability = 0% slop
         -- 40% reliability = 43% slop
         -- 10% reliability = 86% slop
-        local slopFactor = (0.7 - hydraulicReliability) / 0.7
+        local slopFactor = (config.steeringPullThreshold - hydraulicReliability) / config.steeringPullThreshold
         slopFactor = math.min(slopFactor, 0.9)  -- Max 90% slop
 
         -- Generate steering wander (random drift that accumulates)
         -- Higher speed = more noticeable wander
-        local speedFactor = math.min(speed / 30, 1.0)  -- Maxes out at 30 km/h
-        local wanderIntensity = slopFactor * speedFactor * 0.08  -- Max ~7% input modification
+        local wanderSpeedFactor = math.min(speed / 30, 1.0)  -- Maxes out at 30 km/h
+        local wanderIntensity = slopFactor * wanderSpeedFactor * 0.08  -- Max ~7% input modification
 
         -- Smooth random wander (not jerky)
         spec.steeringWanderTarget = spec.steeringWanderTarget or 0
@@ -479,7 +819,8 @@ function UsedPlusMaintenance:setSteeringInput(superFunc, inputValue, isAnalog, d
             inputValue = math.max(-1, math.min(1, inputValue + slip))
 
             -- Show warning on first slip
-            if not spec.hasShownSteeringWarning then
+            -- v1.6.0: Only show if player is controlling this vehicle
+            if not spec.hasShownSteeringWarning and UsedPlusMaintenance.shouldShowWarning(self) then
                 g_currentMission:showBlinkingWarning(
                     g_i18n:getText("usedPlus_steeringLoose") or "Steering feels loose!",
                     2000
@@ -492,6 +833,9 @@ function UsedPlusMaintenance:setSteeringInput(superFunc, inputValue, isAnalog, d
         spec.steeringWanderCurrent = 0
         spec.steeringWanderTarget = 0
     end
+
+    -- Final clamp
+    inputValue = math.max(-1, math.min(1, inputValue))
 
     return superFunc(self, inputValue, isAnalog, deviceCategory)
 end
@@ -561,6 +905,11 @@ function UsedPlusMaintenance:onLoad(savegame)
     -- v1.5.1: Stall recovery state (prevents immediate restart)
     spec.stallRecoveryEndTime = 0
 
+    -- v1.6.0: Startup grace period - prevents warnings immediately after load/purchase
+    -- Warnings only show after player has been in control for a few seconds
+    spec.startupGracePeriod = 2000  -- 2 seconds before warnings can show (reduced from 5)
+    spec.lastIsActiveForInput = false  -- Track player control state for override functions
+
     -- Warning notification state (reset per session, not persisted)
     -- Speed degradation warnings
     spec.hasShownSpeedWarning = false
@@ -570,6 +919,74 @@ function UsedPlusMaintenance:onLoad(savegame)
     -- Hydraulic drift warnings
     spec.hasShownDriftWarning = false
     spec.hasShownDriftMidpointWarning = false
+
+    -- v1.6.0: Steering pull state (worn vehicles pull to one side)
+    spec.steeringPullDirection = 0        -- -1 = left, 0 = none, +1 = right
+    spec.steeringPullInitialized = false  -- Set true once direction is chosen
+    spec.steeringPullSurgeTimer = 0       -- Countdown to next surge event
+    spec.steeringPullSurgeActive = false  -- True during a surge
+    spec.steeringPullSurgeEndTime = 0     -- When current surge ends
+    spec.hasShownPullWarning = false      -- One-time warning when pull manifests
+
+    -- v1.6.0: Engine misfiring state
+    spec.misfireTimer = 0                 -- Timer for misfire check interval
+    spec.misfireActive = false            -- True during a misfire
+    spec.misfireEndTime = 0               -- When current misfire ends
+    spec.misfireBurstRemaining = 0        -- Remaining misfires in burst
+    spec.hasShownMisfireWarning = false   -- One-time warning
+
+    -- v1.6.0: Engine overheating state
+    spec.engineTemperature = 0            -- 0 = cold, 1 = overheated
+    spec.isOverheated = false             -- True when engine overheated and cooling
+    spec.overheatCooldownEndTime = 0      -- Minimum time before restart
+    spec.hasShownOverheatWarning = false  -- Warning at 70% temp
+    spec.hasShownOverheatCritical = false -- Warning at critical temp
+
+    -- v1.6.0: Implement malfunction state
+    spec.implementMalfunctionTimer = 0    -- Timer for implement checks
+    spec.hasShownSurgeWarning = false     -- One-time surge warning
+    spec.hasShownDropWarning = false      -- One-time drop warning
+    spec.hasShownPTOWarning = false       -- One-time PTO toggle warning
+    spec.hasShownHitchWarning = false     -- One-time hitch failure warning
+
+    -- v1.7.0: Tire system state
+    spec.tireCondition = 1.0              -- 0-1, 1 = new tires
+    spec.tireQuality = 2                  -- 1=Retread, 2=Normal, 3=Quality
+    spec.tireMaxTraction = 1.0            -- Traction multiplier based on quality
+    spec.tireFailureMultiplier = 1.0      -- Failure chance multiplier based on quality
+    spec.distanceTraveled = 0             -- Meters traveled (for wear calculation)
+    spec.lastPosition = nil               -- For distance tracking
+    spec.hasFlatTire = false              -- True if currently has a flat
+    spec.flatTireSide = 0                 -- -1=left, 0=none, 1=right
+    spec.hasShownTireWarnWarning = false  -- One-time tire low warning
+    spec.hasShownTireCriticalWarning = false -- One-time critical tire warning
+    spec.hasShownFlatTireWarning = false  -- One-time flat tire warning
+    spec.hasShownLowTractionWarning = false -- One-time traction warning
+
+    -- v1.7.0: Oil system state
+    spec.oilLevel = 1.0                   -- 0-1, 1 = full
+    spec.wasLowOil = false                -- Track if engine ran low (for permanent damage)
+    spec.hasOilLeak = false               -- True if currently leaking
+    spec.oilLeakSeverity = 0              -- 0=none, 1=minor, 2=moderate, 3=severe
+    spec.engineReliabilityCeiling = 1.0   -- Permanent ceiling (separate from maxReliabilityCeiling)
+    spec.hasShownOilWarnWarning = false   -- One-time oil low warning
+    spec.hasShownOilCriticalWarning = false -- One-time critical oil warning
+    spec.hasShownOilLeakWarning = false   -- One-time oil leak warning
+
+    -- v1.7.0: Hydraulic fluid system state
+    spec.hydraulicFluidLevel = 1.0        -- 0-1, 1 = full
+    spec.wasLowHydraulicFluid = false     -- Track if ran low (for permanent damage)
+    spec.hasHydraulicLeak = false         -- True if currently leaking
+    spec.hydraulicLeakSeverity = 0        -- 0=none, 1=minor, 2=moderate, 3=severe
+    spec.hydraulicReliabilityCeiling = 1.0 -- Permanent ceiling for hydraulics
+    spec.hasShownHydraulicWarnWarning = false -- One-time hydraulic low warning
+    spec.hasShownHydraulicCriticalWarning = false -- One-time critical warning
+    spec.hasShownHydraulicLeakWarning = false -- One-time leak warning
+
+    -- v1.7.0: Fuel leak state
+    spec.hasFuelLeak = false              -- True if currently leaking fuel
+    spec.fuelLeakMultiplier = 1.0         -- Current fuel consumption multiplier
+    spec.hasShownFuelLeakWarning = false  -- One-time fuel leak warning
 
     UsedPlus.logTrace("UsedPlusMaintenance onLoad complete for: " .. tostring(self:getName()))
 end
@@ -616,8 +1033,46 @@ function UsedPlusMaintenance:onPostLoad(savegame)
         spec.inspectionCacheDamage = xmlFile:getValue(key .. ".inspectionCacheDamage", spec.inspectionCacheDamage)
         spec.inspectionCacheWear = xmlFile:getValue(key .. ".inspectionCacheWear", spec.inspectionCacheWear)
 
-        UsedPlus.logTrace(string.format("UsedPlusMaintenance loaded for %s: used=%s, engine=%.2f, repairs=%d",
-            self:getName(), tostring(spec.purchasedUsed), spec.engineReliability, spec.repairCount))
+        -- v1.7.0: Load tire system state (with nil guards for old savegames)
+        spec.tireCondition = xmlFile:getValue(key .. ".tireCondition", spec.tireCondition) or 1.0
+        spec.tireQuality = xmlFile:getValue(key .. ".tireQuality", spec.tireQuality) or 2
+        spec.distanceTraveled = xmlFile:getValue(key .. ".distanceTraveled", spec.distanceTraveled) or 0
+        spec.hasFlatTire = xmlFile:getValue(key .. ".hasFlatTire", spec.hasFlatTire) or false
+        spec.flatTireSide = xmlFile:getValue(key .. ".flatTireSide", spec.flatTireSide) or ""
+
+        -- Apply tire quality modifiers after loading
+        if spec.tireQuality == 1 then  -- Retread
+            spec.tireMaxTraction = UsedPlusMaintenance.CONFIG.tireRetreadTractionMult
+            spec.tireFailureMultiplier = UsedPlusMaintenance.CONFIG.tireRetreadFailureMult
+        elseif spec.tireQuality == 3 then  -- Quality
+            spec.tireMaxTraction = UsedPlusMaintenance.CONFIG.tireQualityTractionMult
+            spec.tireFailureMultiplier = UsedPlusMaintenance.CONFIG.tireQualityFailureMult
+        else  -- Normal (2)
+            spec.tireMaxTraction = UsedPlusMaintenance.CONFIG.tireNormalTractionMult
+            spec.tireFailureMultiplier = UsedPlusMaintenance.CONFIG.tireNormalFailureMult
+        end
+
+        -- v1.7.0: Load oil system state (with nil guards for old savegames)
+        spec.oilLevel = xmlFile:getValue(key .. ".oilLevel", spec.oilLevel) or 1.0
+        spec.wasLowOil = xmlFile:getValue(key .. ".wasLowOil", spec.wasLowOil) or false
+        spec.hasOilLeak = xmlFile:getValue(key .. ".hasOilLeak", spec.hasOilLeak) or false
+        spec.oilLeakSeverity = xmlFile:getValue(key .. ".oilLeakSeverity", spec.oilLeakSeverity) or 1.0
+        spec.engineReliabilityCeiling = xmlFile:getValue(key .. ".engineReliabilityCeiling", spec.engineReliabilityCeiling) or 1.0
+
+        -- v1.7.0: Load hydraulic fluid system state (with nil guards for old savegames)
+        spec.hydraulicFluidLevel = xmlFile:getValue(key .. ".hydraulicFluidLevel", spec.hydraulicFluidLevel) or 1.0
+        spec.wasLowHydraulicFluid = xmlFile:getValue(key .. ".wasLowHydraulicFluid", spec.wasLowHydraulicFluid) or false
+        spec.hasHydraulicLeak = xmlFile:getValue(key .. ".hasHydraulicLeak", spec.hasHydraulicLeak) or false
+        spec.hydraulicLeakSeverity = xmlFile:getValue(key .. ".hydraulicLeakSeverity", spec.hydraulicLeakSeverity) or 1.0
+        spec.hydraulicReliabilityCeiling = xmlFile:getValue(key .. ".hydraulicReliabilityCeiling", spec.hydraulicReliabilityCeiling) or 1.0
+
+        -- v1.7.0: Load fuel leak state (with nil guards for old savegames)
+        spec.hasFuelLeak = xmlFile:getValue(key .. ".hasFuelLeak", spec.hasFuelLeak) or false
+        spec.fuelLeakMultiplier = xmlFile:getValue(key .. ".fuelLeakMultiplier", spec.fuelLeakMultiplier) or 1.0
+
+        UsedPlus.logTrace(string.format("UsedPlusMaintenance loaded for %s: used=%s, engine=%.2f, repairs=%d, tires=%.0f%%, oil=%.0f%%",
+            self:getName(), tostring(spec.purchasedUsed), spec.engineReliability, spec.repairCount,
+            spec.tireCondition * 100, spec.oilLevel * 100))
     end
 end
 
@@ -657,6 +1112,31 @@ function UsedPlusMaintenance:saveToXMLFile(xmlFile, key, usedModNames)
     xmlFile:setValue(key .. ".inspectionCacheHours", spec.inspectionCacheHours)
     xmlFile:setValue(key .. ".inspectionCacheDamage", spec.inspectionCacheDamage)
     xmlFile:setValue(key .. ".inspectionCacheWear", spec.inspectionCacheWear)
+
+    -- v1.7.0: Save tire system state
+    xmlFile:setValue(key .. ".tireCondition", spec.tireCondition)
+    xmlFile:setValue(key .. ".tireQuality", spec.tireQuality)
+    xmlFile:setValue(key .. ".distanceTraveled", spec.distanceTraveled)
+    xmlFile:setValue(key .. ".hasFlatTire", spec.hasFlatTire)
+    xmlFile:setValue(key .. ".flatTireSide", spec.flatTireSide)
+
+    -- v1.7.0: Save oil system state
+    xmlFile:setValue(key .. ".oilLevel", spec.oilLevel)
+    xmlFile:setValue(key .. ".wasLowOil", spec.wasLowOil)
+    xmlFile:setValue(key .. ".hasOilLeak", spec.hasOilLeak)
+    xmlFile:setValue(key .. ".oilLeakSeverity", spec.oilLeakSeverity)
+    xmlFile:setValue(key .. ".engineReliabilityCeiling", spec.engineReliabilityCeiling)
+
+    -- v1.7.0: Save hydraulic fluid system state
+    xmlFile:setValue(key .. ".hydraulicFluidLevel", spec.hydraulicFluidLevel)
+    xmlFile:setValue(key .. ".wasLowHydraulicFluid", spec.wasLowHydraulicFluid)
+    xmlFile:setValue(key .. ".hasHydraulicLeak", spec.hasHydraulicLeak)
+    xmlFile:setValue(key .. ".hydraulicLeakSeverity", spec.hydraulicLeakSeverity)
+    xmlFile:setValue(key .. ".hydraulicReliabilityCeiling", spec.hydraulicReliabilityCeiling)
+
+    -- v1.7.0: Save fuel leak state
+    xmlFile:setValue(key .. ".hasFuelLeak", spec.hasFuelLeak)
+    xmlFile:setValue(key .. ".fuelLeakMultiplier", spec.fuelLeakMultiplier)
 
     UsedPlus.logTrace(string.format("UsedPlusMaintenance saved for %s", self:getName()))
 end
@@ -698,6 +1178,43 @@ function UsedPlusMaintenance:onReadStream(streamId, connection)
     spec.inspectionCacheDamage = streamReadFloat32(streamId)
     spec.inspectionCacheWear = streamReadFloat32(streamId)
 
+    -- v1.7.0: Tire system
+    spec.tireCondition = streamReadFloat32(streamId)
+    spec.tireQuality = streamReadInt8(streamId)
+    spec.distanceTraveled = streamReadFloat32(streamId)
+    spec.hasFlatTire = streamReadBool(streamId)
+    spec.flatTireSide = streamReadInt8(streamId)
+
+    -- Apply tire quality modifiers after reading
+    if spec.tireQuality == 1 then  -- Retread
+        spec.tireMaxTraction = UsedPlusMaintenance.CONFIG.tireRetreadTractionMult
+        spec.tireFailureMultiplier = UsedPlusMaintenance.CONFIG.tireRetreadFailureMult
+    elseif spec.tireQuality == 3 then  -- Quality
+        spec.tireMaxTraction = UsedPlusMaintenance.CONFIG.tireQualityTractionMult
+        spec.tireFailureMultiplier = UsedPlusMaintenance.CONFIG.tireQualityFailureMult
+    else  -- Normal (2)
+        spec.tireMaxTraction = UsedPlusMaintenance.CONFIG.tireNormalTractionMult
+        spec.tireFailureMultiplier = UsedPlusMaintenance.CONFIG.tireNormalFailureMult
+    end
+
+    -- v1.7.0: Oil system
+    spec.oilLevel = streamReadFloat32(streamId)
+    spec.wasLowOil = streamReadBool(streamId)
+    spec.hasOilLeak = streamReadBool(streamId)
+    spec.oilLeakSeverity = streamReadInt8(streamId)
+    spec.engineReliabilityCeiling = streamReadFloat32(streamId)
+
+    -- v1.7.0: Hydraulic fluid system
+    spec.hydraulicFluidLevel = streamReadFloat32(streamId)
+    spec.wasLowHydraulicFluid = streamReadBool(streamId)
+    spec.hasHydraulicLeak = streamReadBool(streamId)
+    spec.hydraulicLeakSeverity = streamReadInt8(streamId)
+    spec.hydraulicReliabilityCeiling = streamReadFloat32(streamId)
+
+    -- v1.7.0: Fuel leak
+    spec.hasFuelLeak = streamReadBool(streamId)
+    spec.fuelLeakMultiplier = streamReadFloat32(streamId)
+
     UsedPlus.logTrace("UsedPlusMaintenance onReadStream complete")
 end
 
@@ -738,6 +1255,31 @@ function UsedPlusMaintenance:onWriteStream(streamId, connection)
     streamWriteFloat32(streamId, spec.inspectionCacheDamage)
     streamWriteFloat32(streamId, spec.inspectionCacheWear)
 
+    -- v1.7.0: Tire system
+    streamWriteFloat32(streamId, spec.tireCondition)
+    streamWriteInt8(streamId, spec.tireQuality)
+    streamWriteFloat32(streamId, spec.distanceTraveled)
+    streamWriteBool(streamId, spec.hasFlatTire)
+    streamWriteInt8(streamId, spec.flatTireSide)
+
+    -- v1.7.0: Oil system
+    streamWriteFloat32(streamId, spec.oilLevel)
+    streamWriteBool(streamId, spec.wasLowOil)
+    streamWriteBool(streamId, spec.hasOilLeak)
+    streamWriteInt8(streamId, spec.oilLeakSeverity)
+    streamWriteFloat32(streamId, spec.engineReliabilityCeiling)
+
+    -- v1.7.0: Hydraulic fluid system
+    streamWriteFloat32(streamId, spec.hydraulicFluidLevel)
+    streamWriteBool(streamId, spec.wasLowHydraulicFluid)
+    streamWriteBool(streamId, spec.hasHydraulicLeak)
+    streamWriteInt8(streamId, spec.hydraulicLeakSeverity)
+    streamWriteFloat32(streamId, spec.hydraulicReliabilityCeiling)
+
+    -- v1.7.0: Fuel leak
+    streamWriteBool(streamId, spec.hasFuelLeak)
+    streamWriteFloat32(streamId, spec.fuelLeakMultiplier)
+
     UsedPlus.logTrace("UsedPlusMaintenance onWriteStream complete")
 end
 
@@ -750,7 +1292,19 @@ function UsedPlusMaintenance:onUpdate(dt, isActiveForInput, isActiveForInputIgno
     local spec = self.spec_usedPlusMaintenance
     if spec == nil then return end
 
-    -- Only process on server
+    -- v1.7.1: Track player control state BEFORE server check
+    -- This runs on both client and server so shouldShowWarning() works properly
+    -- Without this, multiplayer clients never see warnings because lastIsActiveForInput stays false
+    spec.lastIsActiveForInput = isActiveForInput
+
+    -- v1.7.1: Countdown startup grace period on client AND server
+    -- Prevents warnings immediately after loading or purchasing a vehicle
+    if isActiveForInput and spec.startupGracePeriod and spec.startupGracePeriod > 0 then
+        spec.startupGracePeriod = spec.startupGracePeriod - dt
+    end
+
+    -- Only process FAILURE SIMULATION on server (state changes, probability checks, etc.)
+    -- Warnings and display logic happens above and in override functions on clients
     if not self.isServer then return end
 
     -- Update stall cooldown
@@ -781,6 +1335,16 @@ function UsedPlusMaintenance:onUpdate(dt, isActiveForInput, isActiveForInputIgno
         UsedPlusMaintenance.applySteeringDegradation(self, dt)
     end
 
+    -- v1.6.0: Check and update misfire state (per-frame for responsive feel)
+    if UsedPlusMaintenance.CONFIG.enableMisfiring then
+        UsedPlusMaintenance.updateMisfireState(self, dt)
+    end
+
+    -- v1.7.0: Track distance traveled for tire wear (per-frame for accuracy)
+    if UsedPlusMaintenance.CONFIG.enableTireWear then
+        UsedPlusMaintenance.trackDistanceTraveled(self, dt)
+    end
+
     -- ========== PERIODIC CHECKS (throttled to every 1 second) ==========
 
     spec.updateTimer = (spec.updateTimer or 0) + dt
@@ -807,6 +1371,485 @@ function UsedPlusMaintenance:onUpdate(dt, isActiveForInput, isActiveForInputIgno
     -- Electrical cutout (implements randomly shut off)
     if UsedPlusMaintenance.CONFIG.enableElectricalCutout then
         UsedPlusMaintenance.checkImplementCutout(self, dt)
+    end
+
+    -- v1.6.0: Steering pull surge timer (intermittent intensification)
+    if UsedPlusMaintenance.CONFIG.enableSteeringDegradation then
+        UsedPlusMaintenance.updateSteeringPullSurge(self)
+    end
+
+    -- v1.6.0: Engine misfiring (check for new misfire triggers)
+    if UsedPlusMaintenance.CONFIG.enableMisfiring then
+        UsedPlusMaintenance.checkEngineMisfire(self)
+    end
+
+    -- v1.6.0: Engine overheating (temperature management)
+    if UsedPlusMaintenance.CONFIG.enableOverheating then
+        UsedPlusMaintenance.updateEngineTemperature(self)
+    end
+
+    -- v1.6.0: Implement malfunctions (surge, drop, PTO, hitch)
+    UsedPlusMaintenance.checkImplementMalfunctions(self)
+
+    -- v1.7.0: Tire wear and malfunctions
+    if UsedPlusMaintenance.CONFIG.enableTireWear then
+        UsedPlusMaintenance.applyTireWear(self)
+        UsedPlusMaintenance.checkTireMalfunctions(self)
+    end
+
+    -- v1.7.0: Oil system (depletion, leak processing, damage)
+    if UsedPlusMaintenance.CONFIG.enableOilSystem then
+        UsedPlusMaintenance.updateOilSystem(self, dt)
+    end
+
+    -- v1.7.0: Hydraulic fluid system (depletion, leak processing, damage)
+    if UsedPlusMaintenance.CONFIG.enableHydraulicFluidSystem then
+        UsedPlusMaintenance.updateHydraulicFluidSystem(self, dt)
+    end
+
+    -- v1.7.0: Check for new leaks (oil, hydraulic, fuel)
+    UsedPlusMaintenance.checkForNewLeaks(self)
+
+    -- v1.7.0: Process fuel leak (drains fuel from tank)
+    UsedPlusMaintenance.processFuelLeak(self, dt)
+end
+
+--[[
+    v1.6.0: Update steering pull surge timer and trigger surge events
+    Called every 1 second from onUpdate periodic checks
+    Surges create "oh crap" moments where pull temporarily intensifies
+]]
+function UsedPlusMaintenance.updateSteeringPullSurge(vehicle)
+    local spec = vehicle.spec_usedPlusMaintenance
+    if spec == nil then return end
+
+    -- Only process if pull is active (direction initialized)
+    if not spec.steeringPullInitialized or spec.steeringPullDirection == 0 then
+        return
+    end
+
+    -- Don't start new surge if one is already active
+    if spec.steeringPullSurgeActive then
+        return
+    end
+
+    local config = UsedPlusMaintenance.CONFIG
+
+    -- Decrement surge timer
+    spec.steeringPullSurgeTimer = (spec.steeringPullSurgeTimer or 0) - config.updateIntervalMs
+
+    -- Check if it's time for a surge
+    if spec.steeringPullSurgeTimer <= 0 then
+        -- Trigger surge!
+        spec.steeringPullSurgeActive = true
+        spec.steeringPullSurgeEndTime = (g_currentMission.time or 0) + config.steeringPullSurgeDuration
+
+        UsedPlus.logDebug(string.format("Steering pull surge triggered on %s (direction=%d, duration=%dms)",
+            vehicle:getName(), spec.steeringPullDirection, config.steeringPullSurgeDuration))
+    end
+end
+
+--[[
+    v1.6.0: Update misfire state per-frame
+    Handles active misfire timing and burst mode
+    Called every frame for responsive stuttering effect
+]]
+function UsedPlusMaintenance.updateMisfireState(vehicle, dt)
+    local spec = vehicle.spec_usedPlusMaintenance
+    if spec == nil then return end
+
+    local currentTime = g_currentMission.time or 0
+
+    -- Check if currently in a misfire
+    if spec.misfireActive then
+        if currentTime >= spec.misfireEndTime then
+            -- Misfire ended
+            spec.misfireActive = false
+
+            -- Check for burst mode (multiple quick misfires)
+            if spec.misfireBurstRemaining and spec.misfireBurstRemaining > 0 then
+                spec.misfireBurstRemaining = spec.misfireBurstRemaining - 1
+                -- Schedule next misfire in burst (50-150ms gap)
+                local gapMs = math.random(50, 150)
+                spec.misfireActive = true
+                local duration = math.random(
+                    UsedPlusMaintenance.CONFIG.misfireDurationMin,
+                    UsedPlusMaintenance.CONFIG.misfireDurationMax
+                )
+                spec.misfireEndTime = currentTime + gapMs + duration
+            end
+        end
+    end
+end
+
+--[[
+    v1.6.0: Check for new engine misfire events
+    Called every 1 second from periodic checks
+    Triggers random misfires based on engine reliability
+]]
+function UsedPlusMaintenance.checkEngineMisfire(vehicle)
+    local spec = vehicle.spec_usedPlusMaintenance
+    if spec == nil then return end
+
+    local config = UsedPlusMaintenance.CONFIG
+    local engineReliability = spec.engineReliability or 1.0
+
+    -- Only misfire if below threshold
+    if engineReliability >= config.misfireThreshold then
+        spec.hasShownMisfireWarning = false
+        return
+    end
+
+    -- Don't start new misfire if one is active
+    if spec.misfireActive then
+        return
+    end
+
+    -- Only misfire if engine is running
+    if not vehicle.getIsMotorStarted or not vehicle:getIsMotorStarted() then
+        return
+    end
+
+    -- Calculate misfire chance based on reliability
+    -- At threshold (60%): 0% chance
+    -- At 0%: max chance (15%)
+    local reliabilityFactor = (config.misfireThreshold - engineReliability) / config.misfireThreshold
+    local misfireChance = reliabilityFactor * config.misfireMaxChancePerCheck
+
+    -- Higher load = more likely to misfire
+    local load = 0
+    if vehicle.getMotorLoadPercentage then
+        load = vehicle:getMotorLoadPercentage() or 0
+    end
+    misfireChance = misfireChance * (0.5 + load * 0.5)  -- 50-100% of base chance
+
+    if math.random() < misfireChance then
+        -- Trigger misfire!
+        spec.misfireActive = true
+        local duration = math.random(config.misfireDurationMin, config.misfireDurationMax)
+        spec.misfireEndTime = (g_currentMission.time or 0) + duration
+
+        -- Check for burst mode
+        if math.random() < config.misfireBurstChance then
+            spec.misfireBurstRemaining = math.random(1, config.misfireBurstCount)
+        else
+            spec.misfireBurstRemaining = 0
+        end
+
+        -- Show warning (once per session)
+        if not spec.hasShownMisfireWarning and UsedPlusMaintenance.shouldShowWarning(vehicle) then
+            g_currentMission:showBlinkingWarning(
+                g_i18n:getText("usedPlus_engineMisfire") or "Engine misfiring!",
+                2000
+            )
+            spec.hasShownMisfireWarning = true
+        end
+
+        UsedPlus.logDebug(string.format("Engine misfire on %s (duration=%dms, burst=%d)",
+            vehicle:getName(), duration, spec.misfireBurstRemaining or 0))
+    end
+end
+
+--[[
+    v1.6.0: Update engine temperature
+    Heat builds when running, dissipates when off
+    Overheating causes forced stall and cooldown period
+]]
+function UsedPlusMaintenance.updateEngineTemperature(vehicle)
+    local spec = vehicle.spec_usedPlusMaintenance
+    if spec == nil then return end
+
+    local config = UsedPlusMaintenance.CONFIG
+    local engineReliability = spec.engineReliability or 1.0
+    local currentTime = g_currentMission.time or 0
+
+    -- Only affected if below threshold
+    if engineReliability >= config.overheatThreshold then
+        -- Good engine - temperature stays at 0
+        spec.engineTemperature = math.max(0, (spec.engineTemperature or 0) - config.overheatCoolRateOff)
+        spec.hasShownOverheatWarning = false
+        spec.hasShownOverheatCritical = false
+        return
+    end
+
+    local isRunning = vehicle.getIsMotorStarted and vehicle:getIsMotorStarted()
+
+    if isRunning then
+        -- Engine running - heat builds up
+        local load = 0
+        if vehicle.getMotorLoadPercentage then
+            load = vehicle:getMotorLoadPercentage() or 0
+        end
+
+        -- Heat rate scales with inverse reliability
+        -- At 50% reliability: 1x heat rate
+        -- At 25% reliability: 1.5x heat rate
+        -- At 0% reliability: 2x heat rate
+        local reliabilityFactor = 1 + (1 - engineReliability / config.overheatThreshold)
+
+        local heatRate = config.overheatHeatRateBase + (load * config.overheatHeatRateLoad)
+        heatRate = heatRate * reliabilityFactor
+
+        spec.engineTemperature = math.min(1.0, (spec.engineTemperature or 0) + heatRate)
+
+        -- Check for warning thresholds
+        if spec.engineTemperature >= config.overheatWarningTemp then
+            if not spec.hasShownOverheatWarning and UsedPlusMaintenance.shouldShowWarning(vehicle) then
+                local tempPercent = math.floor(spec.engineTemperature * 100)
+                g_currentMission:showBlinkingWarning(
+                    string.format(g_i18n:getText("usedPlus_engineOverheating") or "Engine overheating! (%d%%)", tempPercent),
+                    3000
+                )
+                spec.hasShownOverheatWarning = true
+            end
+        end
+
+        -- Check for critical overheat (force stall)
+        if spec.engineTemperature >= config.overheatStallTemp then
+            if not spec.isOverheated then
+                -- Force stall!
+                if vehicle.stopMotor then
+                    vehicle:stopMotor()
+                end
+                spec.isOverheated = true
+                spec.overheatCooldownEndTime = currentTime + config.overheatCooldownMs
+                spec.failureCount = (spec.failureCount or 0) + 1  -- v1.6.0: Count as breakdown
+
+                if UsedPlusMaintenance.shouldShowWarning(vehicle) then
+                    g_currentMission:showBlinkingWarning(
+                        g_i18n:getText("usedPlus_engineOverheated") or "ENGINE OVERHEATED! Let it cool down!",
+                        5000
+                    )
+                end
+                spec.hasShownOverheatCritical = true
+
+                UsedPlus.logDebug(string.format("Engine overheated on %s - forced stall", vehicle:getName()))
+            end
+        end
+    else
+        -- Engine off - cool down
+        local coolRate = config.overheatCoolRateOff
+        spec.engineTemperature = math.max(0, (spec.engineTemperature or 0) - coolRate)
+
+        -- Check if cooled enough to restart
+        if spec.isOverheated then
+            if currentTime >= spec.overheatCooldownEndTime and spec.engineTemperature <= config.overheatRestartTemp then
+                spec.isOverheated = false
+                spec.hasShownOverheatWarning = false
+                spec.hasShownOverheatCritical = false
+                UsedPlus.logDebug(string.format("Engine cooled on %s - can restart", vehicle:getName()))
+            end
+        end
+    end
+end
+
+--[[
+    v1.6.0: Check for implement malfunctions
+    Handles surge (random lift), drop (sudden lower), PTO toggle, and hitch failure
+    Called every 1 second from periodic checks
+]]
+function UsedPlusMaintenance.checkImplementMalfunctions(vehicle)
+    local spec = vehicle.spec_usedPlusMaintenance
+    if spec == nil then return end
+
+    local config = UsedPlusMaintenance.CONFIG
+    local hydraulicReliability = spec.hydraulicReliability or 1.0
+    local electricalReliability = spec.electricalReliability or 1.0
+
+    -- Get attached implements
+    if not vehicle.getAttachedImplements then return end
+    local implements = vehicle:getAttachedImplements()
+    if implements == nil or #implements == 0 then return end
+
+    -- Process each implement
+    for _, implement in pairs(implements) do
+        local attachedVehicle = implement.object
+        if attachedVehicle then
+            -- Implement Surge (random lift) - hydraulic pressure spike
+            if config.enableImplementSurge and hydraulicReliability < config.implementSurgeThreshold then
+                UsedPlusMaintenance.checkImplementSurge(vehicle, attachedVehicle, hydraulicReliability)
+            end
+
+            -- Implement Drop (sudden lower) - hydraulic valve failure
+            if config.enableImplementDrop and hydraulicReliability < config.implementDropThreshold then
+                UsedPlusMaintenance.checkImplementDrop(vehicle, attachedVehicle, hydraulicReliability)
+            end
+
+            -- PTO Toggle - electrical relay failure
+            if config.enablePTOToggle and electricalReliability < config.ptoToggleThreshold then
+                UsedPlusMaintenance.checkPTOToggle(vehicle, attachedVehicle, electricalReliability)
+            end
+
+            -- Hitch Failure - implement detaches (VERY RARE)
+            if config.enableHitchFailure and hydraulicReliability < config.hitchFailureThreshold then
+                UsedPlusMaintenance.checkHitchFailure(vehicle, implement, hydraulicReliability)
+            end
+        end
+    end
+end
+
+--[[
+    v1.6.0: Check for implement surge (random lift)
+    Simulates hydraulic pressure spike lifting a lowered implement
+]]
+function UsedPlusMaintenance.checkImplementSurge(vehicle, implement, hydraulicReliability)
+    local spec = vehicle.spec_usedPlusMaintenance
+    if spec == nil then return end
+
+    local config = UsedPlusMaintenance.CONFIG
+
+    -- Only affects lowered implements
+    if not implement.getIsLowered or not implement:getIsLowered() then
+        return
+    end
+
+    -- Calculate surge chance based on reliability
+    local reliabilityFactor = (config.implementSurgeThreshold - hydraulicReliability) / config.implementSurgeThreshold
+    local surgeChance = reliabilityFactor * config.implementSurgeChance
+
+    if math.random() < surgeChance then
+        -- Surge! Lift the implement
+        if implement.setLoweredAll then
+            implement:setLoweredAll(false)
+
+            if not spec.hasShownSurgeWarning and UsedPlusMaintenance.shouldShowWarning(vehicle) then
+                g_currentMission:showBlinkingWarning(
+                    g_i18n:getText("usedPlus_implementSurge") or "Hydraulic surge - implement raised!",
+                    3000
+                )
+                spec.hasShownSurgeWarning = true
+            end
+
+            UsedPlus.logDebug(string.format("Implement surge on %s - %s raised",
+                vehicle:getName(), implement:getName()))
+        end
+    end
+end
+
+--[[
+    v1.6.0: Check for implement drop (sudden lower)
+    Simulates hydraulic valve failure dropping a raised implement
+]]
+function UsedPlusMaintenance.checkImplementDrop(vehicle, implement, hydraulicReliability)
+    local spec = vehicle.spec_usedPlusMaintenance
+    if spec == nil then return end
+
+    local config = UsedPlusMaintenance.CONFIG
+
+    -- Only affects raised implements
+    if not implement.getIsLowered or implement:getIsLowered() then
+        return
+    end
+
+    -- Calculate drop chance based on reliability
+    local reliabilityFactor = (config.implementDropThreshold - hydraulicReliability) / config.implementDropThreshold
+    local dropChance = reliabilityFactor * config.implementDropChance
+
+    if math.random() < dropChance then
+        -- Drop! Lower the implement suddenly
+        if implement.setLoweredAll then
+            implement:setLoweredAll(true)
+            spec.failureCount = (spec.failureCount or 0) + 1  -- v1.6.0: Count as breakdown
+
+            -- v1.7.0: Hydraulic failure while fluid is low = permanent damage
+            UsedPlusMaintenance.applyHydraulicDamageOnFailure(vehicle)
+
+            if not spec.hasShownDropWarning and UsedPlusMaintenance.shouldShowWarning(vehicle) then
+                g_currentMission:showBlinkingWarning(
+                    g_i18n:getText("usedPlus_implementDrop") or "Hydraulic failure - implement dropped!",
+                    3000
+                )
+                spec.hasShownDropWarning = true
+            end
+
+            UsedPlus.logDebug(string.format("Implement drop on %s - %s lowered",
+                vehicle:getName(), implement:getName()))
+        end
+    end
+end
+
+--[[
+    v1.6.0: Check for PTO toggle (power randomly on/off)
+    Simulates electrical relay failure toggling implement power
+]]
+function UsedPlusMaintenance.checkPTOToggle(vehicle, implement, electricalReliability)
+    local spec = vehicle.spec_usedPlusMaintenance
+    if spec == nil then return end
+
+    local config = UsedPlusMaintenance.CONFIG
+
+    -- Only affects implements that can be turned on/off
+    if not implement.getIsTurnedOn then
+        return
+    end
+
+    -- Calculate toggle chance based on reliability
+    local reliabilityFactor = (config.ptoToggleThreshold - electricalReliability) / config.ptoToggleThreshold
+    local toggleChance = reliabilityFactor * config.ptoToggleChance
+
+    if math.random() < toggleChance then
+        -- Toggle! Switch power state
+        local isOn = implement:getIsTurnedOn()
+        if implement.setIsTurnedOn then
+            implement:setIsTurnedOn(not isOn)
+
+            if not spec.hasShownPTOWarning and UsedPlusMaintenance.shouldShowWarning(vehicle) then
+                local stateText = isOn and
+                    (g_i18n:getText("usedPlus_ptoOff") or "off") or
+                    (g_i18n:getText("usedPlus_ptoOn") or "on")
+                g_currentMission:showBlinkingWarning(
+                    string.format(g_i18n:getText("usedPlus_ptoToggle") or "Electrical fault - PTO switched %s!", stateText),
+                    3000
+                )
+                spec.hasShownPTOWarning = true
+            end
+
+            UsedPlus.logDebug(string.format("PTO toggle on %s - %s turned %s",
+                vehicle:getName(), implement:getName(), isOn and "off" or "on"))
+        end
+    end
+end
+
+--[[
+    v1.6.0: Check for hitch failure (implement detaches)
+    VERY RARE - only at critical hydraulic reliability
+    Simulates complete hydraulic hitch failure
+]]
+function UsedPlusMaintenance.checkHitchFailure(vehicle, implementInfo, hydraulicReliability)
+    local spec = vehicle.spec_usedPlusMaintenance
+    if spec == nil then return end
+
+    local config = UsedPlusMaintenance.CONFIG
+    local implement = implementInfo.object
+    if implement == nil then return end
+
+    -- Calculate failure chance (very low)
+    local reliabilityFactor = (config.hitchFailureThreshold - hydraulicReliability) / config.hitchFailureThreshold
+    local failureChance = reliabilityFactor * config.hitchFailureChance
+
+    if math.random() < failureChance then
+        -- Hitch failure! Detach the implement
+        local jointDescIndex = implementInfo.jointDescIndex
+
+        -- Try to detach using the vehicle's method
+        if vehicle.detachImplementByObject then
+            vehicle:detachImplementByObject(implement)
+            spec.failureCount = (spec.failureCount or 0) + 1  -- v1.6.0: Count as major breakdown
+
+            -- v1.7.0: Hitch failure while fluid is low = permanent damage
+            UsedPlusMaintenance.applyHydraulicDamageOnFailure(vehicle)
+
+            if not spec.hasShownHitchWarning and UsedPlusMaintenance.shouldShowWarning(vehicle) then
+                g_currentMission:showBlinkingWarning(
+                    g_i18n:getText("usedPlus_hitchFailure") or "HITCH FAILURE - Implement detached!",
+                    5000
+                )
+                spec.hasShownHitchWarning = true
+            end
+
+            UsedPlus.logDebug(string.format("Hitch failure on %s - %s detached!",
+                vehicle:getName(), implement:getName()))
+        end
     end
 end
 
@@ -933,6 +1976,10 @@ function UsedPlusMaintenance.triggerEngineStall(vehicle, isFirstStart)
     spec.stallCooldown = UsedPlusMaintenance.CONFIG.stallCooldownMs
     spec.failureCount = (spec.failureCount or 0) + 1
 
+    -- v1.7.0: Check for permanent damage from low fluids
+    -- Engine stall while oil is critically low = permanent engine damage
+    UsedPlusMaintenance.applyOilDamageOnFailure(vehicle)
+
     -- v1.5.1: Set recovery period - engine cannot restart for X seconds
     -- This defeats auto-start and forces the player to actually stop
     local currentTime = g_currentMission.time or 0
@@ -957,10 +2004,18 @@ function UsedPlusMaintenance.triggerEngineStall(vehicle, isFirstStart)
             message = "Engine stalled! Wait %d seconds..."
         end
     end
-    g_currentMission:showBlinkingWarning(
-        string.format(message, recoverySeconds),
-        recoveryDuration
-    )
+    -- v1.7.2: Show warning - first-start stalls ALWAYS show (intentional feedback)
+    -- Normal stalls respect shouldShowWarning (checks grace period, control state)
+    local shouldShow = isFirstStart or UsedPlusMaintenance.shouldShowWarning(vehicle)
+    if shouldShow then
+        g_currentMission:showBlinkingWarning(
+            string.format(message, recoverySeconds),
+            recoveryDuration
+        )
+        UsedPlus.logDebug("Stall warning shown to player")
+    else
+        UsedPlus.logDebug("Stall warning suppressed (not controlling or grace period)")
+    end
 
     -- Stop AI worker if active
     local rootVehicle = vehicle:getRootVehicle()
@@ -1034,6 +2089,8 @@ function UsedPlusMaintenance.calculateSpeedLimit(vehicle)
     local spec = vehicle.spec_usedPlusMaintenance
     if spec == nil then return end
 
+    local config = UsedPlusMaintenance.CONFIG
+
     -- Get current damage
     local damage = 0
     if vehicle.getDamageAmount then
@@ -1049,12 +2106,18 @@ function UsedPlusMaintenance.calculateSpeedLimit(vehicle)
     local reliabilitySpeedFactor = 0.4 + (engineReliability * 0.6)
 
     -- Damage ALSO reduces speed (stacks with reliability)
-    local maxReduction = UsedPlusMaintenance.CONFIG.speedDegradationMax
+    local maxReduction = config.speedDegradationMax
     local damageSpeedFactor = 1 - (damage * maxReduction)
 
+    -- v1.7.0: Flat tire severely limits speed
+    local flatTireSpeedFactor = 1.0
+    if spec.hasFlatTire and config.enableFlatTire then
+        flatTireSpeedFactor = config.flatTireSpeedReduction  -- 0.5 = 50% max speed
+    end
+
     -- Combined factor (multiplicative stacking)
-    local finalFactor = reliabilitySpeedFactor * damageSpeedFactor
-    finalFactor = math.max(finalFactor, 0.3)  -- Never below 30% speed
+    local finalFactor = reliabilitySpeedFactor * damageSpeedFactor * flatTireSpeedFactor
+    finalFactor = math.max(finalFactor, 0.2)  -- Never below 20% speed (even with flat)
 
     -- Store for use by getCanMotorRun speed governor
     spec.maxSpeedFactor = finalFactor
@@ -1074,7 +2137,8 @@ function UsedPlusMaintenance.calculateSpeedLimit(vehicle)
     end
 
     -- Show warning when speed degradation is first noticed
-    if not spec.hasShownSpeedWarning then
+    -- v1.6.0: Only show if player is controlling this vehicle
+    if not spec.hasShownSpeedWarning and UsedPlusMaintenance.shouldShowWarning(vehicle) then
         local speedPercent = math.floor(finalFactor * 100)
         g_currentMission:showBlinkingWarning(
             string.format(g_i18n:getText("usedPlus_speedDegraded") or "Engine struggling - max speed reduced to %d%%!", speedPercent),
@@ -1162,7 +2226,8 @@ function UsedPlusMaintenance.checkHydraulicDrift(vehicle, dt)
     end
 
     -- v1.4.0: Show one-time warning when drift conditions are first detected
-    if not spec.hasShownDriftWarning then
+    -- v1.6.0: Only show if player is controlling this vehicle
+    if not spec.hasShownDriftWarning and UsedPlusMaintenance.shouldShowWarning(vehicle) then
         local reliabilityPercent = math.floor(spec.hydraulicReliability * 100)
         g_currentMission:showBlinkingWarning(
             string.format(g_i18n:getText("usedPlus_hydraulicWeak") or "Hydraulics weak (%d%%) - implements may drift!", reliabilityPercent),
@@ -1354,10 +2419,13 @@ function UsedPlusMaintenance.triggerImplementCutout(vehicle)
     end
 
     -- Show warning to player
-    g_currentMission:showBlinkingWarning(
-        g_i18n:getText("usedPlus_electricalCutout") or "Electrical fault - implements offline!",
-        3000
-    )
+    -- v1.6.0: Only show if player is controlling this vehicle
+    if UsedPlusMaintenance.shouldShowWarning(vehicle) then
+        g_currentMission:showBlinkingWarning(
+            g_i18n:getText("usedPlus_electricalCutout") or "Electrical fault - implements offline!",
+            3000
+        )
+    end
 
     -- Stop AI worker if active
     local rootVehicle = vehicle:getRootVehicle()
@@ -1400,18 +2468,46 @@ function UsedPlusMaintenance.setUsedPurchaseData(vehicle, usedPlusData)
     spec.hydraulicReliability = usedPlusData.hydraulicReliability or 1.0
     spec.electricalReliability = usedPlusData.electricalReliability or 1.0
 
+    -- v1.6.0: Reset grace period - prevents warnings immediately after purchase
+    spec.startupGracePeriod = 2000
+
     -- v1.4.0: Transfer Workhorse/Lemon Scale data
     spec.workhorseLemonScale = usedPlusData.workhorseLemonScale or 0.5
     spec.maxReliabilityCeiling = usedPlusData.maxReliabilityCeiling or 1.0
+
+    -- v1.7.0: Transfer tire data
+    spec.tireCondition = usedPlusData.tireCondition or 1.0
+    spec.tireQuality = usedPlusData.tireQuality or 2
+
+    -- Apply tire quality modifiers
+    local config = UsedPlusMaintenance.CONFIG
+    if spec.tireQuality == 1 then  -- Retread
+        spec.tireMaxTraction = config.tireRetreadTractionMult
+        spec.tireFailureMultiplier = config.tireRetreadFailureMult
+    elseif spec.tireQuality == 3 then  -- Quality
+        spec.tireMaxTraction = config.tireQualityTractionMult
+        spec.tireFailureMultiplier = config.tireQualityFailureMult
+    else  -- Normal (2)
+        spec.tireMaxTraction = config.tireNormalTractionMult
+        spec.tireFailureMultiplier = config.tireNormalFailureMult
+    end
+
+    -- v1.7.0: Transfer fluid data
+    spec.oilLevel = usedPlusData.oilLevel or 1.0
+    spec.hydraulicFluidLevel = usedPlusData.hydraulicFluidLevel or 1.0
+
+    -- v1.7.0: Initialize reliability ceilings (separate from DNA ceiling)
+    spec.engineReliabilityCeiling = spec.maxReliabilityCeiling
+    spec.hydraulicReliabilityCeiling = spec.maxReliabilityCeiling
 
     -- Initialize maintenance history
     spec.repairCount = 0
     spec.totalRepairCost = 0
     spec.failureCount = 0
 
-    UsedPlus.logDebug(string.format("Set used purchase data for %s: DNA=%.2f, ceiling=%.1f%%, engine=%.2f, hydraulic=%.2f, electrical=%.2f",
+    UsedPlus.logDebug(string.format("Set used purchase data for %s: DNA=%.2f, ceiling=%.1f%%, engine=%.2f, tires=%.0f%%, oil=%.0f%%",
         vehicle:getName(), spec.workhorseLemonScale, spec.maxReliabilityCeiling * 100,
-        spec.engineReliability, spec.hydraulicReliability, spec.electricalReliability))
+        spec.engineReliability, spec.tireCondition * 100, spec.oilLevel * 100))
 
     return true
 end
@@ -1437,6 +2533,14 @@ function UsedPlusMaintenance.getReliabilityData(vehicle)
     -- A 90% reliable vehicle sells for 97% of normal value
     local resaleModifier = 0.7 + (avgReliability * 0.3)
 
+    -- v1.7.0: Get tire quality name
+    local tireQualityName = "Normal"
+    if spec.tireQuality == 1 then
+        tireQualityName = "Retread"
+    elseif spec.tireQuality == 3 then
+        tireQualityName = "Quality"
+    end
+
     return {
         purchasedUsed = spec.purchasedUsed,
         wasInspected = spec.wasInspected,
@@ -1449,7 +2553,29 @@ function UsedPlusMaintenance.getReliabilityData(vehicle)
         totalRepairCost = spec.totalRepairCost,
         failureCount = spec.failureCount,
         avgReliability = avgReliability,
-        resaleModifier = resaleModifier  -- v1.4.0: Reliability affects resale value
+        resaleModifier = resaleModifier,  -- v1.4.0: Reliability affects resale value
+
+        -- v1.7.0: Tire data
+        tireCondition = spec.tireCondition,
+        tireQuality = spec.tireQuality,
+        tireQualityName = tireQualityName,
+        tireMaxTraction = spec.tireMaxTraction,
+        hasFlatTire = spec.hasFlatTire,
+
+        -- v1.7.0: Fluid data
+        oilLevel = spec.oilLevel,
+        hasOilLeak = spec.hasOilLeak,
+        oilLeakSeverity = spec.oilLeakSeverity,
+        engineReliabilityCeiling = spec.engineReliabilityCeiling,
+
+        hydraulicFluidLevel = spec.hydraulicFluidLevel,
+        hasHydraulicLeak = spec.hasHydraulicLeak,
+        hydraulicLeakSeverity = spec.hydraulicLeakSeverity,
+        hydraulicReliabilityCeiling = spec.hydraulicReliabilityCeiling,
+
+        -- v1.7.0: Fuel leak data
+        hasFuelLeak = spec.hasFuelLeak,
+        fuelLeakMultiplier = spec.fuelLeakMultiplier
     }
 end
 
@@ -1556,8 +2682,43 @@ function UsedPlusMaintenance.generateReliabilityScores(damage, age, hours, quali
     hydraulicReliability = math.min(hydraulicReliability, maxReliabilityCeiling)
     electricalReliability = math.min(electricalReliability, maxReliabilityCeiling)
 
-    UsedPlus.logDebug(string.format("Generated reliability: DNA=%.2f, ceiling=%.1f%%, est.repairs=%d",
-        workhorseLemonScale, maxReliabilityCeiling * 100, estimatedRepairs))
+    -- v1.7.0: Generate tire condition based on age and hours
+    -- Tires wear roughly 10% per 500 operating hours
+    local tireWearFromHours = (hours or 0) / 5000  -- 10% per 500 hours
+    local tireWearFromAge = (age or 0) * 0.05  -- 5% per year from age
+    local tireCondition = math.max(0.1, 1.0 - tireWearFromHours - tireWearFromAge + randomVariance(0.1))
+    tireCondition = math.min(1.0, tireCondition)
+
+    -- Tire quality - used vehicles typically have normal tires
+    -- Rarely retreads (lemons) or quality (workhorses)
+    local tireQuality = 2  -- Normal
+    if workhorseLemonScale < 0.3 then
+        -- Lemons may have retreads
+        if math.random() < 0.3 then
+            tireQuality = 1  -- Retread
+        end
+    elseif workhorseLemonScale > 0.7 then
+        -- Workhorses may have quality tires
+        if math.random() < 0.2 then
+            tireQuality = 3  -- Quality
+        end
+    end
+
+    -- v1.7.0: Generate fluid levels (oil tends to be ok, hydraulic varies more)
+    local oilLevel = math.max(0.2, 1.0 - (hours or 0) / 20000 + randomVariance(0.2))  -- Depletes slowly
+    oilLevel = math.min(1.0, oilLevel)
+
+    local hydraulicFluidLevel = math.max(0.3, 1.0 - (hours or 0) / 15000 + randomVariance(0.25))
+    hydraulicFluidLevel = math.min(1.0, hydraulicFluidLevel)
+
+    -- Lemons more likely to have fluid issues
+    if workhorseLemonScale < 0.3 then
+        oilLevel = oilLevel * 0.7
+        hydraulicFluidLevel = hydraulicFluidLevel * 0.6
+    end
+
+    UsedPlus.logDebug(string.format("Generated reliability: DNA=%.2f, ceiling=%.1f%%, est.repairs=%d, tires=%.0f%%, oil=%.0f%%",
+        workhorseLemonScale, maxReliabilityCeiling * 100, estimatedRepairs, tireCondition * 100, oilLevel * 100))
 
     return {
         engineReliability = engineReliability,
@@ -1565,7 +2726,13 @@ function UsedPlusMaintenance.generateReliabilityScores(damage, age, hours, quali
         electricalReliability = electricalReliability,
         workhorseLemonScale = workhorseLemonScale,
         maxReliabilityCeiling = maxReliabilityCeiling,
-        wasInspected = false
+        wasInspected = false,
+
+        -- v1.7.0: Tire and fluid data
+        tireCondition = tireCondition,
+        tireQuality = tireQuality,
+        oilLevel = oilLevel,
+        hydraulicFluidLevel = hydraulicFluidLevel
     }
 end
 
@@ -1734,5 +2901,737 @@ end
     Inspection fee constant
 ]]
 UsedPlusMaintenance.INSPECTION_FEE = 500
+
+-- ============================================================================
+-- v1.7.0: TIRE SYSTEM FUNCTIONS
+-- ============================================================================
+
+--[[
+    Track distance traveled per-frame for tire wear calculation
+    Uses 3D position delta to measure actual distance moved
+]]
+function UsedPlusMaintenance.trackDistanceTraveled(vehicle, dt)
+    local spec = vehicle.spec_usedPlusMaintenance
+    if spec == nil then return end
+
+    -- Get current position
+    local x, y, z = getWorldTranslation(vehicle.rootNode)
+    local currentPos = {x = x, y = y, z = z}
+
+    -- Calculate distance from last position
+    if spec.lastPosition ~= nil then
+        local dx = currentPos.x - spec.lastPosition.x
+        local dy = currentPos.y - spec.lastPosition.y
+        local dz = currentPos.z - spec.lastPosition.z
+        local distance = math.sqrt(dx*dx + dy*dy + dz*dz)
+
+        -- Only count if moving (ignore tiny movements/jitter)
+        if distance > 0.01 then
+            spec.distanceTraveled = (spec.distanceTraveled or 0) + distance
+        end
+    end
+
+    spec.lastPosition = currentPos
+end
+
+--[[
+    Apply tire wear based on accumulated distance
+    Called every 1 second from periodic checks
+]]
+function UsedPlusMaintenance.applyTireWear(vehicle)
+    local spec = vehicle.spec_usedPlusMaintenance
+    if spec == nil then return end
+    if spec.hasFlatTire then return end  -- No additional wear with flat
+
+    -- Convert accumulated distance to km
+    local distanceKm = (spec.distanceTraveled or 0) / 1000
+
+    if distanceKm > 0 then
+        -- Calculate wear amount
+        local wearRate = UsedPlusMaintenance.CONFIG.tireWearRatePerKm
+        local wearAmount = distanceKm * wearRate
+
+        -- Apply wear
+        spec.tireCondition = math.max(0, (spec.tireCondition or 1.0) - wearAmount)
+
+        -- Reset distance counter
+        spec.distanceTraveled = 0
+
+        -- Check for warnings
+        local config = UsedPlusMaintenance.CONFIG
+        if spec.tireCondition <= config.tireCriticalThreshold and not spec.hasShownTireCriticalWarning then
+            spec.hasShownTireCriticalWarning = true
+            UsedPlusMaintenance.showWarning(vehicle, g_i18n:getText("usedplus_warning_tireCritical"))
+        elseif spec.tireCondition <= config.tireWarnThreshold and not spec.hasShownTireWarnWarning then
+            spec.hasShownTireWarnWarning = true
+            UsedPlusMaintenance.showWarning(vehicle, g_i18n:getText("usedplus_warning_tireWorn"))
+        end
+    end
+end
+
+--[[
+    Check for tire-related malfunctions (flat tire, low traction)
+    Called every 1 second from periodic checks
+]]
+function UsedPlusMaintenance.checkTireMalfunctions(vehicle)
+    local spec = vehicle.spec_usedPlusMaintenance
+    if spec == nil then return end
+
+    local config = UsedPlusMaintenance.CONFIG
+
+    -- Skip if already have flat tire
+    if spec.hasFlatTire then return end
+
+    -- Check for flat tire (only if tires are worn and vehicle is moving)
+    if config.enableFlatTire and spec.tireCondition < config.flatTireThreshold then
+        -- Calculate chance based on tire condition and quality
+        local conditionFactor = 1 - (spec.tireCondition / config.flatTireThreshold)
+        local chance = config.flatTireBaseChance * conditionFactor * (spec.tireFailureMultiplier or 1.0)
+
+        if math.random() < chance then
+            -- Flat tire!
+            spec.hasFlatTire = true
+            spec.flatTireSide = math.random() < 0.5 and -1 or 1  -- Random left or right
+            spec.hasShownFlatTireWarning = true
+            spec.failureCount = (spec.failureCount or 0) + 1
+
+            local sideText = spec.flatTireSide < 0 and "left" or "right"
+            UsedPlusMaintenance.showWarning(vehicle, g_i18n:getText("usedplus_warning_flatTire"))
+            UsedPlus.logDebug(string.format("Flat tire triggered on %s side for %s",
+                sideText, vehicle:getName()))
+        end
+    end
+
+    -- Check for low traction warning (weather-aware)
+    if config.enableLowTraction and spec.tireCondition < config.lowTractionThreshold then
+        if not spec.hasShownLowTractionWarning then
+            -- Check weather conditions
+            local isWet = false
+            local isSnow = false
+
+            if g_currentMission and g_currentMission.environment then
+                local weather = g_currentMission.environment.weather
+                if weather then
+                    isWet = weather:getIsRaining() or false
+                    isSnow = weather:getTimeSinceLastRain() ~= nil and weather:getSnowHeight() > 0
+                end
+            end
+
+            if isWet or isSnow or spec.tireCondition < config.lowTractionThreshold * 0.5 then
+                spec.hasShownLowTractionWarning = true
+                UsedPlusMaintenance.showWarning(vehicle, g_i18n:getText("usedplus_warning_lowTraction"))
+            end
+        end
+    end
+end
+
+--[[
+    Get current tire traction multiplier based on condition, quality, and weather
+    Used by friction system and display
+]]
+function UsedPlusMaintenance.getTireTractionMultiplier(vehicle)
+    local spec = vehicle.spec_usedPlusMaintenance
+    if spec == nil then return 1.0 end
+
+    local config = UsedPlusMaintenance.CONFIG
+    local condition = spec.tireCondition or 1.0
+    local qualityTraction = spec.tireMaxTraction or 1.0
+
+    -- Base traction from tire condition (linear interpolation)
+    -- At 100% condition: 100% of quality traction
+    -- At 0% condition: 60% of quality traction (CONFIG.tireFrictionMinMultiplier)
+    local minFriction = config.tireFrictionMinMultiplier
+    local conditionTraction = minFriction + (condition * (1.0 - minFriction))
+
+    local finalTraction = qualityTraction * conditionTraction
+
+    -- Weather penalties (only if tire friction is enabled)
+    if config.enableTireFriction then
+        local isWet = false
+        local isSnow = false
+
+        if g_currentMission and g_currentMission.environment then
+            local weather = g_currentMission.environment.weather
+            if weather then
+                isWet = weather:getIsRaining() or false
+                -- Check for snow on ground
+                if weather.getSnowHeight then
+                    isSnow = weather:getSnowHeight() > 0
+                end
+            end
+        end
+
+        if isSnow then
+            finalTraction = finalTraction * (1.0 - config.tireFrictionSnowPenalty)
+        elseif isWet then
+            finalTraction = finalTraction * (1.0 - config.tireFrictionWetPenalty)
+        end
+    end
+
+    -- Flat tire = severe traction loss
+    if spec.hasFlatTire then
+        finalTraction = finalTraction * 0.5
+    end
+
+    return math.max(0.3, finalTraction)  -- Never below 30%
+end
+
+-- ============================================================================
+-- v1.7.0: OIL SYSTEM FUNCTIONS
+-- ============================================================================
+
+--[[
+    Update oil system: depletion, leak processing, damage
+    Called every 1 second from periodic checks
+]]
+function UsedPlusMaintenance.updateOilSystem(vehicle, dt)
+    local spec = vehicle.spec_usedPlusMaintenance
+    if spec == nil then return end
+
+    local config = UsedPlusMaintenance.CONFIG
+
+    -- Only deplete oil when engine is running
+    local motor = vehicle.spec_motorized
+    if motor == nil or not motor.isMotorStarted then return end
+
+    -- Base depletion rate (per second, converted from per hour)
+    local baseRate = config.oilDepletionRatePerHour / 3600
+
+    -- Leak multiplier
+    local leakMult = 1.0
+    if spec.hasOilLeak then
+        if spec.oilLeakSeverity == 1 then
+            leakMult = config.oilLeakMinorMult
+        elseif spec.oilLeakSeverity == 2 then
+            leakMult = config.oilLeakModerateMult
+        else
+            leakMult = config.oilLeakSevereMult
+        end
+    end
+
+    -- Apply depletion
+    local depletion = baseRate * leakMult * (dt / 1000)  -- dt is in ms
+    spec.oilLevel = math.max(0, (spec.oilLevel or 1.0) - depletion)
+
+    -- Check for low oil damage
+    if spec.oilLevel <= config.oilCriticalThreshold then
+        -- Track that we ran low (for permanent damage on failure)
+        spec.wasLowOil = true
+
+        -- Apply accelerated engine wear
+        local wearAmount = 0.001 * config.oilLowDamageMultiplier
+        spec.engineReliability = math.max(0.1, spec.engineReliability - wearAmount)
+
+        -- Critical warning
+        if not spec.hasShownOilCriticalWarning then
+            spec.hasShownOilCriticalWarning = true
+            UsedPlusMaintenance.showWarning(vehicle, g_i18n:getText("usedplus_warning_oilCritical"))
+        end
+    elseif spec.oilLevel <= config.oilWarnThreshold then
+        -- Low warning
+        if not spec.hasShownOilWarnWarning then
+            spec.hasShownOilWarnWarning = true
+            UsedPlusMaintenance.showWarning(vehicle, g_i18n:getText("usedplus_warning_oilLow"))
+        end
+    end
+
+    -- Leak warning
+    if spec.hasOilLeak and not spec.hasShownOilLeakWarning then
+        spec.hasShownOilLeakWarning = true
+        local severityText = spec.oilLeakSeverity == 1 and "minor" or
+                            (spec.oilLeakSeverity == 2 and "moderate" or "severe")
+        UsedPlusMaintenance.showWarning(vehicle, g_i18n:getText("usedplus_warning_oilLeak"))
+    end
+end
+
+--[[
+    Apply permanent engine damage when failure occurs while oil was low
+    Called when engine stall or failure happens
+]]
+function UsedPlusMaintenance.applyOilDamageOnFailure(vehicle)
+    local spec = vehicle.spec_usedPlusMaintenance
+    if spec == nil then return end
+
+    if spec.wasLowOil and spec.oilLevel <= UsedPlusMaintenance.CONFIG.oilCriticalThreshold then
+        local damage = UsedPlusMaintenance.CONFIG.oilPermanentDamageOnFailure
+        spec.engineReliabilityCeiling = math.max(
+            UsedPlusMaintenance.CONFIG.minReliabilityCeiling,
+            (spec.engineReliabilityCeiling or 1.0) - damage
+        )
+
+        -- Cap current reliability to new ceiling
+        spec.engineReliability = math.min(spec.engineReliability, spec.engineReliabilityCeiling)
+
+        UsedPlus.logDebug(string.format("Permanent engine damage! Ceiling now %.0f%% for %s",
+            spec.engineReliabilityCeiling * 100, vehicle:getName()))
+
+        UsedPlusMaintenance.showWarning(vehicle, g_i18n:getText("usedplus_warning_engineDamage"))
+    end
+end
+
+-- ============================================================================
+-- v1.7.0: HYDRAULIC FLUID SYSTEM FUNCTIONS
+-- ============================================================================
+
+--[[
+    Update hydraulic fluid system: depletion, leak processing, damage
+    Called every 1 second from periodic checks
+]]
+function UsedPlusMaintenance.updateHydraulicFluidSystem(vehicle, dt)
+    local spec = vehicle.spec_usedPlusMaintenance
+    if spec == nil then return end
+
+    local config = UsedPlusMaintenance.CONFIG
+
+    -- Only deplete hydraulic fluid when doing hydraulic actions
+    -- Check if any implement is raised/lowered
+    local isUsingHydraulics = false
+
+    -- Check attacherJoints for raised implements
+    if vehicle.spec_attacherJoints then
+        for _, joint in pairs(vehicle.spec_attacherJoints.attacherJoints or {}) do
+            if joint.moveAlpha and joint.moveAlpha > 0 and joint.moveAlpha < 1 then
+                isUsingHydraulics = true
+                break
+            end
+        end
+    end
+
+    -- Check for cylinder movement
+    if vehicle.spec_cylindered then
+        for _, movingTool in pairs(vehicle.spec_cylindered.movingTools or {}) do
+            if movingTool.isActive then
+                isUsingHydraulics = true
+                break
+            end
+        end
+    end
+
+    -- Leak always depletes, even without active hydraulics use
+    local leakMult = 1.0
+    if spec.hasHydraulicLeak then
+        if spec.hydraulicLeakSeverity == 1 then
+            leakMult = config.hydraulicLeakMinorMult
+        elseif spec.hydraulicLeakSeverity == 2 then
+            leakMult = config.hydraulicLeakModerateMult
+        else
+            leakMult = config.hydraulicLeakSevereMult
+        end
+    end
+
+    -- Apply depletion
+    local depletion = 0
+    if isUsingHydraulics then
+        depletion = config.hydraulicFluidDepletionPerAction * leakMult
+    elseif spec.hasHydraulicLeak then
+        -- Passive leak depletion (slower than active use)
+        depletion = config.hydraulicFluidDepletionPerAction * 0.1 * leakMult
+    end
+
+    if depletion > 0 then
+        spec.hydraulicFluidLevel = math.max(0, (spec.hydraulicFluidLevel or 1.0) - depletion)
+    end
+
+    -- Check for low hydraulic fluid damage
+    if spec.hydraulicFluidLevel <= config.hydraulicFluidCriticalThreshold then
+        spec.wasLowHydraulicFluid = true
+
+        -- Apply accelerated hydraulic wear
+        local wearAmount = 0.001 * config.hydraulicFluidLowDamageMultiplier
+        spec.hydraulicReliability = math.max(0.1, spec.hydraulicReliability - wearAmount)
+
+        if not spec.hasShownHydraulicCriticalWarning then
+            spec.hasShownHydraulicCriticalWarning = true
+            UsedPlusMaintenance.showWarning(vehicle, g_i18n:getText("usedplus_warning_hydraulicCritical"))
+        end
+    elseif spec.hydraulicFluidLevel <= config.hydraulicFluidWarnThreshold then
+        if not spec.hasShownHydraulicWarnWarning then
+            spec.hasShownHydraulicWarnWarning = true
+            UsedPlusMaintenance.showWarning(vehicle, g_i18n:getText("usedplus_warning_hydraulicLow"))
+        end
+    end
+
+    -- Leak warning
+    if spec.hasHydraulicLeak and not spec.hasShownHydraulicLeakWarning then
+        spec.hasShownHydraulicLeakWarning = true
+        UsedPlusMaintenance.showWarning(vehicle, g_i18n:getText("usedplus_warning_hydraulicLeak"))
+    end
+end
+
+--[[
+    Apply permanent hydraulic damage when failure occurs while fluid was low
+]]
+function UsedPlusMaintenance.applyHydraulicDamageOnFailure(vehicle)
+    local spec = vehicle.spec_usedPlusMaintenance
+    if spec == nil then return end
+
+    if spec.wasLowHydraulicFluid and spec.hydraulicFluidLevel <= UsedPlusMaintenance.CONFIG.hydraulicFluidCriticalThreshold then
+        local damage = UsedPlusMaintenance.CONFIG.hydraulicFluidPermanentDamageOnFailure
+        spec.hydraulicReliabilityCeiling = math.max(
+            UsedPlusMaintenance.CONFIG.minReliabilityCeiling,
+            (spec.hydraulicReliabilityCeiling or 1.0) - damage
+        )
+
+        spec.hydraulicReliability = math.min(spec.hydraulicReliability, spec.hydraulicReliabilityCeiling)
+
+        UsedPlus.logDebug(string.format("Permanent hydraulic damage! Ceiling now %.0f%% for %s",
+            spec.hydraulicReliabilityCeiling * 100, vehicle:getName()))
+
+        UsedPlusMaintenance.showWarning(vehicle, g_i18n:getText("usedplus_warning_hydraulicDamage"))
+    end
+end
+
+-- ============================================================================
+-- v1.7.0: LEAK SYSTEM FUNCTIONS
+-- ============================================================================
+
+--[[
+    Check for new leaks (oil, hydraulic, fuel)
+    Called every 1 second from periodic checks
+]]
+function UsedPlusMaintenance.checkForNewLeaks(vehicle)
+    local spec = vehicle.spec_usedPlusMaintenance
+    if spec == nil then return end
+
+    local config = UsedPlusMaintenance.CONFIG
+
+    -- Check for new oil leak
+    if config.enableOilLeak and not spec.hasOilLeak then
+        if spec.engineReliability < config.oilLeakThreshold then
+            local reliabilityFactor = 1 - (spec.engineReliability / config.oilLeakThreshold)
+            local chance = config.oilLeakBaseChance * reliabilityFactor
+
+            if math.random() < chance then
+                spec.hasOilLeak = true
+                -- Determine severity based on reliability
+                if spec.engineReliability < 0.15 then
+                    spec.oilLeakSeverity = 3  -- Severe
+                elseif spec.engineReliability < 0.25 then
+                    spec.oilLeakSeverity = 2  -- Moderate
+                else
+                    spec.oilLeakSeverity = 1  -- Minor
+                end
+                UsedPlus.logDebug(string.format("Oil leak (severity %d) triggered for %s",
+                    spec.oilLeakSeverity, vehicle:getName()))
+            end
+        end
+    end
+
+    -- Check for new hydraulic leak
+    if config.enableHydraulicLeak and not spec.hasHydraulicLeak then
+        if spec.hydraulicReliability < config.hydraulicLeakThreshold then
+            local reliabilityFactor = 1 - (spec.hydraulicReliability / config.hydraulicLeakThreshold)
+            local chance = config.hydraulicLeakBaseChance * reliabilityFactor
+
+            if math.random() < chance then
+                spec.hasHydraulicLeak = true
+                if spec.hydraulicReliability < 0.15 then
+                    spec.hydraulicLeakSeverity = 3
+                elseif spec.hydraulicReliability < 0.25 then
+                    spec.hydraulicLeakSeverity = 2
+                else
+                    spec.hydraulicLeakSeverity = 1
+                end
+                UsedPlus.logDebug(string.format("Hydraulic leak (severity %d) triggered for %s",
+                    spec.hydraulicLeakSeverity, vehicle:getName()))
+            end
+        end
+    end
+
+    -- Check for new fuel leak
+    if config.enableFuelLeak and not spec.hasFuelLeak then
+        if spec.engineReliability < config.fuelLeakThreshold then
+            local reliabilityFactor = 1 - (spec.engineReliability / config.fuelLeakThreshold)
+            local chance = config.fuelLeakBaseChance * reliabilityFactor
+
+            if math.random() < chance then
+                spec.hasFuelLeak = true
+                -- Random multiplier between min and max
+                spec.fuelLeakMultiplier = config.fuelLeakMinMult +
+                    (math.random() * (config.fuelLeakMaxMult - config.fuelLeakMinMult))
+
+                if not spec.hasShownFuelLeakWarning then
+                    spec.hasShownFuelLeakWarning = true
+                    UsedPlusMaintenance.showWarning(vehicle, g_i18n:getText("usedplus_warning_fuelLeak"))
+                end
+
+                UsedPlus.logDebug(string.format("Fuel leak (%.1fx consumption) triggered for %s",
+                    spec.fuelLeakMultiplier, vehicle:getName()))
+            end
+        end
+    end
+end
+
+--[[
+    Get fuel consumption multiplier (for fuel leak effect)
+    Returns 1.0 normally, or higher if fuel leak active
+]]
+function UsedPlusMaintenance.getFuelConsumptionMultiplier(vehicle)
+    local spec = vehicle.spec_usedPlusMaintenance
+    if spec == nil then return 1.0 end
+
+    if spec.hasFuelLeak then
+        return spec.fuelLeakMultiplier or 1.0
+    end
+
+    return 1.0
+end
+
+--[[
+    v1.7.0: Process fuel leak - drain fuel from tank
+    Called every 1 second from periodic checks
+    Drains fuel at a rate based on the leak multiplier
+]]
+function UsedPlusMaintenance.processFuelLeak(vehicle, dt)
+    local spec = vehicle.spec_usedPlusMaintenance
+    if spec == nil then return end
+
+    if not spec.hasFuelLeak then return end
+
+    local config = UsedPlusMaintenance.CONFIG
+
+    -- Only leak when engine is running (fuel system pressurized)
+    local motor = vehicle.spec_motorized
+    if motor == nil or not motor.isMotorStarted then return end
+
+    -- Get fuel fill unit
+    local fuelFillUnitIndex = nil
+    if vehicle.getConsumerFillUnitIndex then
+        fuelFillUnitIndex = vehicle:getConsumerFillUnitIndex(FillType.DIESEL)
+        -- Also check methane if no diesel
+        if fuelFillUnitIndex == nil then
+            fuelFillUnitIndex = vehicle:getConsumerFillUnitIndex(FillType.METHANE)
+        end
+    end
+
+    if fuelFillUnitIndex == nil then return end
+
+    -- Calculate leak rate (liters per second based on multiplier)
+    -- Base leak: ~0.5 L/s, scaled by multiplier (1.5x to 3x)
+    local baseFuelLeakRate = config.fuelLeakBaseDrainRate or 0.5
+    local leakRate = baseFuelLeakRate * (spec.fuelLeakMultiplier - 1.0)
+
+    -- dt is in seconds (1 second from periodic check)
+    local fuelDrained = leakRate * 1.0  -- 1 second interval
+
+    if fuelDrained > 0 then
+        local currentFuel = vehicle:getFillUnitFillLevel(fuelFillUnitIndex)
+
+        if currentFuel > 0 then
+            -- Drain fuel using addFillUnitFillLevel with negative amount
+            vehicle:addFillUnitFillLevel(
+                vehicle:getOwnerFarmId(),
+                fuelFillUnitIndex,
+                -fuelDrained,
+                vehicle:getFillUnitFillType(fuelFillUnitIndex),
+                ToolType.UNDEFINED,
+                nil
+            )
+
+            UsedPlus.logDebug(string.format("Fuel leak: drained %.2f L from %s (mult %.1fx)",
+                fuelDrained, vehicle:getName(), spec.fuelLeakMultiplier))
+        end
+    end
+end
+
+--[[
+    Set tire quality and apply modifiers
+    Called when tires are replaced/retreaded
+    @param quality 1=Retread, 2=Normal, 3=Quality
+]]
+function UsedPlusMaintenance.setTireQuality(vehicle, quality)
+    local spec = vehicle.spec_usedPlusMaintenance
+    if spec == nil then return end
+
+    local config = UsedPlusMaintenance.CONFIG
+
+    spec.tireQuality = quality
+    spec.tireCondition = 1.0  -- New tires
+    spec.hasFlatTire = false
+    spec.flatTireSide = 0
+    spec.hasShownTireWarnWarning = false
+    spec.hasShownTireCriticalWarning = false
+    spec.hasShownFlatTireWarning = false
+    spec.hasShownLowTractionWarning = false
+
+    if quality == 1 then  -- Retread
+        spec.tireMaxTraction = config.tireRetreadTractionMult
+        spec.tireFailureMultiplier = config.tireRetreadFailureMult
+    elseif quality == 3 then  -- Quality
+        spec.tireMaxTraction = config.tireQualityTractionMult
+        spec.tireFailureMultiplier = config.tireQualityFailureMult
+    else  -- Normal (2)
+        spec.tireMaxTraction = config.tireNormalTractionMult
+        spec.tireFailureMultiplier = config.tireNormalFailureMult
+    end
+
+    UsedPlus.logDebug(string.format("Tires replaced on %s: quality=%d, traction=%.0f%%, failureMult=%.1f",
+        vehicle:getName(), quality, spec.tireMaxTraction * 100, spec.tireFailureMultiplier))
+end
+
+--[[
+    Refill oil (full change or top up)
+    @param isFullChange true for full change (resets wasLowOil), false for top up
+]]
+function UsedPlusMaintenance.refillOil(vehicle, isFullChange)
+    local spec = vehicle.spec_usedPlusMaintenance
+    if spec == nil then return end
+
+    spec.oilLevel = 1.0
+    spec.hasOilLeak = false
+    spec.oilLeakSeverity = 0
+    spec.hasShownOilWarnWarning = false
+    spec.hasShownOilCriticalWarning = false
+    spec.hasShownOilLeakWarning = false
+
+    if isFullChange then
+        spec.wasLowOil = false
+    end
+
+    UsedPlus.logDebug(string.format("Oil %s for %s",
+        isFullChange and "changed" or "topped up", vehicle:getName()))
+end
+
+--[[
+    Refill hydraulic fluid (full change or top up)
+    @param isFullChange true for full change (resets wasLowHydraulicFluid), false for top up
+]]
+function UsedPlusMaintenance.refillHydraulicFluid(vehicle, isFullChange)
+    local spec = vehicle.spec_usedPlusMaintenance
+    if spec == nil then return end
+
+    spec.hydraulicFluidLevel = 1.0
+    spec.hasHydraulicLeak = false
+    spec.hydraulicLeakSeverity = 0
+    spec.hasShownHydraulicWarnWarning = false
+    spec.hasShownHydraulicCriticalWarning = false
+    spec.hasShownHydraulicLeakWarning = false
+
+    if isFullChange then
+        spec.wasLowHydraulicFluid = false
+    end
+
+    UsedPlus.logDebug(string.format("Hydraulic fluid %s for %s",
+        isFullChange and "changed" or "topped up", vehicle:getName()))
+end
+
+--[[
+    Fix fuel leak (repair required)
+]]
+function UsedPlusMaintenance.repairFuelLeak(vehicle)
+    local spec = vehicle.spec_usedPlusMaintenance
+    if spec == nil then return end
+
+    spec.hasFuelLeak = false
+    spec.fuelLeakMultiplier = 1.0
+    spec.hasShownFuelLeakWarning = false
+
+    UsedPlus.logDebug(string.format("Fuel leak repaired for %s", vehicle:getName()))
+end
+
+--[[
+    Fix flat tire (requires tire replacement via Tires dialog)
+]]
+function UsedPlusMaintenance.repairFlatTire(vehicle)
+    local spec = vehicle.spec_usedPlusMaintenance
+    if spec == nil then return end
+
+    spec.hasFlatTire = false
+    spec.flatTireSide = 0
+    spec.hasShownFlatTireWarning = false
+
+    UsedPlus.logDebug(string.format("Flat tire fixed for %s", vehicle:getName()))
+end
+
+-- ============================================================================
+-- v1.7.0: WHEEL PHYSICS FRICTION HOOK
+-- Global hook into WheelPhysics to reduce tire friction based on condition
+-- ============================================================================
+
+--[[
+    v1.7.0: Calculate tire friction scale for a vehicle
+    Returns a multiplier (0.1 to 1.1) based on:
+    - Tire condition (worn tires = less grip)
+    - Tire quality (retread=0.85, normal=1.0, quality=1.1)
+    - Flat tire (severely reduced)
+]]
+function UsedPlusMaintenance.getTireFrictionScale(vehicle)
+    local spec = vehicle.spec_usedPlusMaintenance
+    if spec == nil then return 1.0 end
+
+    local config = UsedPlusMaintenance.CONFIG
+
+    -- Base friction from tire quality
+    local qualityScale = spec.tireMaxTraction or 1.0
+
+    -- Condition-based friction reduction
+    -- New tires (1.0) = full friction
+    -- Worn tires (0.3) = ~85% friction
+    -- Critical tires (0.15) = ~70% friction
+    local condition = spec.tireCondition or 1.0
+    local conditionScale = 0.7 + (condition * 0.3)  -- Range: 0.7 to 1.0
+
+    -- Flat tire = severe friction loss on that side
+    local flatTireScale = 1.0
+    if spec.hasFlatTire then
+        flatTireScale = config.flatTireFrictionMult or 0.3  -- 30% friction with flat
+    end
+
+    -- Combine all factors
+    local finalScale = qualityScale * conditionScale * flatTireScale
+
+    -- Clamp to reasonable range
+    return math.max(0.1, math.min(1.1, finalScale))
+end
+
+--[[
+    v1.7.0: Hook into WheelPhysics.updateTireFriction
+    Modifies tire friction based on UsedPlus tire condition system
+    Pattern from: FS25_useYourTyres
+]]
+function UsedPlusMaintenance.hookTireFriction(physWheel)
+    -- Safety check: ensure physWheel and vehicle exist
+    if physWheel == nil or physWheel.vehicle == nil then return end
+    if not physWheel.vehicle.isServer then return end
+    if not physWheel.vehicle.isAddedToPhysics then return end
+
+    local vehicle = physWheel.vehicle
+    local spec = vehicle.spec_usedPlusMaintenance
+    if spec == nil then return end
+
+    local config = UsedPlusMaintenance.CONFIG
+    if not config.enableTireFriction then return end
+
+    -- Calculate our friction scale
+    local usedPlusFrictionScale = UsedPlusMaintenance.getTireFrictionScale(vehicle)
+
+    -- Only modify if we have a meaningful change
+    if usedPlusFrictionScale >= 0.99 and usedPlusFrictionScale <= 1.01 then return end
+
+    -- Apply friction modification
+    -- The base game (or other mods like useYourTyres) will have already called
+    -- setWheelShapeTireFriction, so we need to call it again with our modifier
+    local frictionCoeff = physWheel.frictionScale * physWheel.tireGroundFrictionCoeff * usedPlusFrictionScale
+
+    setWheelShapeTireFriction(
+        physWheel.wheel.node,
+        physWheel.wheelShape,
+        physWheel.maxLongStiffness,
+        physWheel.maxLatStiffness,
+        physWheel.maxLatStiffnessLoad,
+        frictionCoeff
+    )
+end
+
+-- Register the global WheelPhysics hook (if WheelPhysics exists)
+if WheelPhysics ~= nil and WheelPhysics.updateTireFriction ~= nil then
+    WheelPhysics.updateTireFriction = Utils.appendedFunction(
+        WheelPhysics.updateTireFriction,
+        UsedPlusMaintenance.hookTireFriction
+    )
+    UsedPlus.logInfo("WheelPhysics friction hook registered for tire condition system")
+else
+    UsedPlus.logWarn("WheelPhysics not available - tire friction effects disabled")
+end
 
 UsedPlus.logInfo("UsedPlusMaintenance specialization loaded")

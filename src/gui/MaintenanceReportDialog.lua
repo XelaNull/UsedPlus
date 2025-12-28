@@ -244,9 +244,6 @@ function MaintenanceReportDialog:updateDisplay()
             end
             self.mechanicQuoteText:setText('"' .. quote .. '"')
         end
-        if self.mechanicAttribText then
-            self.mechanicAttribText:setText(g_i18n:getText("usedplus_irp_mechanicName"))
-        end
 
         -- v1.5.1: Show operating hours for new vehicles
         if self.hoursText then
@@ -427,11 +424,6 @@ function MaintenanceReportDialog:updateMechanicQuote(data)
 
     -- Display the quote with proper formatting
     self.mechanicQuoteText:setText('"' .. quote .. '"')
-
-    -- Display mechanic attribution
-    if self.mechanicAttribText then
-        self.mechanicAttribText:setText(g_i18n:getText("usedplus_irp_mechanicName"))
-    end
 end
 
 --[[

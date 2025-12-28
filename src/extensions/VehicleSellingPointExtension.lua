@@ -158,10 +158,11 @@ function VehicleSellingPointExtension.showSellVehicleDialog(vehicle, farmId)
     end
 
     -- Use DialogLoader with callback
-    local callback = function(selectedTier)
-        if selectedTier then
-            -- Player selected a tier - create listing
-            VehicleSellingPointExtension.createSaleListing(vehicle, farmId, selectedTier)
+    -- Callback receives BOTH agentTier and priceTier from dual-tier system
+    local callback = function(agentTier, priceTier)
+        if agentTier ~= nil then
+            -- Player selected tiers - create listing
+            VehicleSellingPointExtension.createSaleListing(vehicle, farmId, agentTier, priceTier)
         else
             UsedPlus.logDebug("Sale dialog cancelled")
         end
@@ -181,9 +182,10 @@ end
     Create a sale listing through VehicleSaleManager
     @param vehicle - The vehicle to sell
     @param farmId - The owning farm
-    @param saleTier - Selected agent tier (1-3)
+    @param agentTier - Selected agent tier (0=Private, 1=Local, 2=Regional, 3=National)
+    @param priceTier - Selected price tier (1=Quick, 2=Market, 3=Premium)
 ]]
-function VehicleSellingPointExtension.createSaleListing(vehicle, farmId, saleTier)
+function VehicleSellingPointExtension.createSaleListing(vehicle, farmId, agentTier, priceTier)
     if g_vehicleSaleManager == nil then
         UsedPlus.logError("VehicleSaleManager not initialized")
         g_currentMission:addIngameNotification(
@@ -193,13 +195,18 @@ function VehicleSellingPointExtension.createSaleListing(vehicle, farmId, saleTie
         return
     end
 
-    -- Create listing through manager
-    local listing = g_vehicleSaleManager:createSaleListing(farmId, vehicle, saleTier)
+    -- Default priceTier for legacy compatibility
+    priceTier = priceTier or 2
+
+    -- Create listing through manager (passes both tiers)
+    local listing = g_vehicleSaleManager:createSaleListing(farmId, vehicle, agentTier, priceTier)
 
     if listing then
-        UsedPlus.logDebug(string.format("Created sale listing: %s (Tier %d, ID: %s)",
-            listing.vehicleName, saleTier, listing.id))
-        -- Notification is shown by VehicleSaleManager
+        UsedPlus.logDebug(string.format("Created sale listing: %s (Agent %d, Price %d, ID: %s)",
+            listing.vehicleName, agentTier, priceTier, listing.id))
+
+        -- Show styled confirmation dialog
+        VehicleSellingPointExtension.showSaleListingConfirmation(vehicle, agentTier, priceTier)
     else
         g_currentMission:addIngameNotification(
             FSBaseMission.INGAME_NOTIFICATION_INFO,
@@ -216,6 +223,102 @@ function VehicleSellingPointExtension.createSaleListing(vehicle, farmId, saleTie
     VehicleSellingPointExtension.pendingRepairVehicle = nil
     VehicleSellingPointExtension.pendingSellCallback = nil
     VehicleSellingPointExtension.bypassInterception = false
+end
+
+--[[
+    Show the SaleListingInitiatedDialog with listing details
+    @param vehicle - The vehicle being sold
+    @param agentTier - Agent tier (0=Private, 1=Local, 2=Regional, 3=National)
+    @param priceTier - Price tier (1=Quick, 2=Market, 3=Premium)
+]]
+function VehicleSellingPointExtension.showSaleListingConfirmation(vehicle, agentTier, priceTier)
+    -- Get tier definitions from SellVehicleDialog or VehicleSaleListing
+    local agentOptions = SellVehicleDialog and SellVehicleDialog.AGENT_OPTIONS
+    local priceOptions = SellVehicleDialog and SellVehicleDialog.PRICE_OPTIONS
+
+    -- Fallback to VehicleSaleListing if SellVehicleDialog not available
+    if not agentOptions then
+        agentOptions = VehicleSaleListing and VehicleSaleListing.AGENT_TIERS
+    end
+    if not priceOptions then
+        priceOptions = VehicleSaleListing and VehicleSaleListing.PRICE_TIERS
+    end
+
+    if not agentOptions or not priceOptions then
+        UsedPlus.logError("Cannot show confirmation - tier definitions not found")
+        return
+    end
+
+    -- Find agent option (array for SellVehicleDialog, keyed for VehicleSaleListing)
+    local agentOption = nil
+    if agentOptions[1] and agentOptions[1].tier ~= nil then
+        -- SellVehicleDialog format (array with tier field)
+        for _, opt in ipairs(agentOptions) do
+            if opt.tier == agentTier then
+                agentOption = opt
+                break
+            end
+        end
+    else
+        -- VehicleSaleListing format (keyed by tier)
+        agentOption = agentOptions[agentTier]
+    end
+
+    local priceOption = priceOptions[priceTier]
+
+    if not agentOption or not priceOption then
+        UsedPlus.logError(string.format("Invalid tier values: agent=%s, price=%s", tostring(agentTier), tostring(priceTier)))
+        return
+    end
+
+    -- Get vanilla sell price
+    local vanillaSellPrice = 0
+    if vehicle and vehicle.getSellPrice then
+        vanillaSellPrice = vehicle:getSellPrice()
+    end
+
+    -- Calculate expected price range
+    local minPrice = math.floor(vanillaSellPrice * priceOption.priceMultiplierMin)
+    local maxPrice = math.floor(vanillaSellPrice * priceOption.priceMultiplierMax)
+
+    -- Calculate agent fee (percentage of expected mid-price)
+    local expectedMid = (minPrice + maxPrice) / 2
+    local agentFee = 0
+    local isPrivateSale = (agentOption.feePercent == 0) or (agentTier == 0)
+    if not isPrivateSale then
+        agentFee = math.max(50, math.floor(expectedMid * agentOption.feePercent))
+    end
+
+    -- Calculate combined success rate
+    local successRate = math.max(0.10, math.min(0.98,
+        agentOption.baseSuccessRate + (priceOption.successModifier or 0)))
+
+    -- Get vehicle name
+    local vehicleName = "Unknown Vehicle"
+    if vehicle and vehicle.configFileName then
+        local storeItem = g_storeManager:getItemByXMLFilename(vehicle.configFileName)
+        if UIHelper and UIHelper.Vehicle and UIHelper.Vehicle.getFullName then
+            vehicleName = UIHelper.Vehicle.getFullName(storeItem)
+        elseif storeItem and storeItem.name then
+            vehicleName = storeItem.name
+        end
+    end
+
+    -- Show dialog with details
+    local details = {
+        vehicleName = vehicleName,
+        agentName = agentOption.name,
+        agentFee = agentFee,
+        isPrivateSale = isPrivateSale,
+        priceTierName = priceOption.name,
+        minPrice = minPrice,
+        maxPrice = maxPrice,
+        minMonths = agentOption.minMonths,
+        maxMonths = agentOption.maxMonths,
+        successRate = successRate
+    }
+
+    SaleListingInitiatedDialog.showWithDetails(details)
 end
 
 --[[
@@ -433,7 +536,150 @@ function VehicleSellingPointExtension.hookAllDialogs()
                 return VehicleSellingPointExtension.originalShowDialog(guiSelf, name, ...)
             end
 
-            -- SellItemDialog is now handled by hookSellButton - no interception needed here
+            -- Intercept SellItemDialog (ESC -> Vehicles -> Sell)
+            if name == "SellItemDialog" then
+                UsedPlus.logDebug("Intercepting SellItemDialog - showing UsedPlus SellVehicleDialog instead")
+
+                -- Try to get the vehicle from various sources
+                local vehicle = nil
+
+                -- Method 1: Check if we stored a reference from InGameMenuVehiclesFrameExtension
+                if InGameMenuVehiclesFrameExtension and InGameMenuVehiclesFrameExtension.lastSelectedVehicle then
+                    vehicle = InGameMenuVehiclesFrameExtension.lastSelectedVehicle
+                    UsedPlus.logDebug("Got vehicle from InGameMenuVehiclesFrameExtension.lastSelectedVehicle")
+                end
+
+                -- Method 2: Search through InGameMenu's pages array
+                if vehicle == nil and g_currentMission and g_currentMission.inGameMenu then
+                    local inGameMenu = g_currentMission.inGameMenu
+                    -- Try pageFrames array
+                    if inGameMenu.pageFrames then
+                        for i, frame in ipairs(inGameMenu.pageFrames) do
+                            if frame and frame.getSelectedVehicle then
+                                local v = frame:getSelectedVehicle()
+                                if v then
+                                    vehicle = v
+                                    UsedPlus.logDebug("Got vehicle from inGameMenu.pageFrames[" .. i .. "]")
+                                    break
+                                end
+                            end
+                        end
+                    end
+                    -- Try pages array
+                    if vehicle == nil and inGameMenu.pages then
+                        for i, page in ipairs(inGameMenu.pages) do
+                            local frame = page.element or page
+                            if frame and frame.getSelectedVehicle then
+                                local v = frame:getSelectedVehicle()
+                                if v then
+                                    vehicle = v
+                                    UsedPlus.logDebug("Got vehicle from inGameMenu.pages[" .. i .. "]")
+                                    break
+                                end
+                            end
+                        end
+                    end
+                end
+
+                -- Method 3: Try g_gui.screenControllers
+                if vehicle == nil and g_gui and g_gui.screenControllers then
+                    for screenClass, controller in pairs(g_gui.screenControllers) do
+                        if controller and controller.getSelectedVehicle then
+                            local v = controller:getSelectedVehicle()
+                            if v then
+                                vehicle = v
+                                UsedPlus.logDebug("Got vehicle from g_gui.screenControllers")
+                                break
+                            end
+                        end
+                        -- Check pages inside controller
+                        if controller and controller.pageFrames then
+                            for i, frame in ipairs(controller.pageFrames) do
+                                if frame and frame.getSelectedVehicle then
+                                    local v = frame:getSelectedVehicle()
+                                    if v then
+                                        vehicle = v
+                                        UsedPlus.logDebug("Got vehicle from controller.pageFrames[" .. i .. "]")
+                                        break
+                                    end
+                                end
+                            end
+                        end
+                        if vehicle then break end
+                    end
+                end
+
+                -- Method 4: Try InGameMenuVehiclesFrame class directly if instance exists
+                if vehicle == nil and InGameMenuVehiclesFrame then
+                    -- Look through g_gui.guis for the vehicles frame
+                    if g_gui and g_gui.guis then
+                        for guiName, gui in pairs(g_gui.guis) do
+                            if gui and gui.target and gui.target.getSelectedVehicle then
+                                local v = gui.target:getSelectedVehicle()
+                                if v then
+                                    vehicle = v
+                                    UsedPlus.logDebug("Got vehicle from g_gui.guis." .. guiName .. ".target")
+                                    break
+                                end
+                            end
+                        end
+                    end
+                end
+
+                -- Method 5: Check SellItemDialog itself for vehicle reference
+                if vehicle == nil and g_gui.guis and g_gui.guis.SellItemDialog then
+                    local sellDialog = g_gui.guis.SellItemDialog
+                    UsedPlus.logDebug("Checking SellItemDialog properties:")
+                    -- Log what properties exist
+                    for k, v in pairs(sellDialog) do
+                        if type(v) ~= "function" then
+                            UsedPlus.logDebug("  SellItemDialog." .. tostring(k) .. " = " .. type(v))
+                        end
+                    end
+                    if sellDialog.target then
+                        local target = sellDialog.target
+                        vehicle = target.vehicle or target.selectedVehicle or target.currentVehicle or target.item
+                        if target.object then
+                            vehicle = target.object
+                        end
+                        if vehicle then
+                            UsedPlus.logDebug("Got vehicle from SellItemDialog.target")
+                        end
+                    end
+                    -- Check object directly on dialog
+                    if vehicle == nil then
+                        vehicle = sellDialog.vehicle or sellDialog.object or sellDialog.item or sellDialog.selectedVehicle
+                        if vehicle then
+                            UsedPlus.logDebug("Got vehicle directly from SellItemDialog")
+                        end
+                    end
+                end
+
+                if vehicle and g_vehicleSaleManager and UsedPlus and UsedPlus.instance then
+                    local farmId = g_currentMission:getFarmId()
+                    UsedPlus.logInfo("Successfully found vehicle for SellItemDialog intercept: " .. tostring(vehicle.configFileName))
+
+                    -- Show our dialog instead
+                    local callback = function(agentTier, priceTier)
+                        if agentTier ~= nil then
+                            -- Create sale listing
+                            local listing = g_vehicleSaleManager:createSaleListing(farmId, vehicle, agentTier, priceTier or 2)
+                            if listing then
+                                UsedPlus.logInfo(string.format("Created sale listing for %s", listing.vehicleName))
+                                -- Show confirmation
+                                VehicleSellingPointExtension.showSaleListingConfirmation(vehicle, agentTier, priceTier)
+                            end
+                        end
+                    end
+
+                    DialogLoader.show("SellVehicleDialog", "setVehicle", vehicle, farmId, callback)
+
+                    -- DON'T show the vanilla dialog
+                    return
+                else
+                    UsedPlus.logDebug("Could not find vehicle for SellItemDialog intercept, falling back to vanilla")
+                end
+            end
 
             -- Check if this is a YesNoDialog (repair/repaint confirmation)
             if name == "YesNoDialog" then

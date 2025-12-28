@@ -191,6 +191,44 @@ function SellVehicleDialog:onOpen()
     self:updateVehicleDisplay()
     self:updatePreview()
     self:updateComparisonDisplay()
+
+    -- Check listing limit and show warning if at max
+    self:updateListingLimitStatus()
+end
+
+--[[
+     Check if farm has reached max sale listings and update UI accordingly
+]]
+function SellVehicleDialog:updateListingLimitStatus()
+    self.canCreateListing = true
+    local warningMsg = nil
+
+    if g_vehicleSaleManager and self.farmId then
+        local canCreate, currentCount, maxAllowed = g_vehicleSaleManager:canCreateListing(self.farmId)
+        if not canCreate then
+            self.canCreateListing = false
+            warningMsg = string.format(
+                g_i18n:getText("usedplus_error_maxSaleListings") or "Maximum %d vehicles can be listed for sale at once.",
+                maxAllowed
+            )
+        end
+    end
+
+    -- Show/hide warning text
+    if self.listingLimitWarningText then
+        if warningMsg then
+            self.listingLimitWarningText:setText(warningMsg)
+            self.listingLimitWarningText:setVisible(true)
+            self.listingLimitWarningText:setTextColor(1, 0.3, 0.3, 1)
+        else
+            self.listingLimitWarningText:setVisible(false)
+        end
+    end
+
+    -- Disable confirm button if at limit
+    if self.confirmButton then
+        self.confirmButton:setDisabled(not self.canCreateListing)
+    end
 end
 
 --[[
@@ -443,6 +481,18 @@ end
      Handle confirm button click
 ]]
 function SellVehicleDialog:onClickConfirm()
+    -- Check listing limit first (backup check)
+    if g_vehicleSaleManager and self.farmId then
+        local canCreate, currentCount, maxAllowed = g_vehicleSaleManager:canCreateListing(self.farmId)
+        if not canCreate then
+            g_currentMission:addIngameNotification(
+                FSBaseMission.INGAME_NOTIFICATION_CRITICAL,
+                string.format(g_i18n:getText("usedplus_error_maxSaleListings") or "Maximum %d vehicles can be listed for sale at once.", maxAllowed)
+            )
+            return
+        end
+    end
+
     -- Get selected agent tier (index 1=Private, 2=Local, 3=Regional, 4=National)
     local agentIndex = 3  -- Default to Regional
     if self.agentTierSlider then

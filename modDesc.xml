@@ -327,6 +327,8 @@ v1.0.0.0 (2025-11-22) - Erstveröffentlichung
         <sourceFile filename="src/gui/LandLeaseDialog.lua"/>  <!--  Land leasing -->
         <sourceFile filename="src/gui/RepairDialog.lua"/>
         <sourceFile filename="src/gui/RepairFinanceDialog.lua"/>
+        <sourceFile filename="src/gui/TiresDialog.lua"/>      <!--  v1.7.0: Tire replacement dialog -->
+        <sourceFile filename="src/gui/FluidsDialog.lua"/>     <!--  v1.7.0: Fluids service dialog -->
         <sourceFile filename="src/gui/TakeLoanDialog.lua"/>
         <sourceFile filename="src/gui/LoanApprovedDialog.lua"/>  <!--  Styled loan confirmation popup -->
         <sourceFile filename="src/gui/FinancialDashboard.lua"/>
@@ -346,6 +348,8 @@ v1.0.0.0 (2025-11-22) - Erstveröffentlichung
         <sourceFile filename="src/gui/MaintenanceReportDialog.lua"/>  <!--  Maintenance report for owned vehicles -->
         <sourceFile filename="src/gui/VehiclePortfolioDialog.lua"/>  <!--  v1.5.0: Portfolio browser for multi-find agent model -->
         <sourceFile filename="src/gui/SearchInitiatedDialog.lua"/>  <!--  v1.5.0: Styled search confirmation -->
+        <sourceFile filename="src/gui/SaleListingInitiatedDialog.lua"/>  <!--  v1.5.0: Styled sale listing confirmation -->
+        <sourceFile filename="src/gui/SearchExpiredDialog.lua"/>       <!--  v1.5.1: Search expiration with renewal option -->
 
         <!-- Extensions (depend on managers, GUI) -->
         <sourceFile filename="src/extensions/ShopConfigScreenExtension.lua"/>
@@ -357,6 +361,7 @@ v1.0.0.0 (2025-11-22) - Erstveröffentlichung
         <sourceFile filename="src/extensions/VehicleSellingPointExtension.lua"/>
         <sourceFile filename="src/extensions/InGameMenuVehiclesFrameExtension.lua"/>  <!--  Hook ESC Vehicles Sell button -->
         <sourceFile filename="src/extensions/WorkshopScreenExtension.lua"/>  <!--  Hook Workshop Inspect button -->
+        <sourceFile filename="src/extensions/FinanceMenuExtension.lua"/>  <!--  Disable vanilla borrow, require credit-based loans -->
 
         <!-- Main entry point (MUST be last - depends on everything) -->
         <sourceFile filename="src/main.lua"/>

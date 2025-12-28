@@ -156,10 +156,6 @@ function FinanceManagerFrame:onGuiSetupFinished()
             declineBtn = self[rowId .. "DeclineBtn"],
             declineBtnBg = self[rowId .. "DeclineBtnBg"],
             declineBtnText = self[rowId .. "DeclineBtnText"],
-            -- Edit price button (for active listings)
-            editBtn = self[rowId .. "EditBtn"],
-            editBtnBg = self[rowId .. "EditBtnBg"],
-            editBtnText = self[rowId .. "EditBtnText"],
             -- Cancel button (for active listings)
             cancelBtn = self[rowId .. "CancelBtn"],
             cancelBtnBg = self[rowId .. "CancelBtnBg"],
@@ -319,11 +315,65 @@ function FinanceManagerFrame:updateFinancesSection(farmId, farm)
     -- Store active deals for payment selection
     self.activeDeals = {}
 
+    -- v1.7.3: Calculate UsedPlus loan balances to subtract from farm.loan
+    -- farm.loan includes ALL loans (vanilla + UsedPlus), so we need to find the true vanilla amount
+    local usedPlusLoanTotal = 0
+    if g_financeManager then
+        local deals = g_financeManager:getDealsForFarm(farmId)
+        if deals then
+            for _, deal in ipairs(deals) do
+                if deal.status == "active" and deal.currentBalance then
+                    usedPlusLoanTotal = usedPlusLoanTotal + deal.currentBalance
+                end
+            end
+        end
+    end
+
+    -- v1.7.3: Check for vanilla bank loan (farm.loan minus UsedPlus loans)
+    local rowIndex = 0
+    local farm = g_farmManager:getFarmById(farmId)
+    local vanillaLoanAmount = 0
+    if farm and farm.loan then
+        vanillaLoanAmount = math.max(0, farm.loan - usedPlusLoanTotal)
+    end
+
+    if vanillaLoanAmount > 0 then
+        -- Create a pseudo-deal for the vanilla loan display
+        local vanillaLoanDeal = {
+            id = "VANILLA_LOAN",
+            dealType = 0,  -- Special type for vanilla loan
+            itemName = g_i18n:getText("usedplus_vanillaLoan") or "Bank Loan",
+            currentBalance = vanillaLoanAmount,
+            monthlyPayment = 0,  -- Vanilla loans don't have structured payments
+            interestRate = 0,
+            termMonths = 0,
+            monthsPaid = 0,
+            totalInterestPaid = 0,
+            status = "active",
+            isVanillaLoan = true,
+        }
+        table.insert(self.activeDeals, vanillaLoanDeal)
+
+        -- Update row for vanilla loan
+        local row = self.financeRows[rowIndex]
+        if row then
+            if row.row then row.row:setVisible(true) end
+            if row.type then row.type:setText("BANK") end
+            if row.item then row.item:setText(vanillaLoanDeal.itemName) end
+            if row.balance then row.balance:setText(g_i18n:formatMoney(vanillaLoanAmount, 0, true, true)) end
+            if row.monthly then row.monthly:setText("--") end  -- No structured payment
+            if row.progress then row.progress:setText("--") end
+            if row.remaining then row.remaining:setText("--") end
+        end
+
+        totalFinanced = totalFinanced + vanillaLoanAmount
+        dealCount = dealCount + 1
+        rowIndex = rowIndex + 1
+    end
+
     if g_financeManager then
         local deals = g_financeManager:getDealsForFarm(farmId)
         if deals and #deals > 0 then
-            local rowIndex = 0
-
             for _, deal in ipairs(deals) do
                 if deal.status == "active" and rowIndex < FinanceManagerFrame.MAX_FINANCE_ROWS then
                     -- Store deal reference
@@ -920,10 +970,7 @@ function FinanceManagerFrame:updateSaleListings(farmId)
                         if row.declineBtnBg then row.declineBtnBg:setVisible(hasPendingOffer) end
                         if row.declineBtnText then row.declineBtnText:setVisible(hasPendingOffer) end
 
-                        -- Show Edit/Cancel buttons only for active listings (no pending offer)
-                        if row.editBtn then row.editBtn:setVisible(not hasPendingOffer) end
-                        if row.editBtnBg then row.editBtnBg:setVisible(not hasPendingOffer) end
-                        if row.editBtnText then row.editBtnText:setVisible(not hasPendingOffer) end
+                        -- Show Cancel button only for active listings (no pending offer)
 
                         if row.cancelBtn then row.cancelBtn:setVisible(not hasPendingOffer) end
                         if row.cancelBtnBg then row.cancelBtnBg:setVisible(not hasPendingOffer) end

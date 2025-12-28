@@ -424,6 +424,11 @@ function TakeLoanEvent.execute(farmId, loanAmount, termYears, interestRate, mont
             g_financeManager:registerDeal(deal)
             g_currentMission:addMoney(loanAmount, farmId, MoneyType.OTHER, true, true)
 
+            -- Sync to vanilla farm.loan so it appears on vanilla Finances page
+            -- Note: This may cause vanilla to charge additional interest, but ensures visibility
+            farm.loan = (farm.loan or 0) + loanAmount
+            UsedPlus.logDebug(string.format("Updated farm.loan to $%.0f (added $%.0f)", farm.loan, loanAmount))
+
             UsedPlus.logDebug(string.format("Loan created: $%d at %.2f%% for %d years (ID: %s)",
                 loanAmount, interestRate * 100, termYears, deal.id))
 

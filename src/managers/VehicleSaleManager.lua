@@ -21,6 +21,9 @@
 VehicleSaleManager = {}
 local VehicleSaleManager_mt = Class(VehicleSaleManager)
 
+-- Maximum concurrent sale listings per farm (UI only supports 3 rows)
+VehicleSaleManager.MAX_LISTINGS_PER_FARM = 3
+
 --[[
     Constructor
     Creates manager instance with empty data structures
@@ -121,18 +124,46 @@ end
 
 --[[
     Handle new offer received
-    Sends notification to player
+    Shows SaleOfferDialog to player for immediate decision
 ]]
 function VehicleSaleManager:onOfferReceived(farmId, listing)
     UsedPlus.logDebug(string.format("Offer received for %s: $%d",
         listing.vehicleName, listing.currentOffer))
 
-    -- Send notification to player
-    g_currentMission:addIngameNotification(
-        FSBaseMission.INGAME_NOTIFICATION_OK,
-        string.format("Sale Offer: %s for %s! Check Finance Manager to respond.",
-            listing.vehicleName, g_i18n:formatMoney(listing.currentOffer, 0, true, true))
-    )
+    -- Check if this is the local player's farm (for dialog display)
+    local isLocalFarm = false
+    if g_currentMission and g_currentMission.player then
+        local playerFarmId = g_currentMission.player.farmId
+        isLocalFarm = (playerFarmId == farmId)
+    end
+
+    -- For single-player or when this is our farm, show the dialog
+    if isLocalFarm and self.isClient then
+        -- Create callback to handle player decision
+        local listingId = listing.id
+        local callback = function(accepted)
+            if accepted then
+                -- Send accept to server (works for SP and MP)
+                SaleListingActionEvent.sendToServer(listingId, SaleListingActionEvent.ACTION_ACCEPT)
+            else
+                -- Send decline to server
+                SaleListingActionEvent.sendToServer(listingId, SaleListingActionEvent.ACTION_DECLINE)
+            end
+        end
+
+        -- Show the dialog
+        SaleOfferDialog.showForListing(listing, callback)
+
+        UsedPlus.logDebug(string.format("Showing SaleOfferDialog for listing %s", listing.id))
+    else
+        -- Fallback for multiplayer when this isn't our farm:
+        -- Just send notification (player can respond via Finance Manager)
+        g_currentMission:addIngameNotification(
+            FSBaseMission.INGAME_NOTIFICATION_OK,
+            string.format("Sale Offer: %s for %s! Check Finance Manager to respond.",
+                listing.vehicleName, g_i18n:formatMoney(listing.currentOffer, 0, true, true))
+        )
+    end
 end
 
 --[[
@@ -173,14 +204,18 @@ end
     Called from SellVehicleDialog when player selects agent tier
     @param farmId - Farm that owns the vehicle
     @param vehicle - The vehicle object to sell
-    @param saleTier - Agent tier (1=Local, 2=Regional, 3=National)
+    @param agentTier - Agent tier (0=Private, 1=Local, 2=Regional, 3=National)
+    @param priceTier - Price tier (1=Quick, 2=Market, 3=Premium) - optional, defaults to 2
     @return listing or nil on failure
 ]]
-function VehicleSaleManager:createSaleListing(farmId, vehicle, saleTier)
+function VehicleSaleManager:createSaleListing(farmId, vehicle, agentTier, priceTier)
     if not self.isServer then
         UsedPlus.logError("createSaleListing must be called on server")
         return nil
     end
+
+    -- Default priceTier for legacy compatibility
+    priceTier = priceTier or 2
 
     -- Validate vehicle
     if vehicle == nil then
@@ -188,9 +223,15 @@ function VehicleSaleManager:createSaleListing(farmId, vehicle, saleTier)
         return nil
     end
 
-    -- Validate tier
-    if saleTier < 1 or saleTier > 3 then
-        UsedPlus.logError(string.format("Invalid sale tier %d", saleTier))
+    -- Validate agent tier (0=Private, 1-3=Professional agents)
+    if agentTier < 0 or agentTier > 3 then
+        UsedPlus.logError(string.format("Invalid agent tier %d", agentTier))
+        return nil
+    end
+
+    -- Validate price tier (1=Quick, 2=Market, 3=Premium)
+    if priceTier < 1 or priceTier > 3 then
+        UsedPlus.logError(string.format("Invalid price tier %d", priceTier))
         return nil
     end
 
@@ -202,6 +243,17 @@ function VehicleSaleManager:createSaleListing(farmId, vehicle, saleTier)
 
     if self:isVehicleListed(vehicle) then
         UsedPlus.logError("Vehicle is already listed for sale")
+        return nil
+    end
+
+    -- Check listing limit (UI only supports 3 rows)
+    local canCreate, currentCount, maxAllowed = self:canCreateListing(farmId)
+    if not canCreate then
+        UsedPlus.logError(string.format("Farm %d already has maximum sale listings (%d/%d)", farmId, currentCount, maxAllowed))
+        g_currentMission:addIngameNotification(
+            FSBaseMission.INGAME_NOTIFICATION_CRITICAL,
+            string.format(g_i18n:getText("usedplus_error_maxSaleListings") or "Maximum %d vehicles can be listed for sale at once.", maxAllowed)
+        )
         return nil
     end
 
@@ -224,7 +276,7 @@ function VehicleSaleManager:createSaleListing(farmId, vehicle, saleTier)
     end
 
     -- Create listing using factory method
-    local listing = VehicleSaleListing.createFromVehicle(farmId, vehicle, saleTier)
+    local listing = VehicleSaleListing.createFromVehicle(farmId, vehicle, agentTier, priceTier)
     if listing == nil then
         UsedPlus.logError("Failed to create listing from vehicle")
         return nil
@@ -244,17 +296,12 @@ function VehicleSaleManager:createSaleListing(farmId, vehicle, saleTier)
         g_financeManager:incrementStatistic(farmId, "salesListed", 1)
     end
 
-    UsedPlus.logDebug(string.format("Created sale listing %s: %s ($%d fee, %d hrs TTL, Tier: %s)",
-        listing.id, listing.vehicleName, listing.agentFee, listing.ttl, listing:getTierName()))
+    UsedPlus.logDebug(string.format("Created sale listing %s: %s ($%d fee, %d hrs TTL, Agent: %s, Price: %s)",
+        listing.id, listing.vehicleName, listing.agentFee, listing.ttl,
+        listing:getAgentTierName(), listing:getPriceTierName()))
 
-    -- Send confirmation notification
-    g_currentMission:addIngameNotification(
-        FSBaseMission.INGAME_NOTIFICATION_OK,
-        string.format("%s listed with %s. Expected: %s - %s",
-            listing.vehicleName, listing:getTierName(),
-            g_i18n:formatMoney(listing.expectedMinPrice, 0, true, true),
-            g_i18n:formatMoney(listing.expectedMaxPrice, 0, true, true))
-    )
+    -- Note: Confirmation notification now handled by SaleListingInitiatedDialog
+    -- No inline notification here to avoid duplicate feedback
 
     return listing
 end
@@ -580,6 +627,18 @@ function VehicleSaleManager:getListingsForFarm(farmId, activeOnly)
         end
     end
     return {}
+end
+
+--[[
+    Check if farm can create more sale listings
+    @param farmId - The farm ID
+    @return canCreate (bool), currentCount, maxAllowed
+]]
+function VehicleSaleManager:canCreateListing(farmId)
+    local activeListings = self:getListingsForFarm(farmId, true)  -- true = active only
+    local currentCount = #activeListings
+    local maxAllowed = VehicleSaleManager.MAX_LISTINGS_PER_FARM
+    return currentCount < maxAllowed, currentCount, maxAllowed
 end
 
 --[[

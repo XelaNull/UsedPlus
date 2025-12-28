@@ -75,8 +75,6 @@
                 <!-- Quote text (italicized, centered) -->
                 <Text profile="irpQuoteText" id="mechanicQuoteText" position="0px -32px"
                       text=""/>
-                <!-- Mechanic attribution (right-aligned) -->
-                <Text profile="irpQuoteAttrib" id="mechanicAttribText" position="280px -58px" text=""/>
             </GuiElement>
 
             <!-- ========== SECTION 4: Recommendation ========== -->
@@ -255,13 +253,6 @@
             <textItalic value="true"/>
             <textColor value="0.9 0.9 0.8 1"/>
             <textAlignment value="center"/>
-        </Profile>
-
-        <Profile name="irpQuoteAttrib" extends="fs25_textDefault" with="anchorTopCenter">
-            <size value="100px 16px"/>
-            <textSize value="11px"/>
-            <textColor value="0.6 0.6 0.5 1"/>
-            <textAlignment value="right"/>
         </Profile>
 
         <!-- ========== NOTES & RECOMMENDATION ========== -->

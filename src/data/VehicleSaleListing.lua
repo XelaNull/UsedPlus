@@ -680,10 +680,13 @@ end
     @param saleTier - Agent tier
     @return VehicleSaleListing instance
 ]]
-function VehicleSaleListing.createFromVehicle(farmId, vehicle, saleTier)
+function VehicleSaleListing.createFromVehicle(farmId, vehicle, agentTier, priceTier)
     if vehicle == nil then
         return nil
     end
+
+    -- Default priceTier for legacy compatibility
+    priceTier = priceTier or 2
 
     -- Get store item for vehicle info
     local storeItem = nil
@@ -729,7 +732,7 @@ function VehicleSaleListing.createFromVehicle(farmId, vehicle, saleTier)
         operatingHours = operatingHours
     }
 
-    return VehicleSaleListing.new(farmId, vehicle, vehicleData, saleTier)
+    return VehicleSaleListing.new(farmId, vehicle, vehicleData, agentTier, priceTier)
 end
 
 UsedPlus.logInfo("VehicleSaleListing class loaded")

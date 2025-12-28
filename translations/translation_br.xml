@@ -482,6 +482,25 @@
         <!--  Avisos de degradação de velocidade (v1.4.0) -->
         <e k="usedPlus_speedDegraded" v="Motor com dificuldades - velocidade máxima reduzida para %d%%!" />
         <e k="usedPlus_speedDegradedReminder" v="Veículo lento - reparo recomendado" />
+        <e k="usedPlus_speedGovernor" v="O motor não consegue manter essa velocidade!" />
+        <e k="usedPlus_firstStartStall" v="O motor não ligou!" />
+        <e k="usedPlus_steeringLoose" v="Direção parece solta - hidráulicos desgastados!" />
+        <e k="usedPlus_steeringPull" v="Direção puxando para a %s!" />
+        <e k="usedPlus_directionLeft" v="esquerda" />
+        <e k="usedPlus_directionRight" v="direita" />
+
+        <!--  Falhas do motor (v1.6.0) -->
+        <e k="usedPlus_engineMisfire" v="Motor falhando!" />
+        <e k="usedPlus_engineOverheating" v="Motor superaquecendo! (%d%%)" />
+        <e k="usedPlus_engineOverheated" v="MOTOR SUPERAQUECIDO! Deixe esfriar!" />
+
+        <!--  Falhas de implementos (v1.6.0) -->
+        <e k="usedPlus_implementSurge" v="Surto hidráulico - implemento levantado!" />
+        <e k="usedPlus_implementDrop" v="Falha hidráulica - implemento abaixado!" />
+        <e k="usedPlus_ptoToggle" v="Falha elétrica - TDP %s!" />
+        <e k="usedPlus_ptoOn" v="ligada" />
+        <e k="usedPlus_ptoOff" v="desligada" />
+        <e k="usedPlus_hitchFailure" v="FALHA DO ENGATE - Implemento desconectado!" />
 
         <!--  Avisos de deriva hidráulica (v1.4.0) -->
         <e k="usedPlus_hydraulicWeak" v="Hidráulico fraco (%d%%) - implementos podem derivar!" />
@@ -571,6 +590,31 @@
         <e k="usedplus_error_payoffFailed" v="Quitação falhou" />
         <e k="usedplus_error_paymentFailed" v="Pagamento falhou" />
         <e k="usedplus_error_eventNotAvailable" v="Erro: %s não disponível" />
+
+        <!-- Notificações de erro - Requisitos de pontuação de crédito -->
+        <e k="usedplus_error_creditTooLow" v="Pontuação de crédito muito baixa" />
+        <e k="usedplus_error_creditTooLowDetail" v="Sua pontuação de crédito (%d) está abaixo do mínimo (%d) necessário para %s." />
+        <e k="usedplus_error_creditTip" v="Dica: Faça pagamentos pontuais para melhorar seu crédito." />
+        <e k="usedplus_error_creditShortfall" v="Déficit: %d pontos" />
+        <e k="usedplus_finance_repairFinancing" v="financiamento de reparos" />
+        <e k="usedplus_finance_vehicleFinancing" v="financiamento de veículo" />
+        <e k="usedplus_finance_vehicleLeasing" v="leasing de veículo" />
+        <e k="usedplus_finance_landFinancing" v="financiamento de terreno" />
+        <e k="usedplus_finance_cashLoan" v="empréstimos em dinheiro" />
+
+        <!-- Mensagens de aviso de crédito (UX) -->
+        <e k="usedplus_credit_tooLowForFinancing" v="Pontuação de crédito muito baixa para financiamento.\nSua pontuação: %d | Necessário: %d\nMelhore seu crédito com pagamentos pontuais." />
+        <e k="usedplus_credit_tooLowForLeasing" v="Pontuação de crédito muito baixa para leasing.\nSua pontuação: %d | Necessário: %d\nLeasing requer melhor crédito que financiamento." />
+        <e k="usedplus_credit_tooLowForLand" v="Pontuação de crédito muito baixa (%d). Necessário %d+ para financiar terreno." />
+        <e k="usedplus_credit_tooLowForRepair" v="Pontuação de crédito muito baixa (%d). Necessário %d+ para financiar reparos." />
+        <e k="usedplus_credit_needScore" v="Crédito: %d (precisa %d)" />
+
+        <!-- Opções do seletor de modo -->
+        <e k="usedplus_mode_cash" v="Comprar à vista" />
+        <e k="usedplus_mode_finance" v="Financiar" />
+        <e k="usedplus_mode_lease" v="Alugar" />
+        <e k="usedplus_mode_financeCredit" v="Financiar (Crédito: %d+)" />
+        <e k="usedplus_mode_leaseCredit" v="Alugar (Crédito: %d+)" />
 
         <!-- Success Notifications - Sales -->
         <e k="usedplus_notify_vehicleSold" v="Vendido %s por %s!" />
@@ -1256,5 +1300,132 @@
         <e k="usedplus_tl_fair" v="Regular 650-699: 8,5%" />
         <e k="usedplus_tl_poor" v="Ruim 600-649: 9,5%" />
         <e k="usedplus_tl_veryPoor" v="Muito Ruim &lt;600: 11%" />
+
+        <!-- Search Expired Dialog (v1.5.1) -->
+        <e k="usedplus_searchExpired_title" v="Busca Concluída" />
+        <e k="usedplus_searchExpired_summary" v="RESUMO DA BUSCA" />
+        <e k="usedplus_searchExpired_searchedFor" v="Procurado:" />
+        <e k="usedplus_searchExpired_agentTier" v="Nível do Agente:" />
+        <e k="usedplus_searchExpired_quality" v="Qualidade:" />
+        <e k="usedplus_searchExpired_duration" v="Duração:" />
+        <e k="usedplus_searchExpired_results" v="RESULTADOS" />
+        <e k="usedplus_searchExpired_vehiclesFound" v="%d veículo(s) encontrado(s)" />
+        <e k="usedplus_searchExpired_noVehicles" v="Nenhum veículo encontrado" />
+        <e k="usedplus_searchExpired_renewSearch" v="RENOVAR BUSCA?" />
+        <e k="usedplus_searchExpired_renewCost" v="Custo de Renovação:" />
+        <e k="usedplus_searchExpired_renew" v="Renovar Busca" />
+        <e k="usedplus_searchExpired_renewed" v="Busca renovada por %s!" />
+        <e k="usedplus_searchExpired_insufficientFunds" v="Fundos insuficientes para renovar a busca." />
+
+        <!-- v1.7.0: Avisos do Sistema de Pneus -->
+        <e k="usedplus_warning_tireWorn" v="Aviso: Os pneus estão desgastando. Considere substituí-los em breve." />
+        <e k="usedplus_warning_tireCritical" v="CRÍTICO: Pneus criticamente desgastados! Substitua imediatamente para evitar furo." />
+        <e k="usedplus_warning_flatTire" v="PNEU FURADO! Direção severamente prejudicada. Substituição de pneu necessária." />
+        <e k="usedplus_warning_lowTraction" v="Aviso: Baixa tração devido a pneus desgastados. Reduza a velocidade em más condições." />
+
+        <!-- v1.7.0: Avisos do Sistema de Óleo -->
+        <e k="usedplus_warning_oilLow" v="Aviso: Nível de óleo baixo. Manutenção necessária em breve." />
+        <e k="usedplus_warning_oilCritical" v="CRÍTICO: Nível de óleo perigosamente baixo! Dano ao motor em andamento." />
+        <e k="usedplus_warning_oilLeak" v="Aviso: Vazamento de óleo detectado. Perda de fluido acelerando." />
+        <e k="usedplus_warning_engineDamage" v="DANO AO MOTOR: Perda permanente de confiabilidade por falta de óleo!" />
+
+        <!-- v1.7.0: Avisos do Sistema Hidráulico -->
+        <e k="usedplus_warning_hydraulicLow" v="Aviso: Fluido hidráulico baixo. Manutenção necessária em breve." />
+        <e k="usedplus_warning_hydraulicCritical" v="CRÍTICO: Fluido hidráulico perigosamente baixo! Dano ao sistema em andamento." />
+        <e k="usedplus_warning_hydraulicLeak" v="Aviso: Vazamento hidráulico detectado. Perda de fluido acelerando." />
+        <e k="usedplus_warning_hydraulicDamage" v="DANO HIDRÁULICO: Perda permanente de confiabilidade por falta de fluido!" />
+
+        <!-- v1.7.0: Aviso de Vazamento de Combustível -->
+        <e k="usedplus_warning_fuelLeak" v="Aviso: Vazamento de combustível detectado! Consumo significativamente aumentado." />
+
+        <!-- v1.7.0: Nomes de Qualidade de Pneus -->
+        <e k="usedplus_tire_retread" v="Recapado" />
+        <e k="usedplus_tire_normal" v="Normal" />
+        <e k="usedplus_tire_quality" v="Qualidade" />
+
+        <!-- v1.7.0: Rótulos do Diálogo de Fluidos -->
+        <e k="usedplus_fluids_title" v="SERVIÇO DE FLUIDOS" />
+        <e k="usedplus_fluids_oil" v="Óleo do Motor" />
+        <e k="usedplus_fluids_hydraulic" v="Fluido Hidráulico" />
+        <e k="usedplus_fluids_level" v="Nível:" />
+        <e k="usedplus_fluids_status" v="Status:" />
+        <e k="usedplus_fluids_statusOk" v="OK" />
+        <e k="usedplus_fluids_statusLow" v="BAIXO" />
+        <e k="usedplus_fluids_statusCritical" v="CRÍTICO" />
+        <e k="usedplus_fluids_statusLeaking" v="VAZANDO" />
+        <e k="usedplus_fluids_leakMinor" v="Vazamento Leve" />
+        <e k="usedplus_fluids_leakModerate" v="Vazamento Moderado" />
+        <e k="usedplus_fluids_leakSevere" v="Vazamento Grave" />
+        <e k="usedplus_fluids_topUp" v="Completar" />
+        <e k="usedplus_fluids_fullChange" v="Troca Completa" />
+        <e k="usedplus_fluids_cost" v="Custo:" />
+
+        <!-- v1.7.0: Rótulos do Diálogo de Pneus -->
+        <e k="usedplus_tires_title" v="SERVIÇO DE PNEUS" />
+        <e k="usedplus_tires_condition" v="Condição:" />
+        <e k="usedplus_tires_quality" v="Qualidade:" />
+        <e k="usedplus_tires_traction" v="Tração:" />
+        <e k="usedplus_tires_flatTire" v="PNEU FURADO" />
+        <e k="usedplus_tires_replace" v="Substituir Pneus" />
+        <e k="usedplus_tires_selectQuality" v="Selecionar Qualidade:" />
+        <e k="usedplus_tires_retreadDesc" v="Opção econômica - menor tração, maior risco de falha" />
+        <e k="usedplus_tires_normalDesc" v="Pneus padrão - desempenho equilibrado" />
+        <e k="usedplus_tires_qualityDesc" v="Pneus premium - melhor tração, menor risco de falha" />
+        <e k="usedplus_tires_cost" v="Custo:" />
+
+        <!-- v1.7.0: Relatório de Manutenção - Seção Pneus/Fluidos -->
+        <e k="usedplus_mr_tires" v="PNEUS" />
+        <e k="usedplus_mr_fluids" v="FLUIDOS" />
+        <e k="usedplus_mr_tireCondition" v="Condição dos Pneus:" />
+        <e k="usedplus_mr_tireQuality" v="Qualidade dos Pneus:" />
+        <e k="usedplus_mr_oilLevel" v="Nível de Óleo:" />
+        <e k="usedplus_mr_hydraulicLevel" v="Fluido Hidráulico:" />
+        <e k="usedplus_mr_fuelLeak" v="Vazamento de Combustível:" />
+        <e k="usedplus_mr_yes" v="Sim" />
+        <e k="usedplus_mr_no" v="Não" />
+
+        <!-- v1.7.0: Diálogo de Serviço de Pneus -->
+        <e k="usedplus_tires_sectionStatus" v="STATUS DO VEÍCULO &amp; PNEUS" />
+        <e k="usedplus_tires_sectionSelect" v="SELECIONAR QUALIDADE DO PNEU" />
+        <e k="usedplus_tires_sectionPayment" v="RESUMO DO PAGAMENTO" />
+        <e k="usedplus_tires_currentQuality" v="Qualidade Atual:" />
+        <e k="usedplus_tires_currentCondition" v="Condição dos Pneus:" />
+        <e k="usedplus_tires_selectHelp" v="Clique em um tipo de pneu. Maior qualidade = melhor desempenho." />
+        <e k="usedplus_tires_retread" v="Recapado" />
+        <e k="usedplus_tires_normal" v="Normal" />
+        <e k="usedplus_tires_retreadInfo" v="85% tração, 3x falha" />
+        <e k="usedplus_tires_normalInfo" v="100% tração, base" />
+        <e k="usedplus_tires_qualityInfo" v="110% tração, 0.5x falha" />
+        <e k="usedplus_tires_selectedTire" v="Pneu Selecionado:" />
+        <e k="usedplus_tires_totalCost" v="Custo Total:" />
+        <e k="usedplus_tires_selectOne" v="Selecione um pneu..." />
+        <e k="usedplus_tires_infoText" v="Pneus novos restauram 100%. Recapados são carcaças recicladas." />
+        <e k="usedplus_tires_flatWarning" v="PNEU FURADO - Substituição Necessária!" />
+        <e k="usedplus_tires_selectFirst" v="Por favor, selecione uma qualidade de pneu primeiro." />
+        <e k="usedplus_tires_replaced" v="Pneus substituídos: %s" />
+
+        <!-- v1.7.0: Diálogo de Serviço de Fluidos -->
+        <e k="usedplus_fluids_sectionStatus" v="STATUS DO VEÍCULO &amp; FLUIDOS" />
+        <e k="usedplus_fluids_sectionService" v="OPÇÕES DE SERVIÇO" />
+        <e k="usedplus_fluids_sectionPayment" v="RESUMO DO PAGAMENTO" />
+        <e k="usedplus_fluids_oilLevel" v="Óleo do Motor:" />
+        <e k="usedplus_fluids_hydraulicLevel" v="Fluido Hidráulico:" />
+        <e k="usedplus_fluids_oilRefill" v="Completar Óleo do Motor" />
+        <e k="usedplus_fluids_hydraulicRefill" v="Completar Fluido Hidráulico" />
+        <e k="usedplus_fluids_full" v="Cheio" />
+        <e k="usedplus_fluids_refillAmount" v="Completar: %.0f%%" />
+        <e k="usedplus_fluids_noRefillNeeded" v="Não precisa completar" />
+        <e k="usedplus_fluids_selectedServices" v="Serviços Selecionados:" />
+        <e k="usedplus_fluids_totalCost" v="Custo Total:" />
+        <e k="usedplus_fluids_selectServices" v="Selecione serviços..." />
+        <e k="usedplus_fluids_infoText" v="Clique nos serviços. Completar restaura níveis para 100%." />
+        <e k="usedplus_fluids_oilLeakWarning" v="VAZAMENTO DE ÓLEO DETECTADO" />
+        <e k="usedplus_fluids_hydraulicLeakWarning" v="VAZAMENTO HIDRÁULICO DETECTADO" />
+        <e k="usedplus_fluids_selectFirst" v="Por favor, selecione pelo menos um serviço." />
+        <e k="usedplus_fluids_refilled" v="Fluidos completados: %s" />
+
+        <!-- v1.7.0: Mensagens relacionadas a Crédito -->
+        <e k="usedplus_loan_useFinancialDashboard" v="Use o Painel Financeiro para empréstimos baseados em crédito" />
+
     </elements>
 </l10n>

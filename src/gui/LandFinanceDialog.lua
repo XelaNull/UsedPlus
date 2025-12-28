@@ -133,6 +133,52 @@ function LandFinanceDialog:setData(fieldId, fieldPrice, farmId)
 end
 
 --[[
+     Check credit qualification and minimum amount, update UI accordingly
+]]
+function LandFinanceDialog:updateCreditStatus()
+    self.canFinanceLand = true
+    local warningMsg = nil
+
+    -- Check minimum financing amount first
+    if FinanceCalculations and FinanceCalculations.meetsMinimumAmount then
+        local meetsMinimum, minRequired = FinanceCalculations.meetsMinimumAmount(self.fieldPrice or 0, "LAND_FINANCE")
+        if not meetsMinimum then
+            self.canFinanceLand = false
+            warningMsg = string.format(g_i18n:getText("usedplus_land_amountTooSmall") or "Amount too small for land financing. Minimum: %s",
+                g_i18n:formatMoney(minRequired, 0, true, true))
+        end
+    end
+
+    -- Then check credit score (only if amount check passed)
+    if self.canFinanceLand and CreditScore and CreditScore.canFinance then
+        local canFinance, minRequired, currentScore, message = CreditScore.canFinance(self.farmId, "LAND_FINANCE")
+        if not canFinance then
+            self.canFinanceLand = false
+            local template = g_i18n:getText("usedplus_credit_tooLowForLand")
+            warningMsg = string.format(template, currentScore, minRequired)
+        end
+        self.landMinScore = minRequired
+        self.currentCreditScore = currentScore
+    end
+
+    -- Show/hide warning
+    if self.creditWarningText then
+        if warningMsg then
+            self.creditWarningText:setText(warningMsg)
+            self.creditWarningText:setVisible(true)
+            self.creditWarningText:setTextColor(1, 0.3, 0.3, 1)
+        else
+            self.creditWarningText:setVisible(false)
+        end
+    end
+
+    -- Disable accept button if cannot finance
+    if self.acceptButton then
+        self.acceptButton:setDisabled(not self.canFinanceLand)
+    end
+end
+
+--[[
      Update live preview with land-specific interest rates
 ]]
 function LandFinanceDialog:updatePreview()
@@ -140,6 +186,9 @@ function LandFinanceDialog:updatePreview()
     if not self.isDataSet then return end
     if self.fieldPrice == nil or self.fieldPrice == 0 then return end
     if self.termSlider == nil or self.downPaymentSlider == nil then return end
+
+    -- Update credit status (enables/disables accept button)
+    self:updateCreditStatus()
 
     -- Get current slider values (1-based index) with safety
     local termIndex = self.termSlider:getState()
@@ -217,6 +266,16 @@ function LandFinanceDialog:onAcceptFinance()
     if self.fieldId == nil then
         UsedPlus.logError("No field selected for financing")
         return
+    end
+
+    -- Credit score check - land financing requires minimum credit score
+    if CreditScore and CreditScore.canFinance then
+        local canFinance, minRequired, currentScore, message = CreditScore.canFinance(self.farmId, "LAND_FINANCE")
+        if not canFinance then
+            g_currentMission:addIngameNotification(FSBaseMission.INGAME_NOTIFICATION_CRITICAL, message)
+            UsedPlus.logInfo(string.format("Land finance rejected: credit %d < %d required", currentScore, minRequired))
+            return
+        end
     end
 
     -- Get final values from class constants

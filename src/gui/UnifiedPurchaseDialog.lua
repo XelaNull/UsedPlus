@@ -200,11 +200,62 @@ function UnifiedPurchaseDialog:calculateCreditParameters()
         local baseRate = 0.08
         local adjustment = CreditScore.getInterestAdjustment(self.creditScore) or 0
         self.interestRate = math.max(0.03, math.min(0.15, baseRate + adjustment))
+
+        -- Check qualification for each financing type
+        self.canFinance, self.financeMinScore = CreditScore.canFinance(farmId, "VEHICLE_FINANCE")
+        self.canLease, self.leaseMinScore = CreditScore.canFinance(farmId, "VEHICLE_LEASE")
     else
         self.creditScore = 650
         self.creditRating = "Fair"
         self.interestRate = 0.08
+        self.canFinance = true
+        self.canLease = true
+        self.financeMinScore = 550
+        self.leaseMinScore = 600
     end
+end
+
+--[[
+    Check if current mode is available based on credit score and minimum amounts
+    @return isAvailable (boolean), message (string or nil)
+]]
+function UnifiedPurchaseDialog:isModeAvailable()
+    if self.currentMode == UnifiedPurchaseDialog.MODE_CASH then
+        return true, nil  -- Cash is always available
+    elseif self.currentMode == UnifiedPurchaseDialog.MODE_FINANCE then
+        -- Check minimum financing amount first
+        if FinanceCalculations and FinanceCalculations.meetsMinimumAmount then
+            local meetsMinimum, minRequired = FinanceCalculations.meetsMinimumAmount(self.vehiclePrice, "VEHICLE_FINANCE")
+            if not meetsMinimum then
+                local msg = string.format(g_i18n:getText("usedplus_finance_amountTooSmall") or "Amount too small for financing. Minimum: %s",
+                    g_i18n:formatMoney(minRequired, 0, true, true))
+                return false, msg
+            end
+        end
+        -- Then check credit score
+        if not self.canFinance then
+            local msgTemplate = g_i18n:getText("usedplus_credit_tooLowForFinancing")
+            return false, string.format(msgTemplate, self.creditScore, self.financeMinScore or 550)
+        end
+        return true, nil
+    elseif self.currentMode == UnifiedPurchaseDialog.MODE_LEASE then
+        -- Check minimum lease amount first
+        if FinanceCalculations and FinanceCalculations.meetsMinimumAmount then
+            local meetsMinimum, minRequired = FinanceCalculations.meetsMinimumAmount(self.vehiclePrice, "VEHICLE_LEASE")
+            if not meetsMinimum then
+                local msg = string.format(g_i18n:getText("usedplus_lease_amountTooSmall") or "Amount too small for leasing. Minimum: %s",
+                    g_i18n:formatMoney(minRequired, 0, true, true))
+                return false, msg
+            end
+        end
+        -- Then check credit score
+        if not self.canLease then
+            local msgTemplate = g_i18n:getText("usedplus_credit_tooLowForLeasing")
+            return false, string.format(msgTemplate, self.creditScore, self.leaseMinScore or 600)
+        end
+        return true, nil
+    end
+    return true, nil
 end
 
 --[[
@@ -655,6 +706,34 @@ function UnifiedPurchaseDialog:updateDisplay()
     -- Trade-in value (green - credit toward purchase)
     UIHelper.Finance.displayAssetValue(self.tradeInValueText, self.tradeInValue)
 
+    -- Check if current mode is available (credit qualification)
+    local modeAvailable, creditWarning = self:isModeAvailable()
+
+    -- Show/hide credit warning
+    if self.creditWarningText then
+        if creditWarning then
+            self.creditWarningText:setText(creditWarning)
+            self.creditWarningText:setVisible(true)
+            -- Red color for warning
+            self.creditWarningText:setTextColor(1, 0.3, 0.3, 1)
+        else
+            self.creditWarningText:setVisible(false)
+        end
+    end
+
+    -- Show/hide credit warning container (background)
+    if self.creditWarningContainer then
+        self.creditWarningContainer:setVisible(creditWarning ~= nil)
+    end
+
+    -- Enable/disable confirm button based on mode availability
+    if self.confirmButton then
+        self.confirmButton:setDisabled(not modeAvailable)
+    end
+
+    -- Update mode selector to show unavailable options with indicators
+    self:updateModeSelectorTexts()
+
     -- Update mode-specific displays
     if self.currentMode == UnifiedPurchaseDialog.MODE_CASH then
         self:updateCashDisplay()
@@ -663,6 +742,37 @@ function UnifiedPurchaseDialog:updateDisplay()
     elseif self.currentMode == UnifiedPurchaseDialog.MODE_LEASE then
         self:updateLeaseDisplay()
     end
+end
+
+--[[
+    Update mode selector texts to show which options are unavailable
+    Adds visual indicators for credit-locked options
+]]
+function UnifiedPurchaseDialog:updateModeSelectorTexts()
+    if not self.modeSelector then return end
+
+    local texts = {}
+
+    -- Cash is always available
+    table.insert(texts, g_i18n:getText("usedplus_mode_cash"))
+
+    -- Finance - show lock indicator if unavailable
+    if self.canFinance then
+        table.insert(texts, g_i18n:getText("usedplus_mode_finance"))
+    else
+        local template = g_i18n:getText("usedplus_mode_financeCredit")
+        table.insert(texts, string.format(template, self.financeMinScore or 550))
+    end
+
+    -- Lease - show lock indicator if unavailable
+    if self.canLease then
+        table.insert(texts, g_i18n:getText("usedplus_mode_lease"))
+    else
+        local template = g_i18n:getText("usedplus_mode_leaseCredit")
+        table.insert(texts, string.format(template, self.leaseMinScore or 600))
+    end
+
+    self.modeSelector:setTexts(texts)
 end
 
 --[[
@@ -1085,6 +1195,16 @@ function UnifiedPurchaseDialog:executeFinancePurchase()
         return
     end
 
+    -- Credit score check - must meet minimum for vehicle financing
+    if CreditScore and CreditScore.canFinance then
+        local canFinance, minRequired, currentScore, message = CreditScore.canFinance(farmId, "VEHICLE_FINANCE")
+        if not canFinance then
+            g_currentMission:addIngameNotification(FSBaseMission.INGAME_NOTIFICATION_CRITICAL, message)
+            UsedPlus.logInfo(string.format("Finance rejected: credit %d < %d required", currentScore, minRequired))
+            return
+        end
+    end
+
     -- Calculate finance parameters
     local termYears = UnifiedPurchaseDialog.FINANCE_TERMS[self.financeTermIndex] or 5
     local downPct = UnifiedPurchaseDialog.DOWN_PAYMENT_OPTIONS[self.financeDownIndex] or 10
@@ -1161,6 +1281,16 @@ function UnifiedPurchaseDialog:executeLeasePurchase()
     if not farm then
         g_currentMission:addIngameNotification(FSBaseMission.INGAME_NOTIFICATION_CRITICAL, g_i18n:getText("usedplus_error_farmNotFound"))
         return
+    end
+
+    -- Credit score check - leasing requires HIGHER credit score than financing
+    if CreditScore and CreditScore.canFinance then
+        local canLease, minRequired, currentScore, message = CreditScore.canFinance(farmId, "VEHICLE_LEASE")
+        if not canLease then
+            g_currentMission:addIngameNotification(FSBaseMission.INGAME_NOTIFICATION_CRITICAL, message)
+            UsedPlus.logInfo(string.format("Lease rejected: credit %d < %d required", currentScore, minRequired))
+            return
+        end
     end
 
     -- Calculate lease parameters (LEASE_TERMS stores months directly)

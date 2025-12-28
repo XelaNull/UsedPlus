@@ -222,6 +222,13 @@ function FinanceDeal:processConfiguredPayment()
         self.lastPaymentAmount = paymentAmount
         self.missedPayments = 0  -- Reset missed counter
 
+        -- Sync cash loan principal payment to vanilla farm.loan for Finances page visibility
+        if self.dealType == 3 and principalPayment > 0 then
+            if farm.loan ~= nil and farm.loan > 0 then
+                farm.loan = math.max(0, farm.loan - principalPayment)
+            end
+        end
+
         -- Deduct from farm
         if g_server then
             g_currentMission:addMoneyChange(-paymentAmount, self.farmId, MoneyType.OTHER, true)
@@ -834,6 +841,13 @@ function FinanceDeal:makePayment(amount)
     self.currentBalance = self.currentBalance - principal
     self.monthsPaid = self.monthsPaid + numMonths
     self.totalInterestPaid = self.totalInterestPaid + totalInterest
+
+    -- Sync cash loan principal payment to vanilla farm.loan for Finances page visibility
+    if self.dealType == 3 and principal > 0 then
+        if farm.loan ~= nil and farm.loan > 0 then
+            farm.loan = math.max(0, farm.loan - principal)
+        end
+    end
 
     -- Deduct money
     if g_server then

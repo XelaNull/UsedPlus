@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="utf-8" standalone="no" ?>
+<!--
+    FS25_UsedPlus - Sale Listing Initiated Confirmation Dialog
+    Styled dialog showing listing details after agent is hired to sell a vehicle
+    Matches styling of SearchInitiatedDialog
+-->
+<GUI onOpen="onOpen" onClose="onClose" onCreate="onCreate">
+    <GuiElement profile="newLayer" />
+    <Bitmap profile="dialogFullscreenBg" id="dialogBg" />
+
+    <GuiElement profile="dialogBg" id="dialogElement" size="620px 450px">
+        <ThreePartBitmap profile="fs25_dialogBgMiddle" />
+        <ThreePartBitmap profile="fs25_dialogBgTop" />
+        <ThreePartBitmap profile="fs25_dialogBgBottom" />
+
+        <GuiElement profile="fs25_dialogContentContainer">
+
+            <!-- Title -->
+            <Text profile="sliTitle" position="0px -20px" text="$l10n_usedplus_sli_title"/>
+
+            <!-- ========== SECTION 1: Vehicle Being Sold ========== -->
+            <GuiElement profile="sliSectionContainer" position="0px -55px">
+                <Bitmap profile="sliSectionBgBlue" position="0px 0px"/>
+                <Text profile="sliVehicleName" id="vehicleNameText" position="0px -20px" text=""/>
+            </GuiElement>
+
+            <!-- ========== SECTION 2: Agent & Fee ========== -->
+            <GuiElement profile="sliSectionContainerMed" position="0px -115px">
+                <Bitmap profile="sliSectionBgFee" position="0px 0px"/>
+                <Text profile="sliSectionHeader" position="0px -8px" text="$l10n_usedplus_sli_sectionAgent"/>
+
+                <!-- Two columns: Agent Type | Fee Charged -->
+                <Text profile="sliLabel" position="-140px -32px" text="$l10n_usedplus_sli_agentType"/>
+                <Text profile="sliValueAgent" id="agentTypeText" position="-140px -52px" text=""/>
+
+                <Text profile="sliLabel" position="140px -32px" text="$l10n_usedplus_sli_feeCharged"/>
+                <Text profile="sliValueFee" id="agentFeeText" position="140px -52px" text=""/>
+            </GuiElement>
+
+            <!-- ========== SECTION 3: Listing Details ========== -->
+            <GuiElement profile="sliSectionContainerTall" position="0px -200px">
+                <Bitmap profile="sliSectionBgGreen" position="0px 0px"/>
+                <Text profile="sliSectionHeader" position="0px -8px" text="$l10n_usedplus_sli_sectionListing"/>
+
+                <!-- Three columns: Price Tier | Expected Range | Timeline -->
+                <Text profile="sliLabel" position="-180px -32px" text="$l10n_usedplus_sli_priceTier"/>
+                <Text profile="sliValueTier" id="priceTierText" position="-180px -52px" text=""/>
+
+                <Text profile="sliLabel" position="0px -32px" text="$l10n_usedplus_sli_expectedPrice"/>
+                <Text profile="sliValueGreen" id="priceRangeText" position="0px -52px" text=""/>
+
+                <Text profile="sliLabel" position="180px -32px" text="$l10n_usedplus_sli_timeline"/>
+                <Text profile="sliValue" id="timelineText" position="180px -52px" text=""/>
+
+                <!-- Success rate centered below -->
+                <Text profile="sliLabel" position="0px -76px" text="$l10n_usedplus_sli_successRate"/>
+                <Text profile="sliValueSuccess" id="successRateText" position="0px -94px" text=""/>
+            </GuiElement>
+
+            <!-- ========== Info Text ========== -->
+            <Text profile="sliInfoText" position="0px -320px"
+                text="$l10n_usedplus_sli_infoText"/>
+            <Text profile="sliInfoTextSub" position="0px -342px"
+                text="$l10n_usedplus_sli_infoTextSub"/>
+
+        </GuiElement>
+
+        <BoxLayout profile="fs25_dialogButtonBox">
+            <Button profile="buttonOK" id="okButton" text="$l10n_button_ok" onClick="onClickOk"/>
+        </BoxLayout>
+
+    </GuiElement>
+
+    <GUIProfiles>
+        <!-- ========== TITLE ========== -->
+        <Profile name="sliTitle" extends="fs25_textDefault" with="anchorTopCenter">
+            <size value="500px 28px"/>
+            <textSize value="20px"/>
+            <textBold value="true"/>
+            <textColor value="0.3 1 0.4 1"/>
+            <textAlignment value="center"/>
+        </Profile>
+
+        <!-- ========== SECTION CONTAINERS ========== -->
+        <Profile name="sliSectionContainer" extends="emptyPanel" with="anchorTopCenter">
+            <size value="560px 50px"/>
+        </Profile>
+
+        <Profile name="sliSectionContainerMed" extends="emptyPanel" with="anchorTopCenter">
+            <size value="560px 75px"/>
+        </Profile>
+
+        <Profile name="sliSectionContainerTall" extends="emptyPanel" with="anchorTopCenter">
+            <size value="560px 110px"/>
+        </Profile>
+
+        <!-- ========== SECTION BACKGROUNDS ========== -->
+        <Profile name="sliSectionBgBlue" extends="baseReference" with="anchorTopCenter">
+            <size value="560px 50px"/>
+            <imageColor value="0.06 0.08 0.14 0.9"/>
+        </Profile>
+
+        <Profile name="sliSectionBgFee" extends="baseReference" with="anchorTopCenter">
+            <size value="560px 75px"/>
+            <imageColor value="0.12 0.08 0.08 0.9"/>
+        </Profile>
+
+        <Profile name="sliSectionBgGreen" extends="baseReference" with="anchorTopCenter">
+            <size value="560px 110px"/>
+            <imageColor value="0.06 0.12 0.08 0.9"/>
+        </Profile>
+
+        <!-- ========== SECTION HEADER ========== -->
+        <Profile name="sliSectionHeader" extends="fs25_textDefault" with="anchorTopCenter">
+            <size value="540px 20px"/>
+            <textSize value="12px"/>
+            <textBold value="true"/>
+            <textColor value="1 0.8 0.2 1"/>
+            <textAlignment value="center"/>
+        </Profile>
+
+        <!-- ========== VEHICLE NAME ========== -->
+        <Profile name="sliVehicleName" extends="fs25_textDefault" with="anchorTopCenter">
+            <size value="520px 24px"/>
+            <textSize value="18px"/>
+            <textBold value="true"/>
+            <textColor value="0.5 0.85 1 1"/>
+            <textAlignment value="center"/>
+        </Profile>
+
+        <!-- ========== LABELS ========== -->
+        <Profile name="sliLabel" extends="fs25_textDefault" with="anchorTopCenter">
+            <size value="160px 16px"/>
+            <textSize value="11px"/>
+            <textColor value="0.6 0.6 0.6 1"/>
+            <textAlignment value="center"/>
+        </Profile>
+
+        <!-- ========== VALUES ========== -->
+        <Profile name="sliValue" extends="fs25_textDefault" with="anchorTopCenter">
+            <size value="160px 18px"/>
+            <textSize value="14px"/>
+            <textBold value="true"/>
+            <textColor value="1 1 1 1"/>
+            <textAlignment value="center"/>
+        </Profile>
+
+        <Profile name="sliValueAgent" extends="fs25_textDefault" with="anchorTopCenter">
+            <size value="160px 18px"/>
+            <textSize value="14px"/>
+            <textBold value="true"/>
+            <textColor value="0.5 0.8 1 1"/>
+            <textAlignment value="center"/>
+        </Profile>
+
+        <Profile name="sliValueTier" extends="fs25_textDefault" with="anchorTopCenter">
+            <size value="160px 18px"/>
+            <textSize value="14px"/>
+            <textBold value="true"/>
+            <textColor value="0.9 0.85 0.4 1"/>
+            <textAlignment value="center"/>
+        </Profile>
+
+        <Profile name="sliValueFee" extends="fs25_textDefault" with="anchorTopCenter">
+            <size value="160px 18px"/>
+            <textSize value="15px"/>
+            <textBold value="true"/>
+            <textColor value="1 0.5 0.4 1"/>
+            <textAlignment value="center"/>
+        </Profile>
+
+        <Profile name="sliValueGreen" extends="fs25_textDefault" with="anchorTopCenter">
+            <size value="180px 18px"/>
+            <textSize value="14px"/>
+            <textBold value="true"/>
+            <textColor value="0.3 1 0.4 1"/>
+            <textAlignment value="center"/>
+        </Profile>
+
+        <Profile name="sliValueSuccess" extends="fs25_textDefault" with="anchorTopCenter">
+            <size value="100px 20px"/>
+            <textSize value="16px"/>
+            <textBold value="true"/>
+            <textColor value="0.3 1 0.4 1"/>
+            <textAlignment value="center"/>
+        </Profile>
+
+        <!-- ========== INFO TEXT ========== -->
+        <Profile name="sliInfoText" extends="fs25_textDefault" with="anchorTopCenter">
+            <size value="540px 16px"/>
+            <textSize value="12px"/>
+            <textColor value="0.6 0.8 0.6 1"/>
+            <textAlignment value="center"/>
+        </Profile>
+
+        <Profile name="sliInfoTextSub" extends="fs25_textDefault" with="anchorTopCenter">
+            <size value="540px 14px"/>
+            <textSize value="11px"/>
+            <textColor value="0.5 0.6 0.5 1"/>
+            <textAlignment value="center"/>
+        </Profile>
+    </GUIProfiles>
+</GUI>

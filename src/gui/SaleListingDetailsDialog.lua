@@ -74,6 +74,7 @@ end
 
 --[[
     Update all display fields with listing data
+    Uses UIHelper for consistent styling across UsedPlus dialogs
 ]]
 function SaleListingDetailsDialog:updateDisplay()
     if self.listing == nil then return end
@@ -81,42 +82,38 @@ function SaleListingDetailsDialog:updateDisplay()
     local listing = self.listing
 
     -- Vehicle Info
-    if self.vehicleNameText then
-        self.vehicleNameText:setText(listing.vehicleName or "Unknown Vehicle")
-    end
+    UIHelper.Element.setText(self.vehicleNameText, listing.vehicleName or "Unknown Vehicle")
 
     if self.conditionText then
         local repairPct = listing.repairPercent or 100
         local paintPct = listing.paintPercent or 100
         self.conditionText:setText(string.format("%d%% / %d%%", repairPct, paintPct))
 
-        -- Color based on condition (green if good, yellow if fair, red if poor)
+        -- Color based on condition (green if good, gold if fair, red if poor)
         local avgCondition = (repairPct + paintPct) / 2
         if avgCondition >= 80 then
-            self.conditionText:setTextColor(0.3, 1, 0.3, 1)  -- Green
+            self.conditionText:setTextColor(0.3, 1, 0.4, 1)  -- Green
         elseif avgCondition >= 50 then
-            self.conditionText:setTextColor(1, 0.8, 0.3, 1)  -- Yellow
+            self.conditionText:setTextColor(1, 0.85, 0.2, 1)  -- Gold
         else
             self.conditionText:setTextColor(1, 0.4, 0.4, 1)  -- Red
         end
     end
 
-    if self.hoursText then
-        self.hoursText:setText(tostring(listing.operatingHours or 0))
-    end
+    UIHelper.Element.setText(self.hoursText, tostring(listing.operatingHours or 0))
 
-    -- Status
+    -- Status with dynamic coloring
     if self.statusText then
         local statusText = listing:getStatusText()
         self.statusText:setText(statusText)
 
         -- Color based on status
         if listing.status == VehicleSaleListing.STATUS.OFFER_PENDING then
-            self.statusText:setTextColor(0.3, 1, 0.3, 1)  -- Green - offer ready!
+            self.statusText:setTextColor(0.3, 1, 0.4, 1)  -- Green - offer ready!
         elseif listing.status == VehicleSaleListing.STATUS.ACTIVE then
-            self.statusText:setTextColor(0.7, 0.7, 0.7, 1)  -- Gray - searching
+            self.statusText:setTextColor(1, 0.85, 0.2, 1)  -- Gold - searching
         elseif listing.status == VehicleSaleListing.STATUS.SOLD then
-            self.statusText:setTextColor(0.3, 1, 0.3, 1)  -- Green - sold
+            self.statusText:setTextColor(0.3, 1, 0.4, 1)  -- Green - sold
         elseif listing.status == VehicleSaleListing.STATUS.EXPIRED then
             self.statusText:setTextColor(1, 0.4, 0.4, 1)  -- Red - expired
         else
@@ -124,38 +121,43 @@ function SaleListingDetailsDialog:updateDisplay()
         end
     end
 
-    if self.timeRemainingText then
-        self.timeRemainingText:setText(listing:getRemainingTime())
-    end
+    UIHelper.Element.setText(self.timeRemainingText, listing:getRemainingTime())
 
     -- Agent Tier
     local agentTier = listing:getAgentTierConfig()
-    if self.agentTierText then
-        self.agentTierText:setText(agentTier.name or "Unknown")
-    end
+    UIHelper.Element.setText(self.agentTierText, agentTier.name or "Unknown")
 
     if self.agentFeeText then
         local feePercent = (agentTier.feePercent or 0) * 100
-        self.agentFeeText:setText(string.format("%s (%.0f%%)",
-            g_i18n:formatMoney(listing.agentFee or 0, 0, true, true),
-            feePercent))
+        if feePercent == 0 then
+            UIHelper.Element.setTextWithColor(self.agentFeeText, "No Fee", UIHelper.Colors.MONEY_GREEN)
+        else
+            self.agentFeeText:setText(string.format("%s (%.0f%%)",
+                UIHelper.Text.formatMoney(listing.agentFee or 0), feePercent))
+        end
     end
 
     if self.baseSuccessText then
         local baseSuccess = (agentTier.baseSuccessRate or 0) * 100
         self.baseSuccessText:setText(string.format("%.0f%%", baseSuccess))
+        -- Color based on success rate
+        if baseSuccess >= 85 then
+            self.baseSuccessText:setTextColor(0.3, 1, 0.4, 1)  -- Green
+        elseif baseSuccess >= 70 then
+            self.baseSuccessText:setTextColor(1, 0.85, 0.2, 1)  -- Gold
+        else
+            self.baseSuccessText:setTextColor(1, 0.6, 0.2, 1)  -- Orange
+        end
     end
 
     -- Price Tier
     local priceTier = listing:getPriceTierConfig()
-    if self.priceTierText then
-        self.priceTierText:setText(priceTier.name or "Unknown")
-    end
+    UIHelper.Element.setText(self.priceTierText, priceTier.name or "Unknown")
 
     if self.priceRangeText then
-        self.priceRangeText:setText(string.format("%s - %s",
-            g_i18n:formatMoney(listing.expectedMinPrice or 0, 0, true, true),
-            g_i18n:formatMoney(listing.expectedMaxPrice or 0, 0, true, true)))
+        self.priceRangeText:setText(UIHelper.Text.formatRange(
+            listing.expectedMinPrice or 0,
+            listing.expectedMaxPrice or 0))
     end
 
     if self.successModText then
@@ -165,7 +167,7 @@ function SaleListingDetailsDialog:updateDisplay()
 
         -- Color: green if positive, red if negative, white if zero
         if successMod > 0 then
-            self.successModText:setTextColor(0.3, 1, 0.3, 1)
+            self.successModText:setTextColor(0.3, 1, 0.4, 1)
         elseif successMod < 0 then
             self.successModText:setTextColor(1, 0.4, 0.4, 1)
         else
@@ -175,21 +177,17 @@ function SaleListingDetailsDialog:updateDisplay()
 
     -- Value Comparison
     local vanillaSell = listing.vanillaSellPrice or 0
-    if self.vanillaSellText then
-        self.vanillaSellText:setText(g_i18n:formatMoney(vanillaSell, 0, true, true))
-    end
+    UIHelper.Element.setText(self.vanillaSellText, UIHelper.Text.formatMoney(vanillaSell))
 
     if self.tradeInValueText then
         -- Trade-in is roughly 50-65% of vanilla
         local tradeInEstimate = math.floor(vanillaSell * 0.575)  -- Midpoint of 50-65%
-        self.tradeInValueText:setText(g_i18n:formatMoney(tradeInEstimate, 0, true, true))
+        self.tradeInValueText:setText(UIHelper.Text.formatMoney(tradeInEstimate))
     end
 
     -- Expected value (midpoint of range)
-    local expectedMid = math.floor((listing.expectedMinPrice + listing.expectedMaxPrice) / 2)
-    if self.expectedValueText then
-        self.expectedValueText:setText(g_i18n:formatMoney(expectedMid, 0, true, true))
-    end
+    local expectedMid = math.floor(((listing.expectedMinPrice or 0) + (listing.expectedMaxPrice or 0)) / 2)
+    UIHelper.Element.setText(self.expectedValueText, UIHelper.Text.formatMoney(expectedMid))
 
     -- Bonus vs vanilla
     if self.bonusVsVanillaText then
@@ -201,40 +199,29 @@ function SaleListingDetailsDialog:updateDisplay()
 
         if bonus >= 0 then
             self.bonusVsVanillaText:setText(string.format("+%s (+%d%%)",
-                g_i18n:formatMoney(bonus, 0, true, true), bonusPercent))
-            self.bonusVsVanillaText:setTextColor(0.3, 1, 0.3, 1)
+                UIHelper.Text.formatMoney(bonus), bonusPercent))
+            self.bonusVsVanillaText:setTextColor(0.4, 1, 0.5, 1)  -- Bright green
         else
             self.bonusVsVanillaText:setText(string.format("%s (%d%%)",
-                g_i18n:formatMoney(bonus, 0, true, true), bonusPercent))
-            self.bonusVsVanillaText:setTextColor(1, 0.4, 0.4, 1)
+                UIHelper.Text.formatMoney(bonus), bonusPercent))
+            self.bonusVsVanillaText:setTextColor(1, 0.4, 0.4, 1)  -- Red
         end
     end
 
-    -- Net amount (expected minus fee)
+    -- Net amount (expected minus fee) - gold for emphasis
     if self.netAmountText then
         local netAmount = expectedMid - (listing.agentFee or 0)
-        self.netAmountText:setText(g_i18n:formatMoney(netAmount, 0, true, true))
+        UIHelper.Element.setTextWithColor(self.netAmountText,
+            UIHelper.Text.formatMoney(netAmount), UIHelper.Colors.GOLD)
     end
 
     -- Offer History
-    if self.offersReceivedText then
-        self.offersReceivedText:setText(tostring(listing.offersReceived or 0))
-    end
-
-    if self.offersDeclinedText then
-        self.offersDeclinedText:setText(tostring(listing.offersDeclined or 0))
-    end
+    UIHelper.Element.setText(self.offersReceivedText, tostring(listing.offersReceived or 0))
+    UIHelper.Element.setText(self.offersDeclinedText, tostring(listing.offersDeclined or 0))
 
     if self.listedDurationText then
         local hoursElapsed = listing.hoursElapsed or 0
-        local days = math.floor(hoursElapsed / 24)
-        local hours = hoursElapsed % 24
-
-        if days > 0 then
-            self.listedDurationText:setText(string.format("%d days, %d hrs", days, hours))
-        else
-            self.listedDurationText:setText(string.format("%d hours", hours))
-        end
+        self.listedDurationText:setText(UIHelper.Text.formatHours(hoursElapsed))
     end
 
     -- Info text - tips based on status
@@ -243,7 +230,7 @@ function SaleListingDetailsDialog:updateDisplay()
 
         if listing.status == VehicleSaleListing.STATUS.OFFER_PENDING then
             tipText = "You have a pending offer! Accept from the Finance Manager."
-        elseif listing.offersDeclined > 0 then
+        elseif listing.offersDeclined and listing.offersDeclined > 0 then
             tipText = "Declining offers reduces remaining time for new offers."
         elseif listing.priceTier == 3 then
             tipText = "Premium pricing requires patience - fewer buyers can afford it."

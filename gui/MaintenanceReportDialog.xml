@@ -18,7 +18,7 @@
             <Text profile="fs25_dialogTitle" id="titleText" position="0px -25px" text="$l10n_usedplus_mrp_title"/>
 
             <!-- ===== SECTION 1: VEHICLE INFO (compact) ===== -->
-            <GuiElement profile="mrSectionVehicle" position="0px -60px">
+            <GuiElement profile="mrSectionVehicle" position="0px -68px">
                 <Bitmap profile="mrSectionBgVehicle" position="0px 0px"/>
                 <Text profile="mrSectionHeader" position="0px -5px" text="$l10n_usedplus_irp_sectionVehicle"/>
 
@@ -30,7 +30,7 @@
             </GuiElement>
 
             <!-- ===== SECTION 2: MECHANICAL STATUS ===== -->
-            <GuiElement profile="mrSectionMech" position="0px -175px">
+            <GuiElement profile="mrSectionMech" position="0px -183px">
                 <Bitmap profile="mrSectionBgMech" position="0px 0px"/>
                 <Text profile="mrSectionHeader" position="0px -5px" text="$l10n_usedplus_mrp_sectionMechanical"/>
 
@@ -59,16 +59,15 @@
             </GuiElement>
 
             <!-- ===== SECTION 3: MECHANIC'S ASSESSMENT (NEW) ===== -->
-            <GuiElement profile="mrSectionQuote" position="0px -295px">
+            <GuiElement profile="mrSectionQuote" position="0px -303px">
                 <Bitmap profile="mrSectionBgQuote" position="0px 0px"/>
                 <Text profile="mrSectionHeader" position="0px -5px" text="$l10n_usedplus_irp_sectionMechanic"/>
 
                 <Text profile="mrQuoteText" id="mechanicQuoteText" position="0px -32px" text=""/>
-                <Text profile="mrQuoteAttrib" id="mechanicAttribText" position="280px -55px" text=""/>
             </GuiElement>
 
             <!-- ===== SECTION 4: SERVICE HISTORY (compact) ===== -->
-            <GuiElement profile="mrSectionHistory" position="0px -380px">
+            <GuiElement profile="mrSectionHistory" position="0px -368px">
                 <Bitmap profile="mrSectionBgHistory" position="0px 0px"/>
                 <Text profile="mrSectionHeader" position="0px -5px" text="$l10n_usedplus_mrp_sectionService"/>
 
@@ -87,7 +86,7 @@
             </GuiElement>
 
             <!-- ===== SECTION 5: STATUS NOTES ===== -->
-            <GuiElement profile="mrSectionNotes" position="0px -470px">
+            <GuiElement profile="mrSectionNotes" position="0px -458px">
                 <Bitmap profile="mrSectionBgNotes" position="0px 0px"/>
                 <Text profile="mrSectionHeader" position="0px -5px" text="$l10n_usedplus_mrp_sectionStatus"/>
 
@@ -114,7 +113,7 @@
         </Profile>
 
         <Profile name="mrSectionQuote" extends="emptyPanel" with="anchorTopCenter">
-            <size value="660px 75px"/>
+            <size value="660px 55px"/>
         </Profile>
 
         <Profile name="mrSectionHistory" extends="emptyPanel" with="anchorTopCenter">
@@ -122,7 +121,7 @@
         </Profile>
 
         <Profile name="mrSectionNotes" extends="emptyPanel" with="anchorTopCenter">
-            <size value="660px 78px"/>
+            <size value="660px 70px"/>
         </Profile>
 
         <!-- ========== SECTION BACKGROUNDS ========== -->
@@ -137,7 +136,7 @@
         </Profile>
 
         <Profile name="mrSectionBgQuote" extends="baseReference" with="anchorTopCenter">
-            <size value="660px 75px"/>
+            <size value="660px 55px"/>
             <imageColor value="0.06 0.08 0.10 0.9"/>
         </Profile>
 
@@ -147,7 +146,7 @@
         </Profile>
 
         <Profile name="mrSectionBgNotes" extends="baseReference" with="anchorTopCenter">
-            <size value="660px 78px"/>
+            <size value="660px 70px"/>
             <imageColor value="0.10 0.08 0.06 0.9"/>
         </Profile>
 
@@ -233,13 +232,6 @@
             <textItalic value="true"/>
             <textColor value="0.9 0.9 0.8 1"/>
             <textAlignment value="center"/>
-        </Profile>
-
-        <Profile name="mrQuoteAttrib" extends="fs25_textDefault" with="anchorTopCenter">
-            <size value="100px 16px"/>
-            <textSize value="11px"/>
-            <textColor value="0.6 0.6 0.5 1"/>
-            <textAlignment value="right"/>
         </Profile>
 
         <!-- ========== HISTORY VALUES ========== -->

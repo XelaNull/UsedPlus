@@ -120,6 +120,7 @@
         <e k="usedplus_manager_actions" v="Actions" />
         <e k="usedplus_manager_noDeals" v="No active finance or lease deals." />
         <e k="usedplus_manager_helpText" v="Finance vehicles from the shop (F key). Search for used equipment (V key). Payments are automatically deducted monthly." />
+        <e k="usedplus_vanillaLoan" v="Bank Loan (Vanilla)" />
 
         <!--  Finance Detail Frame -->
         <e k="usedplus_detail_dealInfo" v="Deal Information" />
@@ -203,6 +204,7 @@
         <e k="usedplus_error_invalidDeal" v="Invalid deal. Please contact support." />
         <e k="usedplus_error_cannotSellLeasedVehicle" v="Cannot sell leased vehicle. End lease first or wait until lease expires." />
         <e k="usedplus_error_insufficientSalePrice" v="Cannot sell. Remaining balance (%s) exceeds sale price (%s)." />
+        <e k="usedplus_error_maxSaleListings" v="Maximum %d vehicles can be listed for sale at once. Wait for a sale to complete or cancel a listing." />
 
         <!--  Credit Score Ratings -->
         <e k="usedplus_credit_excellent" v="Excellent" />
@@ -481,6 +483,22 @@
         <e k="usedPlus_speedGovernor" v="Engine can't sustain this speed!" />
         <e k="usedPlus_firstStartStall" v="Engine failed to start!" />
         <e k="usedPlus_steeringLoose" v="Steering feels loose - hydraulics worn!" />
+        <e k="usedPlus_steeringPull" v="Steering pulling to the %s!" />
+        <e k="usedPlus_directionLeft" v="left" />
+        <e k="usedPlus_directionRight" v="right" />
+
+        <!--  Engine Malfunctions (v1.6.0) -->
+        <e k="usedPlus_engineMisfire" v="Engine misfiring!" />
+        <e k="usedPlus_engineOverheating" v="Engine overheating! (%d%%)" />
+        <e k="usedPlus_engineOverheated" v="ENGINE OVERHEATED! Let it cool down!" />
+
+        <!--  Implement Malfunctions (v1.6.0) -->
+        <e k="usedPlus_implementSurge" v="Hydraulic surge - implement raised!" />
+        <e k="usedPlus_implementDrop" v="Hydraulic failure - implement dropped!" />
+        <e k="usedPlus_ptoToggle" v="Electrical fault - PTO switched %s!" />
+        <e k="usedPlus_ptoOn" v="on" />
+        <e k="usedPlus_ptoOff" v="off" />
+        <e k="usedPlus_hitchFailure" v="HITCH FAILURE - Implement detached!" />
 
         <!--  Hydraulic Drift Warnings (v1.4.0) -->
         <e k="usedPlus_hydraulicWeak" v="Hydraulics weak (%d%%) - implements may drift!" />
@@ -570,6 +588,37 @@
         <e k="usedplus_error_payoffFailed" v="Payoff failed" />
         <e k="usedplus_error_paymentFailed" v="Payment failed" />
         <e k="usedplus_error_eventNotAvailable" v="Error: %s not available" />
+
+        <!-- Error Notifications - Credit Score Requirements -->
+        <e k="usedplus_error_creditTooLow" v="Credit Score Too Low" />
+        <e k="usedplus_error_creditTooLowDetail" v="Your credit score (%d) is below the minimum (%d) required for %s." />
+        <e k="usedplus_error_creditTip" v="Tip: Make on-time payments on existing loans to build credit." />
+        <e k="usedplus_error_creditShortfall" v="Shortfall: %d points" />
+        <e k="usedplus_finance_repairFinancing" v="repair financing" />
+        <e k="usedplus_finance_vehicleFinancing" v="vehicle financing" />
+        <e k="usedplus_finance_vehicleLeasing" v="vehicle leasing" />
+        <e k="usedplus_finance_landFinancing" v="land financing" />
+        <e k="usedplus_finance_cashLoan" v="cash loans" />
+
+        <!-- Credit Warning Messages (UX) -->
+        <e k="usedplus_credit_tooLowForFinancing" v="Credit score too low for financing. Your score: %d (need %d+). Build credit with on-time payments." />
+        <e k="usedplus_credit_tooLowForLeasing" v="Credit score too low for leasing. Your score: %d (need %d+). Leasing requires better credit than financing." />
+        <e k="usedplus_credit_tooLowForLand" v="Credit score too low (%d). Need %d+ to finance land." />
+        <e k="usedplus_credit_tooLowForRepair" v="Credit score too low (%d). Need %d+ to finance repairs." />
+        <e k="usedplus_credit_needScore" v="Credit: %d (need %d)" />
+
+        <!-- Minimum Financing Amount Messages -->
+        <e k="usedplus_finance_amountTooSmall" v="Amount too small for financing. Minimum: %s" />
+        <e k="usedplus_lease_amountTooSmall" v="Amount too small for leasing. Minimum: %s" />
+        <e k="usedplus_repair_amountTooSmall" v="Repair cost too small to finance. Minimum: %s" />
+        <e k="usedplus_land_amountTooSmall" v="Land price too small for financing. Minimum: %s" />
+
+        <!-- Mode Selector Options -->
+        <e k="usedplus_mode_cash" v="Buy with Cash" />
+        <e k="usedplus_mode_finance" v="Finance" />
+        <e k="usedplus_mode_lease" v="Lease" />
+        <e k="usedplus_mode_financeCredit" v="Finance (Credit: %d+)" />
+        <e k="usedplus_mode_leaseCredit" v="Lease (Credit: %d+)" />
 
         <!-- Success Notifications - Sales -->
         <e k="usedplus_notify_vehicleSold" v="Sold %s for %s!" />
@@ -668,6 +717,10 @@
         <e k="usedplus_land_modeFinance" v="Finance" />
         <e k="usedplus_land_modeLease" v="Lease" />
 
+        <!-- Land Purchase - Context Menu Actions -->
+        <e k="usedplus_action_financeLand" v="Finance" />
+        <e k="usedplus_action_leaseLand" v="Lease" />
+
         <!-- Land Purchase - Term Sliders -->
         <e k="usedplus_land_termYears" v="%d Years" />
         <e k="usedplus_land_termYear" v="1 Year" />
@@ -694,6 +747,10 @@
 
         <!-- Land Purchase - Success Notifications -->
         <e k="usedplus_notify_landLeased" v="Leased %s! %s/month, %s" />
+
+        <!-- Loan System Notifications -->
+        <e k="usedplus_loan_useFinancialDashboard" v="Use Financial Dashboard (ESC Menu) to take credit-based loans" />
+        <e k="usedplus_loan_vanillaBorrowDisabled" v="Vanilla borrowing disabled. Open Financial Dashboard for credit-based loans." />
 
         <!-- ============================================== -->
         <!-- PHASE 1d: XML Dialog Labels and Buttons        -->
@@ -970,6 +1027,19 @@
         <e k="usedplus_sv_infoText" v="Agent searches for buyers. You receive offers to accept or decline." />
         <e k="usedplus_sv_warningText" v="Agent fee is non-refundable. Vehicle remains yours until sold." />
         <e k="usedplus_button_hireAgent" v="Hire Agent" />
+
+        <!-- Sale Listing Initiated Dialog -->
+        <e k="usedplus_sli_title" v="Listing Created!" />
+        <e k="usedplus_sli_sectionAgent" v="AGENT DETAILS" />
+        <e k="usedplus_sli_agentType" v="Agent:" />
+        <e k="usedplus_sli_feeCharged" v="Fee Charged:" />
+        <e k="usedplus_sli_sectionListing" v="LISTING DETAILS" />
+        <e k="usedplus_sli_priceTier" v="Price Tier:" />
+        <e k="usedplus_sli_expectedPrice" v="Expected Price:" />
+        <e k="usedplus_sli_timeline" v="Timeline:" />
+        <e k="usedplus_sli_successRate" v="Success Rate:" />
+        <e k="usedplus_sli_infoText" v="Your agent is now searching for buyers." />
+        <e k="usedplus_sli_infoTextSub" v="You'll receive offers to accept or decline as buyers are found." />
 
         <!-- Sale Offer Dialog -->
         <e k="usedplus_so_title" v="SALE OFFER RECEIVED!" />
@@ -1339,6 +1409,134 @@
         <e k="usedplus_quote_leg_3" v="Hold onto this one. You won't find another like it." />
         <e k="usedplus_quote_leg_4" v="Old-timers used to talk about tractors like this. Thought they were just legends." />
         <e k="usedplus_quote_leg_5" v="This one's got guardian angels working overtime in the engine bay." />
+
+        <!-- Search Expired Dialog (v1.5.1) -->
+        <e k="usedplus_searchExpired_title" v="Search Complete" />
+        <e k="usedplus_searchExpired_summary" v="SEARCH SUMMARY" />
+        <e k="usedplus_searchExpired_searchedFor" v="Searched For:" />
+        <e k="usedplus_searchExpired_agentTier" v="Agent Tier:" />
+        <e k="usedplus_searchExpired_quality" v="Quality:" />
+        <e k="usedplus_searchExpired_duration" v="Duration:" />
+        <e k="usedplus_searchExpired_results" v="RESULTS" />
+        <e k="usedplus_searchExpired_vehiclesFound" v="%d vehicle(s) found" />
+        <e k="usedplus_searchExpired_noVehicles" v="No vehicles found" />
+        <e k="usedplus_searchExpired_renewSearch" v="RENEW SEARCH?" />
+        <e k="usedplus_searchExpired_renewCost" v="Renewal Cost:" />
+        <e k="usedplus_searchExpired_renew" v="Renew Search" />
+        <e k="usedplus_searchExpired_renewed" v="Search renewed for %s!" />
+        <e k="usedplus_searchExpired_insufficientFunds" v="Insufficient funds to renew search." />
+
+        <!-- v1.7.0: Tire System Warnings -->
+        <e k="usedplus_warning_tireWorn" v="Warning: Tires are getting worn. Consider replacement soon." />
+        <e k="usedplus_warning_tireCritical" v="CRITICAL: Tires are critically worn! Replace immediately to avoid flat tire." />
+        <e k="usedplus_warning_flatTire" v="FLAT TIRE! Vehicle handling severely impaired. Tire replacement required." />
+        <e k="usedplus_warning_lowTraction" v="Warning: Low traction due to worn tires. Reduce speed in poor conditions." />
+
+        <!-- v1.7.0: Oil System Warnings -->
+        <e k="usedplus_warning_oilLow" v="Warning: Oil level is low. Service required soon." />
+        <e k="usedplus_warning_oilCritical" v="CRITICAL: Oil level dangerously low! Engine damage occurring." />
+        <e k="usedplus_warning_oilLeak" v="Warning: Oil leak detected. Fluid loss accelerating." />
+        <e k="usedplus_warning_engineDamage" v="ENGINE DAMAGE: Permanent reliability loss due to running low on oil!" />
+
+        <!-- v1.7.0: Hydraulic Fluid System Warnings -->
+        <e k="usedplus_warning_hydraulicLow" v="Warning: Hydraulic fluid is low. Service required soon." />
+        <e k="usedplus_warning_hydraulicCritical" v="CRITICAL: Hydraulic fluid dangerously low! System damage occurring." />
+        <e k="usedplus_warning_hydraulicLeak" v="Warning: Hydraulic leak detected. Fluid loss accelerating." />
+        <e k="usedplus_warning_hydraulicDamage" v="HYDRAULIC DAMAGE: Permanent reliability loss due to running low on fluid!" />
+
+        <!-- v1.7.0: Fuel Leak Warning -->
+        <e k="usedplus_warning_fuelLeak" v="Warning: Fuel leak detected! Fuel consumption significantly increased." />
+
+        <!-- v1.7.0: Tire Quality Names -->
+        <e k="usedplus_tire_retread" v="Retread" />
+        <e k="usedplus_tire_normal" v="Normal" />
+        <e k="usedplus_tire_quality" v="Quality" />
+
+        <!-- v1.7.0: Fluids Dialog Labels -->
+        <e k="usedplus_fluids_title" v="FLUID SERVICE" />
+        <e k="usedplus_fluids_oil" v="Engine Oil" />
+        <e k="usedplus_fluids_hydraulic" v="Hydraulic Fluid" />
+        <e k="usedplus_fluids_level" v="Level:" />
+        <e k="usedplus_fluids_status" v="Status:" />
+        <e k="usedplus_fluids_statusOk" v="OK" />
+        <e k="usedplus_fluids_statusLow" v="LOW" />
+        <e k="usedplus_fluids_statusCritical" v="CRITICAL" />
+        <e k="usedplus_fluids_statusLeaking" v="LEAKING" />
+        <e k="usedplus_fluids_leakMinor" v="Minor Leak" />
+        <e k="usedplus_fluids_leakModerate" v="Moderate Leak" />
+        <e k="usedplus_fluids_leakSevere" v="Severe Leak" />
+        <e k="usedplus_fluids_topUp" v="Top Up" />
+        <e k="usedplus_fluids_fullChange" v="Full Change" />
+        <e k="usedplus_fluids_cost" v="Cost:" />
+
+        <!-- v1.7.0: Tires Dialog Labels -->
+        <e k="usedplus_tires_title" v="TIRE SERVICE" />
+        <e k="usedplus_tires_condition" v="Condition:" />
+        <e k="usedplus_tires_quality" v="Quality:" />
+        <e k="usedplus_tires_traction" v="Traction:" />
+        <e k="usedplus_tires_flatTire" v="FLAT TIRE" />
+        <e k="usedplus_tires_replace" v="Replace Tires" />
+        <e k="usedplus_tires_selectQuality" v="Select Quality:" />
+        <e k="usedplus_tires_retreadDesc" v="Budget option - lower traction, higher failure risk" />
+        <e k="usedplus_tires_normalDesc" v="Standard tires - balanced performance" />
+        <e k="usedplus_tires_qualityDesc" v="Premium tires - better traction, lower failure risk" />
+        <e k="usedplus_tires_cost" v="Cost:" />
+
+        <!-- v1.7.0: Maintenance Report - Tire/Fluid Section -->
+        <e k="usedplus_mr_tires" v="TIRES" />
+        <e k="usedplus_mr_fluids" v="FLUIDS" />
+        <e k="usedplus_mr_tireCondition" v="Tire Condition:" />
+        <e k="usedplus_mr_tireQuality" v="Tire Quality:" />
+        <e k="usedplus_mr_oilLevel" v="Oil Level:" />
+        <e k="usedplus_mr_hydraulicLevel" v="Hydraulic Fluid:" />
+        <e k="usedplus_mr_fuelLeak" v="Fuel Leak:" />
+        <e k="usedplus_mr_yes" v="Yes" />
+        <e k="usedplus_mr_no" v="No" />
+
+        <!-- v1.7.0: Tires Service Dialog -->
+        <e k="usedplus_tires_title" v="Tire Service" />
+        <e k="usedplus_tires_sectionStatus" v="VEHICLE &amp; TIRE STATUS" />
+        <e k="usedplus_tires_sectionSelect" v="SELECT TIRE QUALITY" />
+        <e k="usedplus_tires_sectionPayment" v="PAYMENT SUMMARY" />
+        <e k="usedplus_tires_currentQuality" v="Current Quality:" />
+        <e k="usedplus_tires_currentCondition" v="Tire Condition:" />
+        <e k="usedplus_tires_selectHelp" v="Click a tire type to select. Higher quality = better performance." />
+        <e k="usedplus_tires_retread" v="Retread" />
+        <e k="usedplus_tires_normal" v="Normal" />
+        <e k="usedplus_tires_quality" v="Quality" />
+        <e k="usedplus_tires_retreadInfo" v="85% traction, 3x failure" />
+        <e k="usedplus_tires_normalInfo" v="100% traction, baseline" />
+        <e k="usedplus_tires_qualityInfo" v="110% traction, 0.5x failure" />
+        <e k="usedplus_tires_selectedTire" v="Selected Tire:" />
+        <e k="usedplus_tires_totalCost" v="Total Cost:" />
+        <e k="usedplus_tires_selectOne" v="Select a tire..." />
+        <e k="usedplus_tires_infoText" v="New tires restore 100% condition. Retreads are recycled casings." />
+        <e k="usedplus_tires_flatWarning" v="FLAT TIRE - Replacement Required!" />
+        <e k="usedplus_tires_selectFirst" v="Please select a tire quality first." />
+        <e k="usedplus_tires_replaced" v="Tires replaced: %s" />
+
+        <!-- v1.7.0: Fluids Service Dialog -->
+        <e k="usedplus_fluids_title" v="Fluid Service" />
+        <e k="usedplus_fluids_sectionStatus" v="VEHICLE &amp; FLUID STATUS" />
+        <e k="usedplus_fluids_sectionService" v="SERVICE OPTIONS" />
+        <e k="usedplus_fluids_sectionPayment" v="PAYMENT SUMMARY" />
+        <e k="usedplus_fluids_oilLevel" v="Engine Oil:" />
+        <e k="usedplus_fluids_hydraulicLevel" v="Hydraulic Fluid:" />
+        <e k="usedplus_fluids_oilRefill" v="Engine Oil Refill" />
+        <e k="usedplus_fluids_hydraulicRefill" v="Hydraulic Fluid Refill" />
+        <e k="usedplus_fluids_full" v="Full" />
+        <e k="usedplus_fluids_refillAmount" v="Refill: %.0f%%" />
+        <e k="usedplus_fluids_noRefillNeeded" v="No refill needed" />
+        <e k="usedplus_fluids_oil" v="Oil" />
+        <e k="usedplus_fluids_hydraulic" v="Hydraulic" />
+        <e k="usedplus_fluids_selectedServices" v="Selected Services:" />
+        <e k="usedplus_fluids_totalCost" v="Total Cost:" />
+        <e k="usedplus_fluids_selectServices" v="Select services..." />
+        <e k="usedplus_fluids_infoText" v="Click services to select. Refills restore fluid levels to 100%." />
+        <e k="usedplus_fluids_oilLeakWarning" v="OIL LEAK DETECTED" />
+        <e k="usedplus_fluids_hydraulicLeakWarning" v="HYDRAULIC LEAK DETECTED" />
+        <e k="usedplus_fluids_selectFirst" v="Please select at least one service." />
+        <e k="usedplus_fluids_refilled" v="Fluids refilled: %s" />
 
     </elements>
 </l10n>

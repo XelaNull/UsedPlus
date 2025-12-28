@@ -265,6 +265,11 @@ function DialogLoader.registerAll()
         DialogLoader.register("MaintenanceReportDialog", MaintenanceReportDialog, "gui/MaintenanceReportDialog.xml")
     end
 
+    -- v1.5.1: Search expiration dialog with renewal option
+    if SearchExpiredDialog then
+        DialogLoader.register("SearchExpiredDialog", SearchExpiredDialog, "gui/SearchExpiredDialog.xml")
+    end
+
     UsedPlus.logInfo("DialogLoader: Registered all dialogs")
 end
 

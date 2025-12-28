@@ -133,6 +133,14 @@ function FinancialDashboard:updateObligationsSection(farm)
     local landTotal = 0
     local loanTotal = 0
 
+    -- Include vanilla game loans (farm.loan)
+    -- Vanilla loans don't have fixed monthly payments, but we estimate interest obligation
+    -- Vanilla uses ~10% annual interest, so monthly is ~0.83% of balance
+    if farm.loan ~= nil and farm.loan > 0 then
+        local vanillaMonthlyInterest = farm.loan * 0.0083  -- ~10% annual / 12 months
+        loanTotal = loanTotal + vanillaMonthlyInterest
+    end
+
     if g_financeManager then
         local deals = g_financeManager:getDealsForFarm(self.farmId)
         if deals then

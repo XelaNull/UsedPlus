@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="utf-8" standalone="no" ?>
+<!--
+    FS25_UsedPlus - Tires Service Dialog
+
+    Allows player to replace tires with quality selection:
+    - Retread: Cheap, reduced traction, higher failure risk
+    - Normal: Standard tires, baseline performance
+    - Quality: Premium tires, better traction, lower failure risk
+
+    v1.7.0 - Tire and Fluid System
+-->
+<GUI onOpen="onOpen" onClose="onClose" onCreate="onCreate">
+    <GuiElement profile="newLayer" />
+    <Bitmap profile="dialogFullscreenBg" id="dialogBg" />
+
+    <GuiElement profile="dialogBg" id="dialogElement" size="720px 520px">
+        <ThreePartBitmap profile="fs25_dialogBgMiddle" />
+        <ThreePartBitmap profile="fs25_dialogBgTop" />
+        <ThreePartBitmap profile="fs25_dialogBgBottom" />
+
+        <GuiElement profile="fs25_dialogContentContainer">
+
+            <!-- Title -->
+            <Text profile="fs25_dialogTitle" id="dialogTitleElement" position="0px -25px" text="$l10n_usedplus_tires_title"/>
+
+            <!-- ========== SECTION 1: Vehicle & Tire Status ========== -->
+            <GuiElement profile="tiresStatusSection" position="0px -60px">
+                <Bitmap profile="tiresStatusSectionBg" position="0px 0px"/>
+                <Text profile="tiresSectionHeader" position="0px -5px" text="$l10n_usedplus_tires_sectionStatus"/>
+
+                <!-- Two-column layout: image left, info right -->
+                <GuiElement profile="tiresVehicleRow" position="0px -28px">
+                    <!-- Vehicle Image -->
+                    <Bitmap profile="tiresVehicleImage" id="vehicleImageElement" position="-185px 42px"/>
+
+                    <!-- Vehicle Info -->
+                    <Text profile="tiresVehicleName" id="vehicleNameText" position="120px -5px" text=""/>
+
+                    <!-- Current Tire Info -->
+                    <Text profile="tiresStatusLabel" position="70px -30px" text="$l10n_usedplus_tires_currentQuality"/>
+                    <Text profile="tiresQualityValue" id="currentQualityText" position="220px -30px" text=""/>
+
+                    <Text profile="tiresStatusLabel" position="70px -52px" text="$l10n_usedplus_tires_currentCondition"/>
+                    <Text profile="tiresConditionValue" id="currentConditionText" position="220px -52px" text=""/>
+
+                    <!-- Flat Tire Warning (if applicable) -->
+                    <Text profile="tiresWarningText" id="flatTireWarningText" position="120px -75px" text=""/>
+                </GuiElement>
+            </GuiElement>
+
+            <!-- ========== SECTION 2: Quality Selection ========== -->
+            <!-- After Status (130px) + gap = -60 - 130 - 15 = -205 -->
+            <GuiElement profile="tiresSelectSection" position="0px -205px">
+                <Bitmap profile="tiresSelectSectionBg" position="0px 0px"/>
+                <Text profile="tiresSectionHeader" position="0px -5px" text="$l10n_usedplus_tires_sectionSelect"/>
+                <Text profile="tiresHelpText" position="0px -28px" text="$l10n_usedplus_tires_selectHelp"/>
+
+                <!-- Three Quality Buttons -->
+                <GuiElement profile="tiresButtonRow" position="0px -55px">
+                    <!-- Retread Button -->
+                    <Bitmap profile="tiresQualityBtnBg" id="btnRetreadBg" position="-200px 0px"/>
+                    <Button profile="tiresQualityBtnHit" id="retreadButton" onClick="onClickRetread" position="-200px 0px"/>
+                    <Text profile="tiresQualityBtnTitle" id="btnRetreadTitle" position="-200px -5px" text="$l10n_usedplus_tires_retread"/>
+                    <Text profile="tiresQualityBtnCost" id="btnRetreadCost" position="-200px -28px" text=""/>
+                    <Text profile="tiresQualityBtnInfo" id="btnRetreadInfo" position="-200px -48px" text="$l10n_usedplus_tires_retreadInfo"/>
+
+                    <!-- Normal Button -->
+                    <Bitmap profile="tiresQualityBtnBgNormal" id="btnNormalBg" position="0px 0px"/>
+                    <Button profile="tiresQualityBtnHit" id="normalButton" onClick="onClickNormal" position="0px 0px"/>
+                    <Text profile="tiresQualityBtnTitle" id="btnNormalTitle" position="0px -5px" text="$l10n_usedplus_tires_normal"/>
+                    <Text profile="tiresQualityBtnCost" id="btnNormalCost" position="0px -28px" text=""/>
+                    <Text profile="tiresQualityBtnInfo" id="btnNormalInfo" position="0px -48px" text="$l10n_usedplus_tires_normalInfo"/>
+
+                    <!-- Quality Button -->
+                    <Bitmap profile="tiresQualityBtnBgQuality" id="btnQualityBg" position="200px 0px"/>
+                    <Button profile="tiresQualityBtnHit" id="qualityButton" onClick="onClickQuality" position="200px 0px"/>
+                    <Text profile="tiresQualityBtnTitle" id="btnQualityTitle" position="200px -5px" text="$l10n_usedplus_tires_quality"/>
+                    <Text profile="tiresQualityBtnCost" id="btnQualityCost" position="200px -28px" text=""/>
+                    <Text profile="tiresQualityBtnInfo" id="btnQualityInfo" position="200px -48px" text="$l10n_usedplus_tires_qualityInfo"/>
+                </GuiElement>
+            </GuiElement>
+
+            <!-- ========== SECTION 3: Payment Summary ========== -->
+            <!-- After Select (145px) + gap = -205 - 145 - 15 = -365 -->
+            <GuiElement profile="tiresPaymentSection" position="0px -365px">
+                <Bitmap profile="tiresPaymentSectionBg" position="0px 0px"/>
+                <Text profile="tiresSectionHeader" position="0px -5px" text="$l10n_usedplus_tires_sectionPayment"/>
+
+                <Text profile="tiresPaymentLabel" position="-100px -35px" text="$l10n_usedplus_tires_selectedTire"/>
+                <Text profile="tiresPaymentValue" id="selectedTireText" position="-100px -58px" text=""/>
+
+                <Text profile="tiresPaymentLabel" position="100px -35px" text="$l10n_usedplus_tires_totalCost"/>
+                <Text profile="tiresCostValue" id="totalCostText" position="100px -58px" text=""/>
+            </GuiElement>
+
+            <!-- Info Text -->
+            <!-- After Payment (90px) + gap = -365 - 90 - 10 = -465 -->
+            <Text profile="tiresInfoText" position="0px -465px" text="$l10n_usedplus_tires_infoText"/>
+
+        </GuiElement>
+
+        <BoxLayout profile="fs25_dialogButtonBox">
+            <Button profile="buttonOK" id="confirmButton" text="$l10n_usedplus_button_confirm" onClick="onConfirm"/>
+            <Bitmap profile="fs25_dialogButtonBoxSeparator"/>
+            <Button profile="buttonBack" id="cancelButton" text="$l10n_button_cancel" onClick="onCancel"/>
+        </BoxLayout>
+
+    </GuiElement>
+
+    <GUIProfiles>
+        <!-- ========== SECTION CONTAINERS ========== -->
+        <Profile name="tiresStatusSection" extends="emptyPanel" with="anchorTopCenter">
+            <size value="660px 130px"/>
+        </Profile>
+
+        <Profile name="tiresSelectSection" extends="emptyPanel" with="anchorTopCenter">
+            <size value="660px 145px"/>
+        </Profile>
+
+        <Profile name="tiresPaymentSection" extends="emptyPanel" with="anchorTopCenter">
+            <size value="660px 90px"/>
+        </Profile>
+
+        <!-- ========== SECTION BACKGROUNDS ========== -->
+        <Profile name="tiresStatusSectionBg" extends="baseReference" with="anchorTopCenter">
+            <size value="660px 130px"/>
+            <imageColor value="0.08 0.08 0.12 0.9"/>
+        </Profile>
+
+        <Profile name="tiresSelectSectionBg" extends="baseReference" with="anchorTopCenter">
+            <size value="660px 145px"/>
+            <imageColor value="0.06 0.08 0.12 0.9"/>
+        </Profile>
+
+        <Profile name="tiresPaymentSectionBg" extends="baseReference" with="anchorTopCenter">
+            <size value="660px 90px"/>
+            <imageColor value="0.12 0.1 0.06 0.9"/>
+        </Profile>
+
+        <!-- ========== SECTION HEADER ========== -->
+        <Profile name="tiresSectionHeader" extends="fs25_textDefault" with="anchorTopCenter">
+            <size value="640px 22px"/>
+            <textSize value="14px"/>
+            <textBold value="true"/>
+            <textColor value="1 0.8 0.2 1"/>
+            <textAlignment value="center"/>
+        </Profile>
+
+        <!-- ========== VEHICLE ROW ========== -->
+        <Profile name="tiresVehicleRow" extends="emptyPanel" with="anchorTopCenter">
+            <size value="660px 100px"/>
+        </Profile>
+
+        <Profile name="tiresVehicleImage" extends="fs25_vehiclesDetailsImage" with="anchorTopCenter">
+            <size value="180px 120px"/>
+        </Profile>
+
+        <Profile name="tiresVehicleName" extends="fs25_textDefault" with="anchorTopCenter">
+            <size value="300px 22px"/>
+            <textSize value="16px"/>
+            <textBold value="true"/>
+            <textColor value="1 1 1 1"/>
+            <textAlignment value="left"/>
+        </Profile>
+
+        <Profile name="tiresStatusLabel" extends="fs25_textDefault" with="anchorTopCenter">
+            <size value="140px 20px"/>
+            <textSize value="12px"/>
+            <textColor value="0.6 0.6 0.6 1"/>
+            <textAlignment value="left"/>
+        </Profile>
+
+        <Profile name="tiresQualityValue" extends="fs25_textDefault" with="anchorTopCenter">
+            <size value="100px 20px"/>
+            <textSize value="14px"/>
+            <textBold value="true"/>
+            <textColor value="0.4 0.85 1 1"/>
+            <textAlignment value="left"/>
+        </Profile>
+
+        <Profile name="tiresConditionValue" extends="fs25_textDefault" with="anchorTopCenter">
+            <size value="100px 20px"/>
+            <textSize value="14px"/>
+            <textBold value="true"/>
+            <textColor value="0.3 1 0.4 1"/>
+            <textAlignment value="left"/>
+        </Profile>
+
+        <Profile name="tiresWarningText" extends="fs25_textDefault" with="anchorTopCenter">
+            <size value="300px 18px"/>
+            <textSize value="12px"/>
+            <textBold value="true"/>
+            <textColor value="1 0.4 0.4 1"/>
+            <textAlignment value="left"/>
+        </Profile>
+
+        <!-- ========== HELP TEXT ========== -->
+        <Profile name="tiresHelpText" extends="fs25_textDefault" with="anchorTopCenter">
+            <size value="620px 18px"/>
+            <textSize value="12px"/>
+            <textColor value="0.55 0.55 0.55 1"/>
+            <textAlignment value="center"/>
+        </Profile>
+
+        <!-- ========== QUALITY BUTTONS ========== -->
+        <Profile name="tiresButtonRow" extends="emptyPanel" with="anchorTopCenter">
+            <size value="620px 75px"/>
+        </Profile>
+
+        <!-- Retread: Orange tint (budget option) -->
+        <Profile name="tiresQualityBtnBg" extends="baseReference" with="anchorTopCenter">
+            <size value="180px 72px"/>
+            <imageColor value="0.2 0.15 0.1 1"/>
+        </Profile>
+
+        <!-- Normal: Blue tint (standard option) -->
+        <Profile name="tiresQualityBtnBgNormal" extends="baseReference" with="anchorTopCenter">
+            <size value="180px 72px"/>
+            <imageColor value="0.1 0.15 0.2 1"/>
+        </Profile>
+
+        <!-- Quality: Green tint (premium option) -->
+        <Profile name="tiresQualityBtnBgQuality" extends="baseReference" with="anchorTopCenter">
+            <size value="180px 72px"/>
+            <imageColor value="0.1 0.2 0.15 1"/>
+        </Profile>
+
+        <Profile name="tiresQualityBtnHit" extends="emptyPanel" with="anchorTopCenter">
+            <size value="180px 72px"/>
+            <isFocusable value="true"/>
+        </Profile>
+
+        <Profile name="tiresQualityBtnTitle" extends="fs25_textDefault" with="anchorTopCenter">
+            <size value="160px 20px"/>
+            <textSize value="14px"/>
+            <textBold value="true"/>
+            <textColor value="1 1 1 1"/>
+            <textAlignment value="center"/>
+        </Profile>
+
+        <Profile name="tiresQualityBtnCost" extends="fs25_textDefault" with="anchorTopCenter">
+            <size value="160px 18px"/>
+            <textSize value="13px"/>
+            <textBold value="true"/>
+            <textColor value="1 0.6 0.3 1"/>
+            <textAlignment value="center"/>
+        </Profile>
+
+        <Profile name="tiresQualityBtnInfo" extends="fs25_textDefault" with="anchorTopCenter">
+            <size value="160px 16px"/>
+            <textSize value="10px"/>
+            <textColor value="0.6 0.6 0.6 1"/>
+            <textAlignment value="center"/>
+        </Profile>
+
+        <!-- ========== PAYMENT SECTION ========== -->
+        <Profile name="tiresPaymentLabel" extends="fs25_textDefault" with="anchorTopCenter">
+            <size value="140px 20px"/>
+            <textSize value="14px"/>
+            <textBold value="true"/>
+            <textColor value="1 0.85 0.2 1"/>
+            <textAlignment value="center"/>
+        </Profile>
+
+        <Profile name="tiresPaymentValue" extends="fs25_textDefault" with="anchorTopCenter">
+            <size value="140px 24px"/>
+            <textSize value="16px"/>
+            <textBold value="true"/>
+            <textColor value="0.4 0.85 1 1"/>
+            <textAlignment value="center"/>
+        </Profile>
+
+        <Profile name="tiresCostValue" extends="fs25_textDefault" with="anchorTopCenter">
+            <size value="140px 24px"/>
+            <textSize value="18px"/>
+            <textBold value="true"/>
+            <textColor value="1 0.6 0.3 1"/>
+            <textAlignment value="center"/>
+        </Profile>
+
+        <!-- ========== INFO TEXT ========== -->
+        <Profile name="tiresInfoText" extends="fs25_textDefault" with="anchorTopCenter">
+            <size value="640px 16px"/>
+            <textSize value="11px"/>
+            <textColor value="0.5 0.7 0.5 1"/>
+            <textAlignment value="center"/>
+        </Profile>
+    </GUIProfiles>
+</GUI>

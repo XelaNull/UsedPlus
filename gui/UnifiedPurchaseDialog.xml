@@ -11,7 +11,7 @@
     <GuiElement profile="newLayer" />
     <Bitmap profile="dialogFullscreenBg" id="dialogBg" />
 
-    <GuiElement profile="dialogBg" id="dialogElement" size="820px 790px">
+    <GuiElement profile="dialogBg" id="dialogElement" size="820px 820px">
         <ThreePartBitmap profile="fs25_dialogBgMiddle" />
         <ThreePartBitmap profile="fs25_dialogBgTop" />
         <ThreePartBitmap profile="fs25_dialogBgBottom" />
@@ -56,16 +56,23 @@
 
             <!-- ========== SECTION 2: Purchase Mode Selector ========== -->
             <!-- 10px gap after Item Details (145px) = -55 - 145 - 10 = -210 -->
+            <!-- Section is 120px tall to accommodate credit warning banner -->
             <GuiElement profile="upModeSection" position="0px -210px">
                 <Bitmap profile="upModeSectionBg" position="0px 0px"/>
                 <Text profile="upSectionHeader" position="0px -5px" text="$l10n_usedplus_up_sectionMethod"/>
                 <Text profile="upHelpText" id="modeHelpText" position="0px -25px" text="$l10n_usedplus_up_methodHelp"/>
                 <MultiTextOption profile="upModeSelector" id="modeSelector" position="0px -48px" onClick="onModeChanged"/>
+
+                <!-- Credit Warning Banner (shown when selected mode requires higher credit) -->
+                <GuiElement profile="upCreditWarningContainer" id="creditWarningContainer" position="0px -78px" visible="false">
+                    <Bitmap profile="upCreditWarningBg" position="0px 0px"/>
+                    <Text profile="upCreditWarningText" id="creditWarningText" position="0px -8px" text=""/>
+                </GuiElement>
             </GuiElement>
 
             <!-- ========== SECTION 3: Trade-In (Always Visible) ========== -->
-            <!-- 10px gap after Mode Section (90px) = -210 - 90 - 10 = -310 -->
-            <GuiElement profile="upTradeInSection" id="tradeInSection" position="0px -310px">
+            <!-- 10px gap after Mode Section (120px) = -210 - 120 - 10 = -340 -->
+            <GuiElement profile="upTradeInSection" id="tradeInSection" position="0px -340px">
                 <Bitmap profile="upTradeInSectionBg" position="0px 0px"/>
                 <Text profile="upSectionHeader" position="0px -5px" text="$l10n_usedplus_up_sectionTradeIn"/>
                 <Text profile="upHelpText" id="tradeInHelpText" position="0px -22px" text="$l10n_usedplus_up_tradeInHelp"/>
@@ -98,8 +105,8 @@
             </GuiElement>
 
             <!-- ========== SECTION 4A: Cash Mode ========== -->
-            <!-- 10px gap after Trade-In (160px) = -310 - 160 - 10 = -480 -->
-            <GuiElement profile="upPaymentSection" id="cashSection" position="0px -480px" visible="true">
+            <!-- 10px gap after Trade-In (160px) = -340 - 160 - 10 = -510 -->
+            <GuiElement profile="upPaymentSection" id="cashSection" position="0px -510px" visible="true">
                 <Bitmap profile="upPaymentSectionBg" position="0px 0px"/>
                 <Text profile="upSectionHeader" position="0px -5px" text="$l10n_usedplus_up_sectionCash"/>
                 <Text profile="upHelpText" id="cashHelpText" position="0px -22px" text="$l10n_usedplus_up_cashHelp"/>
@@ -120,7 +127,7 @@
             <!-- ========== SECTION 4B: Finance Mode ========== -->
             <!-- Same position as Cash - only one visible at a time -->
             <!-- Safe X range: ±280px for dropdowns (200px wide) -->
-            <GuiElement profile="upPaymentSectionLarge" id="financeSection" position="0px -480px" visible="false">
+            <GuiElement profile="upPaymentSectionLarge" id="financeSection" position="0px -510px" visible="false">
                 <Bitmap profile="upPaymentSectionLargeBg" position="0px 0px"/>
                 <Text profile="upSectionHeader" position="0px -5px" text="$l10n_usedplus_up_sectionFinance"/>
                 <Text profile="upHelpText" id="financeHelpText" position="0px -22px" text="$l10n_usedplus_up_financeHelp"/>
@@ -157,7 +164,7 @@
             <!-- ========== SECTION 4C: Lease Mode ========== -->
             <!-- Same position as Cash/Finance - only one visible at a time -->
             <!-- Safe X range: ±280px for dropdowns (200px wide) -->
-            <GuiElement profile="upPaymentSectionLarge" id="leaseSection" position="0px -480px" visible="false">
+            <GuiElement profile="upPaymentSectionLarge" id="leaseSection" position="0px -510px" visible="false">
                 <Bitmap profile="upPaymentSectionLargeBg" position="0px 0px"/>
                 <Text profile="upSectionHeader" position="0px -5px" text="$l10n_usedplus_up_sectionLease"/>
                 <Text profile="upHelpText" id="leaseHelpText" position="0px -22px" text="$l10n_usedplus_up_leaseHelp"/>
@@ -214,7 +221,7 @@
         </Profile>
 
         <Profile name="upModeSection" extends="emptyPanel" with="anchorTopCenter">
-            <size value="750px 90px"/>
+            <size value="750px 120px"/>
         </Profile>
 
         <Profile name="upTradeInSection" extends="emptyPanel" with="anchorTopCenter">
@@ -236,8 +243,27 @@
         </Profile>
 
         <Profile name="upModeSectionBg" extends="baseReference" with="anchorTopCenter">
-            <size value="750px 90px"/>
+            <size value="750px 120px"/>
             <imageColor value="0.08 0.08 0.12 0.9"/>
+        </Profile>
+
+        <!-- Credit warning container (shown when mode unavailable) -->
+        <Profile name="upCreditWarningContainer" extends="emptyPanel" with="anchorTopCenter">
+            <size value="700px 30px"/>
+        </Profile>
+
+        <Profile name="upCreditWarningBg" extends="baseReference" with="anchorTopCenter">
+            <size value="700px 30px"/>
+            <imageColor value="0.4 0.15 0.15 0.95"/>
+        </Profile>
+
+        <Profile name="upCreditWarningText" extends="fs25_textDefault" with="anchorTopCenter">
+            <size value="680px 24px"/>
+            <textSize value="11px"/>
+            <textColor value="1 0.8 0.8 1"/>
+            <textAlignment value="center"/>
+            <textVerticalAlignment value="middle"/>
+            <textBold value="true"/>
         </Profile>
 
         <Profile name="upTradeInSectionBg" extends="baseReference" with="anchorTopCenter">

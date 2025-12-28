@@ -265,7 +265,12 @@ end
 function CreditScore.calculateDebt(farm)
     local total = 0
 
-    -- Get finance deals from FinanceManager
+    -- Include vanilla game loans (farm.loan is the vanilla Finances page "Loan" line)
+    if farm.loan ~= nil and farm.loan > 0 then
+        total = total + farm.loan
+    end
+
+    -- Get finance deals from FinanceManager (UsedPlus loans, vehicle financing, land financing)
     -- This requires FinanceManager to be initialized (will be)
     if g_financeManager ~= nil then
         local deals = g_financeManager:getDealsForFarm(farm.farmId)
@@ -328,6 +333,108 @@ function CreditScore.getInterestAdjustment(score)
 end
 
 --[[
+    Minimum credit score requirements for financing
+    These prevent players with very poor credit from taking on debt they can't afford
+
+    Tier thresholds:
+    - REPAIR: 500 (lowest bar - small amounts, secured by vehicle)
+    - VEHICLE_FINANCE: 550 (moderate - secured by vehicle)
+    - VEHICLE_LEASE: 600 (higher - leases require better credit)
+    - LAND_FINANCE: 600 (high amounts, secured by land)
+    - CASH_LOAN: 550 (unsecured loans require proven history)
+]]
+CreditScore.MIN_CREDIT_FOR_FINANCING = {
+    REPAIR = 500,           -- Small repair loans, low risk
+    VEHICLE_FINANCE = 550,  -- Vehicle is collateral
+    VEHICLE_LEASE = 600,    -- Leases are stricter
+    LAND_FINANCE = 600,     -- Large amounts, land as collateral
+    CASH_LOAN = 550,        -- Needs collateral pledged
+}
+
+--[[
+    Check if a farm qualifies for a specific type of financing
+    @param farmId - The farm ID
+    @param financeType - One of: "REPAIR", "VEHICLE_FINANCE", "VEHICLE_LEASE", "LAND_FINANCE", "CASH_LOAN"
+    @return canFinance (boolean), minRequired (number), currentScore (number), message (string)
+]]
+function CreditScore.canFinance(farmId, financeType)
+    local currentScore = CreditScore.calculate(farmId)
+    local minRequired = CreditScore.MIN_CREDIT_FOR_FINANCING[financeType]
+
+    if minRequired == nil then
+        UsedPlus.logWarn(string.format("Unknown finance type: %s", tostring(financeType)))
+        minRequired = 600  -- Default to moderate requirement
+    end
+
+    local canFinance = currentScore >= minRequired
+    local message = ""
+
+    if not canFinance then
+        local rating, _ = CreditScore.getRating(currentScore)
+        local deficit = minRequired - currentScore
+
+        -- Get finance type name for message
+        local financeTypeNames = {
+            REPAIR = g_i18n:getText("usedplus_finance_repairFinancing"),
+            VEHICLE_FINANCE = g_i18n:getText("usedplus_finance_vehicleFinancing"),
+            VEHICLE_LEASE = g_i18n:getText("usedplus_finance_vehicleLeasing"),
+            LAND_FINANCE = g_i18n:getText("usedplus_finance_landFinancing"),
+            CASH_LOAN = g_i18n:getText("usedplus_finance_cashLoan"),
+        }
+        local financeTypeName = financeTypeNames[financeType] or financeType
+
+        -- Build localized message
+        local detailTemplate = g_i18n:getText("usedplus_error_creditTooLowDetail")
+        local tip = g_i18n:getText("usedplus_error_creditTip")
+        message = string.format(detailTemplate, currentScore, minRequired, financeTypeName) .. "\n\n" .. tip
+    end
+
+    return canFinance, minRequired, currentScore, message
+end
+
+--[[
+    Get user-friendly description of financing requirements
+    @param financeType - The type of financing
+    @return Table with description and tips
+]]
+function CreditScore.getFinanceRequirements(financeType)
+    local requirements = {
+        REPAIR = {
+            name = "Repair/Repaint Financing",
+            minScore = 500,
+            description = "Finance vehicle repairs and repaints over time.",
+            tips = {"Smallest credit requirement", "Good way to start building credit history"}
+        },
+        VEHICLE_FINANCE = {
+            name = "Vehicle Financing",
+            minScore = 550,
+            description = "Purchase vehicles with monthly payments.",
+            tips = {"Vehicle serves as collateral", "Miss 3 payments and vehicle is repossessed"}
+        },
+        VEHICLE_LEASE = {
+            name = "Vehicle Leasing",
+            minScore = 600,
+            description = "Lease vehicles with option to buy at end of term.",
+            tips = {"Requires better credit than financing", "Security deposit based on credit tier"}
+        },
+        LAND_FINANCE = {
+            name = "Land Financing",
+            minScore = 600,
+            description = "Purchase farmland with mortgage payments.",
+            tips = {"Land serves as collateral", "Lower interest rates than vehicle loans"}
+        },
+        CASH_LOAN = {
+            name = "Cash Loan",
+            minScore = 550,
+            description = "Borrow against your assets for immediate cash.",
+            tips = {"Requires pledging collateral", "Higher interest due to flexibility"}
+        }
+    }
+
+    return requirements[financeType] or requirements.VEHICLE_FINANCE
+end
+
+--[[
     Get cash back multiplier based on credit score
     Better credit = more cash back allowed
     Returns multiplier (0.25x to 2.0x)
@@ -374,17 +481,30 @@ PaymentTracker.STATUS_ON_TIME = "on_time"
 PaymentTracker.STATUS_LATE = "late"       -- Paid, but late
 PaymentTracker.STATUS_MISSED = "missed"   -- Not paid at all
 
--- Score impact values (tuned for realistic credit behavior)
+-- Score impact values (tuned for REALISTIC credit behavior)
+-- Key principle: VERY SLOW to gain, QUICK to lose
+-- Real credit takes YEARS to build, one miss can undo months of progress
 PaymentTracker.IMPACT = {
-    ON_TIME = 3,           -- Small steady gain per on-time payment
-    LATE = -15,            -- Moderate penalty for late
-    MISSED = -40,          -- Severe penalty for missed
-    STREAK_BONUS = 2,      -- Per-payment streak bonus (capped)
-    MAX_STREAK_BONUS = 48, -- Max streak bonus (24 payments × 2)
-    PERFECT_RECORD_BONUS = 25,  -- Bonus for 12+ payments with no misses
-    LONGEVITY_DIVISOR = 4, -- totalPayments / 4 = longevity bonus (max 25)
-    MAX_LONGEVITY_BONUS = 25,
-    RECENT_MISS_PENALTY = -30,  -- Extra penalty if missed in last 6 payments
+    -- Per-payment gains (intentionally small)
+    ON_TIME_BASE = 2,          -- Base points per on-time payment (very slow gain)
+    STREAK_BONUS = 0.5,        -- Per-payment streak bonus (0.5 per, max 12 at 24 streak)
+
+    -- Penalties (intentionally harsh)
+    LATE = -20,                -- Moderate penalty for late
+    MISSED = -50,              -- Severe penalty for missed
+    RECENT_MISS_PENALTY = -40, -- Extra penalty if missed in last 6 payments
+
+    -- Milestone bonuses (reward long-term consistency)
+    PERFECT_12_BONUS = 10,     -- Bonus for 12+ payments with no misses
+    PERFECT_24_BONUS = 20,     -- Bonus for 24+ payments with no misses (total, not additional)
+    PERFECT_48_BONUS = 35,     -- Bonus for 48+ payments with no misses
+
+    -- Longevity (very slow accumulation)
+    LONGEVITY_DIVISOR = 8,     -- totalPayments / 8 = longevity bonus
+    MAX_LONGEVITY_BONUS = 30,  -- Max 30 points (requires 240 payments!)
+
+    -- History requirements
+    MIN_PAYMENTS_FOR_SCORE = 3, -- No credit score benefit until 3 payments made
 }
 
 -- Storage per farm
@@ -466,48 +586,68 @@ end
     Calculate payment history score contribution
     This is the PRIMARY factor in credit score (up to +250 points)
 
-    Components:
-    - On-time rate: (onTime / total) * 150 points
-    - Streak bonus: min(streak, 24) * 2 = up to +48 points
-    - Perfect record bonus: +25 if 12+ payments with no misses
-    - Longevity bonus: min(total/4, 25) = up to +25 points
-    - Recent miss penalty: -30 if missed in last 6 payments
+    REDESIGNED for realistic slow credit building:
+    - No instant gratification from percentage rates
+    - Linear accumulation: 2 points per on-time payment
+    - Milestone bonuses for long-term consistency
+    - Harsh penalties for misses (one miss undoes many months of progress)
 
-    Total possible: 150 + 48 + 25 + 25 = 248 (rounded to ~250 max)
+    Progression timeline (monthly payments):
+    - 3 payments (3 months): ~7 points (just starting to build)
+    - 6 payments (6 months): ~15 points (establishing history)
+    - 12 payments (1 year): ~35 points (decent history)
+    - 24 payments (2 years): ~75 points (good history)
+    - 48 payments (4 years): ~140 points (excellent history)
+
+    Total possible: ~250 max (requires 4+ years of perfect payments)
 ]]
 function PaymentTracker.calculateHistoryScore(farmId)
     local data = PaymentTracker.getFarmData(farmId)
     local stats = data.stats
+    local impact = PaymentTracker.IMPACT
 
-    -- No history = no score from payments
-    if stats.totalPayments == 0 then
+    -- No score until minimum payment history established
+    if stats.totalPayments < impact.MIN_PAYMENTS_FOR_SCORE then
         return 0
     end
 
     local score = 0
 
-    -- 1. On-time rate component (up to 150 points)
-    local onTimeRate = stats.onTimePayments / stats.totalPayments
-    score = score + (onTimeRate * 150)
+    -- 1. Base score: 2 points per on-time payment (slow linear accumulation)
+    -- 50 on-time payments = 100 points from this component
+    local baseScore = stats.onTimePayments * impact.ON_TIME_BASE
+    score = score + baseScore
 
-    -- 2. Current streak bonus (up to 48 points)
-    local streakBonus = math.min(stats.currentStreak, 24) * PaymentTracker.IMPACT.STREAK_BONUS
+    -- 2. Current streak bonus: 0.5 points per payment in streak (max 12 at 24 streak)
+    -- Rewards consistency but doesn't dominate
+    local streakBonus = math.min(stats.currentStreak, 24) * impact.STREAK_BONUS
     score = score + streakBonus
 
-    -- 3. Perfect record bonus (25 points if 12+ payments, no misses)
-    if stats.totalPayments >= 12 and stats.missedPayments == 0 then
-        score = score + PaymentTracker.IMPACT.PERFECT_RECORD_BONUS
+    -- 3. Perfect record milestone bonuses (tiered, not cumulative)
+    -- Rewards long-term perfect history
+    if stats.missedPayments == 0 then
+        if stats.totalPayments >= 48 then
+            score = score + impact.PERFECT_48_BONUS  -- +35 for 4 years perfect
+        elseif stats.totalPayments >= 24 then
+            score = score + impact.PERFECT_24_BONUS  -- +20 for 2 years perfect
+        elseif stats.totalPayments >= 12 then
+            score = score + impact.PERFECT_12_BONUS  -- +10 for 1 year perfect
+        end
     end
 
-    -- 4. Longevity bonus (up to 25 points)
-    local longevityBonus = math.min(stats.totalPayments / PaymentTracker.IMPACT.LONGEVITY_DIVISOR,
-                                    PaymentTracker.IMPACT.MAX_LONGEVITY_BONUS)
+    -- 4. Longevity bonus: rewards having a long credit history
+    -- totalPayments / 8, max 30 points (requires 240 payments for max!)
+    local longevityBonus = math.min(
+        stats.totalPayments / impact.LONGEVITY_DIVISOR,
+        impact.MAX_LONGEVITY_BONUS
+    )
     score = score + longevityBonus
 
-    -- 5. Recent miss penalty (if missed in last 6 payments)
+    -- 5. Recent miss penalty: harsh penalty if missed in last 6 payments
+    -- One miss can wipe out months of progress
     local paymentsSinceLastMiss = stats.totalPayments - stats.lastMissedIndex
     if stats.lastMissedIndex > 0 and paymentsSinceLastMiss < 6 then
-        score = score + PaymentTracker.IMPACT.RECENT_MISS_PENALTY
+        score = score + impact.RECENT_MISS_PENALTY  -- -40 points!
     end
 
     -- Cap at reasonable range
@@ -537,25 +677,26 @@ function PaymentTracker.getOnTimeRate(farmId)
 end
 
 --[[
-    Check if farm has enough payment history for "Good" credit
-    Requires at least 6 on-time payments
+    Check if farm has enough payment history for "Good" credit (700+)
+    Requires at least 12 on-time payments (1 year of history)
 ]]
 function PaymentTracker.hasMinimumHistory(farmId)
     local stats = PaymentTracker.getStats(farmId)
-    return stats.onTimePayments >= 6
+    return stats.onTimePayments >= 12
 end
 
 --[[
-    Check if farm qualifies for "Excellent" credit
-    Requires: 24+ on-time payments, current streak of 12+, no recent misses
+    Check if farm qualifies for "Excellent" credit (750+)
+    Requires: 36+ on-time payments (3 years), current streak of 18+, no recent misses
+    This is HARD to achieve - as it should be!
 ]]
 function PaymentTracker.qualifiesForExcellent(farmId)
     local stats = PaymentTracker.getStats(farmId)
     local paymentsSinceLastMiss = stats.totalPayments - stats.lastMissedIndex
 
-    return stats.onTimePayments >= 24 and
-           stats.currentStreak >= 12 and
-           (stats.lastMissedIndex == 0 or paymentsSinceLastMiss >= 12)
+    return stats.onTimePayments >= 36 and
+           stats.currentStreak >= 18 and
+           (stats.lastMissedIndex == 0 or paymentsSinceLastMiss >= 18)
 end
 
 --[[
@@ -649,32 +790,41 @@ end
 CreditHistory = {}
 
 -- Event type constants with score changes
+-- NOTE: These are for DISPLAY/LOGGING purposes - actual score is calculated
+-- by PaymentTracker.calculateHistoryScore() using payment statistics
+-- Values here are intentionally small (slow to gain) or large negative (quick to lose)
 CreditHistory.EVENT_TYPES = {
-    PAYMENT_ON_TIME = { name = "Payment On Time", change = 5 },
-    PAYMENT_MISSED = { name = "Missed Payment", change = -25 },
-    DEAL_PAID_OFF = { name = "Loan Paid Off", change = 50 },
-    NEW_DEBT_TAKEN = { name = "New Finance", change = -10 },
-    DEBT_RATIO_IMPROVED = { name = "Debt Ratio Improved", change = 15 },
-    EXCELLENT_ACHIEVED = { name = "Excellent Credit", change = 25 },
-    LOAN_TAKEN = { name = "Cash Loan Taken", change = -5 },
-    REPAIR_FINANCED = { name = "Repair Financed", change = -5 },
+    -- Payment events (small gains, harsh penalties)
+    PAYMENT_ON_TIME = { name = "Payment On Time", change = 2 },      -- Tiny gain
+    PAYMENT_MISSED = { name = "Missed Payment", change = -50 },      -- Harsh!
+    DEAL_PAID_OFF = { name = "Loan Paid Off", change = 15 },         -- Nice milestone
+    NEW_DEBT_TAKEN = { name = "New Finance", change = -5 },          -- Small hit for new debt
+    DEBT_RATIO_IMPROVED = { name = "Debt Ratio Improved", change = 5 },
+    EXCELLENT_ACHIEVED = { name = "Excellent Credit", change = 10 }, -- Rare achievement
+
+    -- Loan events
+    LOAN_TAKEN = { name = "Cash Loan Taken", change = -3 },
+    REPAIR_FINANCED = { name = "Repair Financed", change = -2 },
+
     -- Land lease events
-    LAND_LEASE_CREATED = { name = "Land Leased", change = -5 },
-    LAND_LEASE_PAYMENT = { name = "Land Lease Payment", change = 3 },
-    LAND_LEASE_MISSED_PAYMENT = { name = "Missed Land Payment", change = -25 },
-    LAND_LEASE_BUYOUT = { name = "Land Lease Buyout", change = 30 },
-    LAND_LEASE_TERMINATED = { name = "Land Lease Terminated", change = -50 },
-    LAND_LEASE_EXPIRED = { name = "Land Lease Expired", change = 0 },  -- Neutral
-    LAND_SEIZED = { name = "Land Seized", change = -100 },  -- Severe penalty
+    LAND_LEASE_CREATED = { name = "Land Leased", change = -3 },
+    LAND_LEASE_PAYMENT = { name = "Land Lease Payment", change = 2 },
+    LAND_LEASE_MISSED_PAYMENT = { name = "Missed Land Payment", change = -50 },  -- Harsh!
+    LAND_LEASE_BUYOUT = { name = "Land Lease Buyout", change = 10 },
+    LAND_LEASE_TERMINATED = { name = "Land Lease Terminated", change = -75 },    -- Very bad
+    LAND_LEASE_EXPIRED = { name = "Land Lease Expired", change = 0 },
+    LAND_SEIZED = { name = "Land Seized", change = -150 },           -- Devastating!
+
     -- Vehicle lease events
-    LEASE_TERMINATED_EARLY = { name = "Lease Terminated Early", change = -30 },
-    LEASE_BUYOUT = { name = "Lease Buyout", change = 25 },
+    LEASE_TERMINATED_EARLY = { name = "Lease Terminated Early", change = -40 },
+    LEASE_BUYOUT = { name = "Lease Buyout", change = 10 },
+
     -- Payment configuration events
-    PAYMENT_SKIPPED = { name = "Payment Skipped", change = -25 },
-    PAYMENT_PARTIAL = { name = "Partial Payment", change = -10 },
-    PAYMENT_MINIMUM = { name = "Minimum Payment", change = 0 },  -- Neutral
-    PAYMENT_STANDARD = { name = "Standard Payment", change = 5 },
-    PAYMENT_EXTRA = { name = "Extra Payment", change = 5 },
+    PAYMENT_SKIPPED = { name = "Payment Skipped", change = -50 },    -- Same as missed
+    PAYMENT_PARTIAL = { name = "Partial Payment", change = -15 },
+    PAYMENT_MINIMUM = { name = "Minimum Payment", change = 0 },
+    PAYMENT_STANDARD = { name = "Standard Payment", change = 2 },
+    PAYMENT_EXTRA = { name = "Extra Payment", change = 3 },
 }
 
 -- Maximum history entries per farm (for performance)
