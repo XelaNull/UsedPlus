@@ -52,46 +52,64 @@ function InGameMenuMapFrameExtension.onLoadMapFinished(self, superFunc)
         -- Replace with our callback
         self.contextActions[InGameMenuMapFrame.ACTIONS.BUY].callback = InGameMenuMapFrameExtension.onBuyFarmland
         UsedPlus.logDebug("Intercepted BUY action callback (ID=" .. tostring(InGameMenuMapFrame.ACTIONS.BUY) .. ")")
+
+        -- Insert FINANCE_LAND and LEASE_LAND right after BUY
+        -- We need to shift all actions with ID > BUY up by 2 to make room
+        local buyId = InGameMenuMapFrame.ACTIONS.BUY
+        local financeId = buyId + 1
+        local leaseId = buyId + 2
+
+        -- Collect all actions that need to be shifted (ID > buyId)
+        local actionsToShift = {}
+        for actionName, actionId in pairs(InGameMenuMapFrame.ACTIONS) do
+            if type(actionId) == "number" and actionId > buyId then
+                table.insert(actionsToShift, {name = actionName, oldId = actionId})
+            end
+        end
+
+        -- Sort by ID descending so we shift highest first (avoid collisions)
+        table.sort(actionsToShift, function(a, b) return a.oldId > b.oldId end)
+
+        -- Shift each action's ID up by 2
+        for _, action in ipairs(actionsToShift) do
+            local newId = action.oldId + 2
+            InGameMenuMapFrame.ACTIONS[action.name] = newId
+
+            -- Also move the contextAction entry
+            if self.contextActions[action.oldId] then
+                self.contextActions[newId] = self.contextActions[action.oldId]
+                self.contextActions[action.oldId] = nil
+            end
+
+            UsedPlus.logDebug("Shifted action " .. action.name .. " from ID " .. action.oldId .. " to " .. newId)
+        end
+
+        -- Now register our actions in the gap we created
+        if InGameMenuMapFrame.ACTIONS.FINANCE_LAND == nil then
+            InGameMenuMapFrame.ACTIONS["FINANCE_LAND"] = financeId
+
+            self.contextActions[financeId] = {
+                ["title"] = g_i18n:getText("usedplus_action_financeLand") or "Finance",
+                ["callback"] = InGameMenuMapFrameExtension.onFinanceLand,
+                ["isActive"] = false
+            }
+
+            UsedPlus.logDebug("Registered FINANCE_LAND action (ID=" .. tostring(financeId) .. ")")
+        end
+
+        if InGameMenuMapFrame.ACTIONS.LEASE_LAND == nil then
+            InGameMenuMapFrame.ACTIONS["LEASE_LAND"] = leaseId
+
+            self.contextActions[leaseId] = {
+                ["title"] = g_i18n:getText("usedplus_action_leaseLand") or "Lease",
+                ["callback"] = InGameMenuMapFrameExtension.onLeaseLand,
+                ["isActive"] = false
+            }
+
+            UsedPlus.logDebug("Registered LEASE_LAND action (ID=" .. tostring(leaseId) .. ")")
+        end
     else
         UsedPlus.logWarn("Could not intercept BUY action")
-    end
-
-    -- Find the highest existing action ID to avoid collisions with vanilla actions
-    local maxActionId = 0
-    for actionName, actionId in pairs(InGameMenuMapFrame.ACTIONS) do
-        if type(actionId) == "number" and actionId > maxActionId then
-            maxActionId = actionId
-        end
-    end
-    UsedPlus.logDebug("Max existing action ID: " .. tostring(maxActionId))
-
-    -- Register FINANCE_LAND action with unique ID (after all existing actions)
-    if InGameMenuMapFrame.ACTIONS.FINANCE_LAND == nil then
-        local financeId = maxActionId + 1
-        InGameMenuMapFrame.ACTIONS["FINANCE_LAND"] = financeId
-
-        self.contextActions[financeId] = {
-            ["title"] = g_i18n:getText("usedplus_action_financeLand") or "Finance",
-            ["callback"] = InGameMenuMapFrameExtension.onFinanceLand,
-            ["isActive"] = false
-        }
-
-        UsedPlus.logDebug("Registered FINANCE_LAND action (ID=" .. tostring(financeId) .. ")")
-        maxActionId = financeId
-    end
-
-    -- Register LEASE_LAND action with unique ID
-    if InGameMenuMapFrame.ACTIONS.LEASE_LAND == nil then
-        local leaseId = maxActionId + 1
-        InGameMenuMapFrame.ACTIONS["LEASE_LAND"] = leaseId
-
-        self.contextActions[leaseId] = {
-            ["title"] = g_i18n:getText("usedplus_action_leaseLand") or "Lease",
-            ["callback"] = InGameMenuMapFrameExtension.onLeaseLand,
-            ["isActive"] = false
-        }
-
-        UsedPlus.logDebug("Registered LEASE_LAND action (ID=" .. tostring(leaseId) .. ")")
     end
 end
 
