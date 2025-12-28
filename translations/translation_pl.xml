@@ -963,6 +963,8 @@
         <e k="usedplus_uvp_inspectedText" v="Pojazd zostal zbadany - zobacz raport" />
         <e k="usedplus_button_buyAsIs" v="Kup jak jest" />
         <e k="usedplus_button_inspect" v="Zbadaj" />
+        <e k="usedplus_button_tires" v="Opony" />
+        <e k="usedplus_button_fluids" v="Płyny" />
 
         <!-- Repair Dialog -->
         <e k="usedplus_rp_title" v="Serwis pojazdu" />
@@ -1200,6 +1202,7 @@
         <e k="usedplus_fmf_noActiveSearches" v="Brak aktywnych wyszukiwan. Rozpocznij ze Sklepu." />
         <e k="usedplus_fmf_headerPrice" v="CENA" />
         <e k="usedplus_fmf_headerTier" v="POZIOM" />
+        <e k="usedplus_fmf_headerStatus" v="STATUS" />
         <e k="usedplus_fmf_headerChance" v="%" />
         <e k="usedplus_fmf_headerTime" v="CZAS" />
         <e k="usedplus_fmf_vehiclesForSale" v="Pojazdy na sprzedaz" />
@@ -1421,6 +1424,25 @@
 
         <!-- v1.7.0: Komunikaty kredytowe -->
         <e k="usedplus_loan_useFinancialDashboard" v="Uzyj Panelu Finansowego dla pozyczek opartych na zdolnosci kredytowej" />
+
+        <!-- v1.8.0: Punkty Serwisowe Oleju -->
+        <e k="usedplus_oilBarrel_name" v="Beczka Serwisowa Oleju" />
+        <e k="usedplus_oilBarrel_function" v="Podjedz pojazdem aby uzupelnic olej silnikowy i plyn hydrauliczny." />
+        <e k="usedplus_oilBarrel_specUnlimited" v="Nieograniczony" />
+        <e k="usedplus_oilTank_name" v="Zbiornik Serwisowy Oleju" />
+        <e k="usedplus_oilTank_function" v="Duza stacja serwisowa oleju do uzupelniania oleju silnikowego i plynu hydraulicznego." />
+        <e k="usedplus_oil_refillAction" v="Uzupelnij Olej Silnikowy" />
+        <e k="usedplus_hydraulic_refillAction" v="Uzupelnij Plyn Hydrauliczny" />
+        <e k="usedplus_oil_refillComplete" v="Olej uzupelniony - Koszt: %s" />
+        <e k="usedplus_hydraulic_refillComplete" v="Plyn hydrauliczny uzupelniony - Koszt: %s" />
+        <e k="usedplus_oil_refillCompleteStorage" v="Olej uzupelniony z magazynu" />
+        <e k="usedplus_hydraulic_refillCompleteStorage" v="Plyn hydrauliczny uzupelniony z magazynu" />
+        <e k="usedplus_oil_notEnoughStorage" v="Za malo oleju w magazynie" />
+        <e k="usedplus_hydraulic_notEnoughStorage" v="Za malo plynu hydraulicznego w magazynie" />
+        <e k="usedplus_oil_alreadyFull" v="Olej silnikowy juz pelny" />
+        <e k="usedplus_hydraulic_alreadyFull" v="Plyn hydrauliczny juz pelny" />
+        <e k="usedplus_oil_storageLevel" v="Magazyn Oleju: %d / %d L" />
+        <e k="usedplus_hydraulic_storageLevel" v="Magazyn Hydrauliki: %d / %d L" />
 
     </elements>
 </l10n>

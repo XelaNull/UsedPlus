@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<i3D name="FuelTankSmall.i3d" version="1.6" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://i3d.giants.ch/schema/i3d-1.6.xsd">
+  <Asset>
+    <Export program="GIANTS Editor 64bit" version="10.0.10"/>
+  </Asset>
+
+  <Files>
+    <File fileId="39" filename="textures/FillRightDecals_diffuse.dds"/>
+    <File fileId="26" filename="textures/FillRightDecals_diffuseWhite.dds"/>
+    <File fileId="35" filename="textures/Tank2_vmask.dds"/>
+    <File fileId="5" filename="$data/shaders/buildingShader.xml"/>
+    <File fileId="13" filename="$data/shaders/vehicleShader.xml"/>
+    <File fileId="2" filename="$data/shared/detailLibrary/calibrated/calibratedPaint_diffuse.dds"/>
+    <File fileId="3" filename="$data/shared/detailLibrary/calibrated/calibratedPaint_normal.dds"/>
+    <File fileId="4" filename="$data/shared/detailLibrary/calibrated/castIron_specular.dds"/>
+    <File fileId="24" filename="$data/shared/detailLibrary/calibrated/grainSmall_specular.dds"/>
+    <File fileId="21" filename="$data/shared/detailLibrary/flat_normal.png"/>
+    <File fileId="16" filename="$data/shared/detailLibrary/metallic/clear_diffuse.png"/>
+    <File fileId="25" filename="$data/shared/detailLibrary/metallic/rough_specular.png"/>
+    <File fileId="31" filename="$data/shared/detailLibrary/metallic/scratched_diffuse.png"/>
+    <File fileId="30" filename="$data/shared/detailLibrary/metallic/scratched_specular.png"/>
+    <File fileId="15" filename="$data/shared/detailLibrary/metallic/silverBumpy_normal.png"/>
+    <File fileId="14" filename="$data/shared/detailLibrary/metallic/silverBumpy_specular.png"/>
+    <File fileId="29" filename="$data/shared/detailLibrary/nonMetallic/leather/leather1_diffuse.png"/>
+    <File fileId="28" filename="$data/shared/detailLibrary/nonMetallic/leather/leather1_normal.png"/>
+    <File fileId="27" filename="$data/shared/detailLibrary/nonMetallic/leather/leather1_specular.png"/>
+    <File fileId="20" filename="$data/shared/detailLibrary/nonMetallic/plastic/plasticPainted_diffuse.png"/>
+    <File fileId="22" filename="$data/shared/detailLibrary/nonMetallic/plastic/plasticPainted_specular.png"/>
+    <File fileId="38" filename="$data/shared/detailLibrary/nonMetallic/rubber/rubberBlack_diffuse.png"/>
+    <File fileId="37" filename="$data/shared/detailLibrary/nonMetallic/rubber/rubber_normal.png"/>
+    <File fileId="36" filename="$data/shared/detailLibrary/nonMetallic/rubber/rubber_specular.png"/>
+  </Files>
+
+
+  <Materials>
+    <Material name="brassScratchedMat" materialId="5" diffuseColor="0.8 0.8 0.8 1" specularColor="0.6 1 0" customShaderId="13">
+      <Custommap name="detailSpecular" fileId="30"/>
+      <Custommap name="detailNormal" fileId="21"/>
+      <Custommap name="detailDiffuse" fileId="31"/>
+      <CustomParameter name="colorScale" value="0.9647 0.7913 0.3095"/>
+    </Material>
+    <Material name="CalibratedCastIron" materialId="6" customShaderId="5">
+      <Texture fileId="2"/>
+      <Normalmap fileId="3"/>
+      <Glossmap fileId="4"/>
+      <CustomParameter name="snowScale" value="0"/>
+    </Material>
+    <Material name="Decals" materialId="7" specularColor="0.501961 1 0">
+      <Texture fileId="39"/>
+    </Material>
+    <Material name="Decals2" materialId="8">
+      <Texture fileId="26"/>
+      <Glossmap fileId="22"/>
+    </Material>
+    <Material name="lambert1" materialId="9" diffuseColor="0.501961 0.501961 0.501961 1">
+    </Material>
+    <Material name="leather1MatBlack" materialId="10" diffuseColor="0.8 0.8 0.8 1" specularColor="0.6 1 0" customShaderId="13">
+      <Custommap name="detailSpecular" fileId="27"/>
+      <Custommap name="detailNormal" fileId="28"/>
+      <Custommap name="detailDiffuse" fileId="29"/>
+      <CustomParameter name="colorScale" value="0.12 0.12 0.12"/>
+    </Material>
+    <Material name="leather1MatGrey" materialId="11" diffuseColor="0.8 0.8 0.8 1" specularColor="0.6 1 0" customShaderId="13">
+      <Custommap name="detailSpecular" fileId="27"/>
+      <Custommap name="detailNormal" fileId="28"/>
+      <Custommap name="detailDiffuse" fileId="29"/>
+      <CustomParameter name="colorScale" value="0.4 0.4 0.4"/>
+    </Material>
+    <Material name="MetalPaintedRed" materialId="12" diffuseColor="0.501961 0 0 1" customShaderId="5">
+      <Normalmap fileId="3"/>
+      <Glossmap fileId="24"/>
+    </Material>
+    <Material name="PlasticBlack" materialId="13" diffuseColor="1 1 1 1" specularColor="0.501961 1 0" customShaderId="13">
+      <Custommap name="detailSpecular" fileId="22"/>
+      <Custommap name="detailNormal" fileId="21"/>
+      <Custommap name="detailDiffuse" fileId="20"/>
+      <CustomParameter name="colorScale" value="0.012 0.012 0.012"/>
+    </Material>
+    <Material name="PlasticBlack.001" materialId="14" customShaderId="5" customShaderVariation="colorScale">
+      <Texture fileId="20"/>
+      <Normalmap fileId="21"/>
+      <Glossmap fileId="22"/>
+      <CustomParameter name="colorScale0" value="0.12 0.12 0.12 1"/>
+    </Material>
+    <Material name="PlasticPaintedGreen" materialId="15" diffuseColor="0 0.34902 0 1" customShaderId="5">
+      <Normalmap fileId="22"/>
+      <Glossmap fileId="22"/>
+    </Material>
+    <Material name="Rubber" materialId="16" diffuseColor="0.8 0.8 0.8 1" customShaderId="13" customShaderVariation="vmaskUV2">
+      <Glossmap fileId="35"/>
+      <Custommap name="detailSpecular" fileId="36"/>
+      <Custommap name="detailNormal" fileId="37"/>
+      <Custommap name="detailDiffuse" fileId="38"/>
+      <CustomParameter name="colorScale" value="0.01 0.01 0.01"/>
+      <CustomParameter name="porosity" value="0.5"/>
+    </Material>
+    <Material name="silverBumpyMat" materialId="17" diffuseColor="0.8 0.8 0.8 1" specularColor="0.6 1 0" customShaderId="13">
+      <Custommap name="detailSpecular" fileId="14"/>
+      <Custommap name="detailNormal" fileId="15"/>
+      <Custommap name="detailDiffuse" fileId="16"/>
+      <CustomParameter name="colorScale" value="0.7379 0.7454 0.7529"/>
+    </Material>
+    <Material name="silverBumpyMat.001" materialId="18" diffuseColor="0.8 0.8 0.8 1" specularColor="0.6 1 0" customShaderId="13">
+      <Custommap name="detailSpecular" fileId="14"/>
+      <Custommap name="detailNormal" fileId="15"/>
+      <Custommap name="detailDiffuse" fileId="16"/>
+      <CustomParameter name="colorScale" value="0.7379 0.7454 0.7529"/>
+      <CustomParameter name="smoothnessScale" value="0.8"/>
+      <CustomParameter name="metalnessScale" value="0.6"/>
+    </Material>
+    <Material name="silverRoughMat" materialId="19" diffuseColor="0.8 0.8 0.8 1" specularColor="0.6 1 0" customShaderId="13">
+      <Custommap name="detailSpecular" fileId="25"/>
+      <Custommap name="detailNormal" fileId="21"/>
+      <Custommap name="detailDiffuse" fileId="16"/>
+      <CustomParameter name="colorScale" value="0.6 0.6 0.6"/>
+    </Material>
+  </Materials>
+
+
+  <Shapes externalShapesFile="FuelTankSmall.i3d.shapes">
+  </Shapes>
+
+  <Scene>
+    <TransformGroup name="TankSmall" clipDistance="500" nodeId="39">
+      <TransformGroup name="clearAreas" nodeId="40">
+        <TransformGroup name="clearAreaStart" translation="-0.913277 -0.0121005 1.49191" nodeId="41">
+          <TransformGroup name="clearAreaWidth" translation="1.84586 0 0" nodeId="42"/>
+          <TransformGroup name="clearAreaHeight" translation="0 0 -2.91649" nodeId="43"/>
+        </TransformGroup>
+      </TransformGroup>
+      <TransformGroup name="levelAreas" nodeId="44">
+        <TransformGroup name="levelAreaStart" translation="-0.913277 -0.0121005 1.49191" nodeId="45">
+          <TransformGroup name="levelAreaWidth" translation="1.84586 0 0" nodeId="46"/>
+          <TransformGroup name="levelAreaHeight" translation="0 0 -2.91649" nodeId="47"/>
+        </TransformGroup>
+      </TransformGroup>
+      <TransformGroup name="testAreas" nodeId="48">
+        <TransformGroup name="testAreaStart" translation="0.932583 -0.0121005 1.59049" nodeId="49">
+          <TransformGroup name="testAreaEnd" translation="-1.84586 2.21273 -2.84829" nodeId="50"/>
+        </TransformGroup>
+      </TransformGroup>
+      <TransformGroup name="tipOcclusionUpdateAreas" nodeId="51">
+        <TransformGroup name="tipOcclusionUpdateStart" translation="0.932583 -0.0121005 1.59049" nodeId="52">
+          <TransformGroup name="tipOcclusionUpdateEnd" translation="-1.84586 2.21273 -2.84829" nodeId="53"/>
+        </TransformGroup>
+      </TransformGroup>
+      <TransformGroup name="silo" nodeId="54">
+        <TransformGroup name="unloadingStation" translation="0 0 -0.117081" scale="1 1 0.723073" nodeId="55">
+          <Shape name="exactFillRootNode" translation="0 -0.45 2.25368" shapeId="1" static="true" collisionFilterGroup="0x40000000" collisionFilterMask="0x20000000" nodeId="56" castsShadows="true" receiveShadows="true" nonRenderable="true" materialIds="9"/>
+        </TransformGroup>
+        <TransformGroup name="loadingStation" translation="0 0 -0.285462" scale="1 1 0.647737" nodeId="57">
+          <Shape name="loadingTrigger" translation="0 0 2.254" shapeId="2" static="true" trigger="true" collisionFilterGroup="0x20000000" collisionFilterMask="0x40000000" nodeId="58" castsShadows="true" receiveShadows="true" nonRenderable="true" materialIds="9"/>
+          <TransformGroup name="dischargeNode" translation="0 0 2.69674" nodeId="59"/>
+          <TransformGroup name="loadingMarker" translation="-0.00458934 0 3.10215" nodeId="60"/>
+        </TransformGroup>
+        <Shape name="refillPlayerTrigger" translation="-1.70146 0 -0.240082" shapeId="3" static="true" trigger="true" collisionFilterGroup="0x20000000" collisionFilterMask="0x100000" nodeId="61" castsShadows="true" receiveShadows="true" nonRenderable="true" materialIds="9">
+          <TransformGroup name="refillMarker" nodeId="62"/>
+        </Shape>
+        <TransformGroup name="storage" nodeId="63"/>
+        <TransformGroup name="hotspotNode" nodeId="64"/>
+        <Shape name="infoTrigger" shapeId="2" static="true" trigger="true" collisionFilterGroup="0x20000000" collisionFilterMask="0x100000" nodeId="65" castsShadows="true" receiveShadows="true" nonRenderable="true" materialIds="9"/>
+      </TransformGroup>
+      <TransformGroup name="collisions" nodeId="66">
+        <Shape name="tipCollision" scale="1.3581 1 0.556494" shapeId="4" static="true" collisionFilterGroup="0x8" collisionFilterMask="0x1" nodeId="67" castsShadows="true" receiveShadows="true" nonRenderable="true" materialIds="9"/>
+        <Shape name="Col" translation="0 -0.0121005 -1.15909" shapeId="5" static="true" collisionFilterGroup="0x3e" collisionFilterMask="0xfffffbff" nodeId="68" castsShadows="false" receiveShadows="false" nonRenderable="true" materialIds="9"/>
+      </TransformGroup>
+      <Shape name="NewTank" shapeId="6" clipDistance="5000" nodeId="69" castsShadows="true" receiveShadows="true" materialIds="6,18,14,17">
+        <Shape name="Pump" translation="-0.19645 2.1617 0.93568" scale="0.0989858 0.0989858 0.0989858" shapeId="7" clipDistance="2000" nodeId="70" castsShadows="true" receiveShadows="true" materialIds="12">
+          <Shape name="Support" translation="3.60707 -0.323772 0.358322" scale="10.1025 10.1025 10.1025" shapeId="8" clipDistance="100" nodeId="71" castsShadows="true" receiveShadows="true" materialIds="19"/>
+          <Shape name="FuelExit" translation="0.0313416 0.383373 3.8147e-05" rotation="-0 -180 -0" scale="11.75 11.75 11.75" shapeId="9" clipDistance="200" nodeId="72" castsShadows="true" receiveShadows="true" materialIds="19">
+            <Shape name="FuelPump" translation="0 -3.57628e-07 4.76837e-07" rotation="-0 180 -0" shapeId="10" clipDistance="200" nodeId="73" castsShadows="true" receiveShadows="true" materialIds="19,8"/>
+          </Shape>
+          <Shape name="Hose" translation="2.62997 -12.4332 2.17244" rotation="-0 90 0" scale="10.1025 10.1025 10.1025" shapeId="11" clipDistance="200" nodeId="74" castsShadows="true" receiveShadows="true" materialIds="10">
+            <Shape name="Fitting" translation="-0.0162334 1.30954 -0.257234" rotation="90 -90 0" scale="1.28976 1 1.28976" shapeId="12" clipDistance="100" nodeId="75" castsShadows="true" receiveShadows="true" materialIds="5"/>
+            <Shape name="Fitting" translation="0.0067749 1.11033 0.129244" rotation="-26.1906 -90 0" scale="1.2437 1.05191 1.20011" shapeId="13" clipDistance="100" nodeId="76" castsShadows="true" receiveShadows="true" materialIds="5"/>
+          </Shape>
+          <Shape name="Nozzle" translation="3.93592 -0.43178 0.630806" rotation="44.5313 3.795e-17 -9.81921e-16" scale="10.1025 10.1025 10.1025" shapeId="14" clipDistance="200" nodeId="77" castsShadows="true" receiveShadows="true" materialIds="15,19,13">
+            <Shape name="1" translation="-2.52724e-05 0.0486603 0.153389" rotation="-75.9513 6.61567e-16 7.26594e-16" shapeId="15" clipDistance="100" nodeId="78" castsShadows="true" receiveShadows="true" materialIds="19"/>
+          </Shape>
+          <Shape name="Cover" translation="3.93598 -0.431763 0.630776" rotation="44.5313 3.795e-17 -9.81921e-16" scale="10.1025 10.1025 10.1025" shapeId="16" clipDistance="200" nodeId="79" castsShadows="true" receiveShadows="true" materialIds="16"/>
+          <Shape name="DecalNew" translation="1.92765 -0.819815 0.828712" rotation="90 -0 0" scale="3.26045 2.55527 2.55527" shapeId="17" clipDistance="200" nodeId="80" castsShadows="true" receiveShadows="true" materialIds="7"/>
+          <Shape name="ElectricalHose" translation="3.70528 -2.1 -0.651506" scale="10.1025 10.1025 10.1025" shapeId="18" clipDistance="200" nodeId="81" castsShadows="true" receiveShadows="true" materialIds="11"/>
+        </Shape>
+      </Shape>
+    </TransformGroup>
+  </Scene>
+
+</i3D>

@@ -963,6 +963,8 @@
         <e k="usedplus_uvp_inspectedText" v="Транспорт осмотрен - просмотреть отчёт" />
         <e k="usedplus_button_buyAsIs" v="Купить как есть" />
         <e k="usedplus_button_inspect" v="Осмотреть" />
+        <e k="usedplus_button_tires" v="Шины" />
+        <e k="usedplus_button_fluids" v="Жидкости" />
 
         <!-- Repair Dialog -->
         <e k="usedplus_rp_title" v="Обслуживание транспорта" />
@@ -1200,6 +1202,7 @@
         <e k="usedplus_fmf_noActiveSearches" v="Нет активных поисков. Начните из магазина." />
         <e k="usedplus_fmf_headerPrice" v="ЦЕНА" />
         <e k="usedplus_fmf_headerTier" v="УРОВ." />
+        <e k="usedplus_fmf_headerStatus" v="СТАТУС" />
         <e k="usedplus_fmf_headerChance" v="%" />
         <e k="usedplus_fmf_headerTime" v="ВРЕМЯ" />
         <e k="usedplus_fmf_vehiclesForSale" v="Транспорт на продаже" />
@@ -1421,6 +1424,25 @@
 
         <!-- v1.7.0: Кредитные сообщения -->
         <e k="usedplus_loan_useFinancialDashboard" v="Используйте Финансовую панель для кредитов" />
+
+        <!-- v1.8.0: Точки обслуживания масла -->
+        <e k="usedplus_oilBarrel_name" v="Бочка для масла" />
+        <e k="usedplus_oilBarrel_function" v="Подъедьте на транспорте для заправки моторным маслом и гидравлической жидкостью." />
+        <e k="usedplus_oilBarrel_specUnlimited" v="Неограниченно" />
+        <e k="usedplus_oilTank_name" v="Резервуар для масла" />
+        <e k="usedplus_oilTank_function" v="Большая станция обслуживания масла для заправки моторным маслом и гидравлической жидкостью." />
+        <e k="usedplus_oil_refillAction" v="Заправить Моторное Масло" />
+        <e k="usedplus_hydraulic_refillAction" v="Заправить Гидравлическую Жидкость" />
+        <e k="usedplus_oil_refillComplete" v="Масло заправлено - Стоимость: %s" />
+        <e k="usedplus_hydraulic_refillComplete" v="Гидравлическая жидкость заправлена - Стоимость: %s" />
+        <e k="usedplus_oil_refillCompleteStorage" v="Масло заправлено из хранилища" />
+        <e k="usedplus_hydraulic_refillCompleteStorage" v="Гидравлическая жидкость заправлена из хранилища" />
+        <e k="usedplus_oil_notEnoughStorage" v="Недостаточно масла в хранилище" />
+        <e k="usedplus_hydraulic_notEnoughStorage" v="Недостаточно гидравлической жидкости в хранилище" />
+        <e k="usedplus_oil_alreadyFull" v="Моторное масло уже полное" />
+        <e k="usedplus_hydraulic_alreadyFull" v="Гидравлическая жидкость уже полная" />
+        <e k="usedplus_oil_storageLevel" v="Хранилище Масла: %d / %d L" />
+        <e k="usedplus_hydraulic_storageLevel" v="Хранилище Гидравлики: %d / %d L" />
 
     </elements>
 </l10n>

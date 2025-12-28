@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8" standalone="no" ?>
+<!--
+    FS25_UsedPlus - Oil Service Barrel
+
+    A placeable oil service point. Drive a vehicle near it to refill engine oil.
+    Default mode: Infinite supply, cost based on vehicle value.
+
+    Model adapted from: FS25_Fuel_Barrel by Gian FS (with acknowledgment)
+
+    v1.8.0 - Oil Service Point System
+-->
+<placeable type="usedPlusOilServicePoint" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../../../shared/xml/schema/placeable.xsd">
+    <storeData>
+        <name>$l10n_usedplus_oilBarrel_name</name>
+        <image>placeables/store_OilBarrel.dds</image>
+        <functions>
+            <function>$l10n_usedplus_oilBarrel_function</function>
+        </functions>
+        <specs>
+            <capacity>$l10n_usedplus_oilBarrel_specUnlimited</capacity>
+        </specs>
+        <price>500</price>
+        <dailyUpkeep>1</dailyUpkeep>
+        <canBeSold>true</canBeSold>
+        <showInStore>true</showInStore>
+        <lifetime>1000</lifetime>
+        <rotation>0</rotation>
+        <brand>NONE</brand>
+        <species>placeable</species>
+        <category>misc</category>
+        <brush>
+            <type>placeable</type>
+            <category>misc</category>
+            <tab>decorations</tab>
+        </brush>
+        <vertexBufferMemoryUsage>46336</vertexBufferMemoryUsage>
+        <indexBufferMemoryUsage>15104</indexBufferMemoryUsage>
+        <textureMemoryUsage>524288</textureMemoryUsage>
+        <audioMemoryUsage>0</audioMemoryUsage>
+        <instanceVertexBufferMemoryUsage>0</instanceVertexBufferMemoryUsage>
+        <instanceIndexBufferMemoryUsage>0</instanceIndexBufferMemoryUsage>
+    </storeData>
+
+    <base>
+        <filename>placeables/OilBarrel.i3d</filename>
+        <canBeRenamed>true</canBeRenamed>
+        <boughtWithFarmland>true</boughtWithFarmland>
+    </base>
+
+    <placement useRandomYRotation="false" useManualYRotation="true">
+        <testAreas>
+            <testArea startNode="testAreaStart" endNode="testAreaEnd" />
+        </testAreas>
+        <sounds>
+            <place template="siloImp" pitchScale="1.0"/>
+        </sounds>
+    </placement>
+
+    <clearAreas>
+        <clearArea startNode="clearAreaStart" widthNode="clearAreaWidth" heightNode="clearAreaHeight"/>
+    </clearAreas>
+
+    <leveling requireLeveling="false" maxSmoothDistance="0.5" maxSlope="75" maxEdgeAngle="30">
+        <levelAreas>
+            <levelArea startNode="levelAreaStart" widthNode="levelAreaWidth" heightNode="levelAreaHeight"/>
+        </levelAreas>
+    </leveling>
+
+    <triggerMarkers>
+        <triggerMarker node="serviceMarker" filename="$data/shared/assets/marker/markerIconWrench.i3d" />
+    </triggerMarkers>
+
+    <hotspots>
+        <hotspot type="LOADING" linkNode="hotspotNode" />
+    </hotspots>
+
+    <infoTrigger triggerNode="infoTrigger" />
+
+    <!-- Oil Service Point Configuration -->
+    <oilServicePoint
+        triggerNode="serviceTrigger"
+        oilCostMultiplier="0.01"
+        hydraulicCostMultiplier="0.008"
+        useFillableStorage="false"
+    />
+
+    <i3dMappings>
+        <!-- Test/clear/level areas - placeholder nodes we'll add to i3d -->
+        <i3dMapping id="testAreaStart" node="0>0|0"/>
+        <i3dMapping id="testAreaEnd" node="0>0|0|0"/>
+        <i3dMapping id="clearAreaStart" node="0>0|1"/>
+        <i3dMapping id="clearAreaWidth" node="0>0|1|0"/>
+        <i3dMapping id="clearAreaHeight" node="0>0|1|1"/>
+        <i3dMapping id="levelAreaStart" node="0>0|2"/>
+        <i3dMapping id="levelAreaWidth" node="0>0|2|0"/>
+        <i3dMapping id="levelAreaHeight" node="0>0|2|1"/>
+        <!-- Service trigger and markers -->
+        <i3dMapping id="serviceTrigger" node="0>0|3"/>
+        <i3dMapping id="serviceMarker" node="0>0|4"/>
+        <i3dMapping id="hotspotNode" node="0>0|5"/>
+        <i3dMapping id="infoTrigger" node="0>0|6"/>
+    </i3dMappings>
+</placeable>

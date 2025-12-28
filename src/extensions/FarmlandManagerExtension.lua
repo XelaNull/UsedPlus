@@ -7,7 +7,7 @@
 
     Responsibilities:
     - Add "Finance Land" button to farmland purchase dialog
-    - Open LandFinanceDialog when button clicked
+    - Open UnifiedLandPurchaseDialog when button clicked
     - Handle financed land purchase (ownership transfers immediately)
     - Prevent selling financed land if proceeds < remaining balance
     - Track land finance deals

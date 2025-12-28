@@ -963,6 +963,8 @@
         <e k="usedplus_uvp_inspectedText" v="Транспорт оглянуто - переглянути звіт" />
         <e k="usedplus_button_buyAsIs" v="Купити як є" />
         <e k="usedplus_button_inspect" v="Огляд" />
+        <e k="usedplus_button_tires" v="Шини" />
+        <e k="usedplus_button_fluids" v="Рідини" />
 
         <!-- Repair Dialog -->
         <e k="usedplus_rp_title" v="Обслуговування транспорту" />
@@ -1200,6 +1202,7 @@
         <e k="usedplus_fmf_noActiveSearches" v="Немає активних пошуків. Почніть з магазину." />
         <e k="usedplus_fmf_headerPrice" v="ЦІНА" />
         <e k="usedplus_fmf_headerTier" v="РІВЕНЬ" />
+        <e k="usedplus_fmf_headerStatus" v="СТАТУС" />
         <e k="usedplus_fmf_headerChance" v="%" />
         <e k="usedplus_fmf_headerTime" v="ЧАС" />
         <e k="usedplus_fmf_vehiclesForSale" v="Транспорт на продаж" />

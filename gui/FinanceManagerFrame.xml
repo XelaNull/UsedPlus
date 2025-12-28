@@ -361,82 +361,91 @@
                     <GuiElement id="saleTableContainer" position="0px 0px" size="500px 100px">
                         <Bitmap profile="baseReference" imageColor="0.06 0.08 0.06 1" size="500px 100px"/>
 
-                        <!-- Empty state text - centered in wider container -->
-                        <Text profile="fs25_textDefault" id="saleEmptyText" text="$l10n_usedplus_fmf_noListings" position="140px 45px" textSize="11px" textColor="0.4 0.5 0.4 1"/>
+                        <!-- Column Headers Row (at top of data area) -->
+                        <GuiElement position="0px 76px" size="500px 24px">
+                            <Bitmap profile="baseReference" imageColor="0.14 0.14 0.14 1" size="500px 24px"/>
+                            <Text profile="fs25_textDefault" text="$l10n_usedplus_fmf_headerItem" position="5px 5px" textSize="10px" textBold="true" textColor="0.6 0.6 0.6 1"/>
+                            <Text profile="fs25_textDefault" text="$l10n_usedplus_fmf_headerTier" position="130px 5px" textSize="10px" textBold="true" textColor="0.6 0.6 0.6 1"/>
+                            <Text profile="fs25_textDefault" text="$l10n_usedplus_fmf_headerStatus" position="185px 5px" textSize="10px" textBold="true" textColor="0.6 0.6 0.6 1"/>
+                            <Text profile="fs25_textDefault" text="$l10n_usedplus_fmf_headerTime" position="265px 5px" textSize="10px" textBold="true" textColor="0.6 0.6 0.6 1"/>
+                        </GuiElement>
 
-                        <!-- Sale Row 0 -->
-                        <GuiElement id="saleRow0" position="0px 67px" size="500px 33px" visible="false">
-                            <Bitmap profile="baseReference" id="saleRow0Bg" imageColor="0.1 0.12 0.1 1" size="500px 33px"/>
-                            <Text profile="fs25_textDefault" id="saleRow0Item" text="" position="5px 9px" textSize="11px" textColor="1 1 1 1"/>
-                            <Text profile="fs25_textDefault" id="saleRow0Tier" text="" position="130px 9px" textSize="11px" textColor="0.5 0.8 1 1"/>
-                            <Text profile="fs25_textDefault" id="saleRow0Status" text="" position="185px 9px" textSize="11px" textColor="0.7 0.7 0.7 1"/>
-                            <Text profile="fs25_textDefault" id="saleRow0Time" text="" position="265px 9px" textSize="11px" textColor="0.7 0.7 0.7 1"/>
-                            <!-- Accept button (green, for pending offers) -->
-                            <Bitmap profile="baseReference" id="saleRow0AcceptBtnBg" position="330px 4px" size="36px 24px" imageColor="0.15 0.25 0.15 1" visible="false"/>
-                            <Button profile="financeActionBtn" id="saleRow0AcceptBtn" text="" onClick="onAcceptSale0" position="330px 4px" size="36px 24px" visible="false"/>
-                            <Text profile="fs25_textDefault" id="saleRow0AcceptBtnText" text="YES" position="330px 7px" size="36px 18px" textSize="11px" textBold="true" textAlignment="center" textColor="0.4 1 0.4 1" visible="false"/>
-                            <!-- Decline button (red, for pending offers) -->
-                            <Bitmap profile="baseReference" id="saleRow0DeclineBtnBg" position="370px 4px" size="36px 24px" imageColor="0.25 0.15 0.15 1" visible="false"/>
-                            <Button profile="financeActionBtn" id="saleRow0DeclineBtn" text="" onClick="onDeclineSale0" position="370px 4px" size="36px 24px" visible="false"/>
-                            <Text profile="fs25_textDefault" id="saleRow0DeclineBtnText" text="NO" position="370px 7px" size="36px 18px" textSize="11px" textBold="true" textAlignment="center" textColor="1 0.5 0.5 1" visible="false"/>
-                            <!-- Info button (moved to where $ was) -->
-                            <Bitmap profile="baseReference" id="saleRow0InfoBtnBg" position="340px 4px" size="30px 24px" imageColor="0.18 0.18 0.18 1"/>
-                            <Button profile="financeActionBtn" id="saleRow0InfoBtn" text="" onClick="onInfoSale0" position="340px 4px" size="30px 24px"/>
-                            <Text profile="fs25_textDefault" id="saleRow0InfoBtnText" text="?" position="340px 7px" size="30px 18px" textSize="12px" textBold="true" textAlignment="center"/>
-                            <!-- Cancel listing button (red X, for active listings) -->
-                            <Bitmap profile="baseReference" id="saleRow0CancelBtnBg" position="375px 4px" size="30px 24px" imageColor="0.25 0.15 0.15 1" visible="false"/>
-                            <Button profile="financeActionBtn" id="saleRow0CancelBtn" text="" onClick="onCancelSale0" position="375px 4px" size="30px 24px" visible="false"/>
-                            <Text profile="fs25_textDefault" id="saleRow0CancelBtnText" text="X" position="375px 7px" size="30px 18px" textSize="12px" textBold="true" textAlignment="center" textColor="1 0.5 0.5 1" visible="false"/>
+                        <!-- Empty state text - centered in wider container -->
+                        <Text profile="fs25_textDefault" id="saleEmptyText" text="$l10n_usedplus_fmf_noListings" position="140px 30px" textSize="11px" textColor="0.4 0.5 0.4 1"/>
+
+                        <!-- Sale Row 0 (below header) -->
+                        <GuiElement id="saleRow0" position="0px 51px" size="500px 25px" visible="false">
+                            <Bitmap profile="baseReference" id="saleRow0Bg" imageColor="0.1 0.12 0.1 1" size="500px 25px"/>
+                            <Text profile="fs25_textDefault" id="saleRow0Item" text="" position="5px 5px" textSize="11px" textColor="1 1 1 1"/>
+                            <Text profile="fs25_textDefault" id="saleRow0Tier" text="" position="130px 5px" textSize="11px" textColor="0.5 0.8 1 1"/>
+                            <Text profile="fs25_textDefault" id="saleRow0Status" text="" position="185px 5px" textSize="11px" textColor="0.7 0.7 0.7 1"/>
+                            <Text profile="fs25_textDefault" id="saleRow0Time" text="" position="265px 5px" textSize="11px" textColor="0.7 0.7 0.7 1"/>
+                            <!-- Accept button (green, for pending offers) - right aligned -->
+                            <Bitmap profile="baseReference" id="saleRow0AcceptBtnBg" position="410px 1px" size="36px 22px" imageColor="0.15 0.25 0.15 1" visible="false"/>
+                            <Button profile="financeActionBtn" id="saleRow0AcceptBtn" text="" onClick="onAcceptSale0" position="410px 1px" size="36px 22px" visible="false"/>
+                            <Text profile="fs25_textDefault" id="saleRow0AcceptBtnText" text="YES" position="410px 4px" size="36px 18px" textSize="11px" textBold="true" textAlignment="center" textColor="0.4 1 0.4 1" visible="false"/>
+                            <!-- Decline button (red, for pending offers) - right aligned -->
+                            <Bitmap profile="baseReference" id="saleRow0DeclineBtnBg" position="450px 1px" size="36px 22px" imageColor="0.25 0.15 0.15 1" visible="false"/>
+                            <Button profile="financeActionBtn" id="saleRow0DeclineBtn" text="" onClick="onDeclineSale0" position="450px 1px" size="36px 22px" visible="false"/>
+                            <Text profile="fs25_textDefault" id="saleRow0DeclineBtnText" text="NO" position="450px 4px" size="36px 18px" textSize="11px" textBold="true" textAlignment="center" textColor="1 0.5 0.5 1" visible="false"/>
+                            <!-- Info button - right aligned -->
+                            <Bitmap profile="baseReference" id="saleRow0InfoBtnBg" position="440px 1px" size="26px 22px" imageColor="0.18 0.18 0.18 1"/>
+                            <Button profile="financeActionBtn" id="saleRow0InfoBtn" text="" onClick="onInfoSale0" position="440px 1px" size="26px 22px"/>
+                            <Text profile="fs25_textDefault" id="saleRow0InfoBtnText" text="?" position="440px 4px" size="26px 18px" textSize="12px" textBold="true" textAlignment="center"/>
+                            <!-- Cancel listing button (red X, for active listings) - right aligned -->
+                            <Bitmap profile="baseReference" id="saleRow0CancelBtnBg" position="470px 1px" size="26px 22px" imageColor="0.25 0.15 0.15 1" visible="false"/>
+                            <Button profile="financeActionBtn" id="saleRow0CancelBtn" text="" onClick="onCancelSale0" position="470px 1px" size="26px 22px" visible="false"/>
+                            <Text profile="fs25_textDefault" id="saleRow0CancelBtnText" text="X" position="470px 4px" size="26px 18px" textSize="12px" textBold="true" textAlignment="center" textColor="1 0.5 0.5 1" visible="false"/>
                         </GuiElement>
 
                         <!-- Sale Row 1 -->
-                        <GuiElement id="saleRow1" position="0px 34px" size="500px 33px" visible="false">
-                            <Bitmap profile="baseReference" id="saleRow1Bg" imageColor="0.08 0.1 0.08 1" size="500px 33px"/>
-                            <Text profile="fs25_textDefault" id="saleRow1Item" text="" position="5px 9px" textSize="11px" textColor="1 1 1 1"/>
-                            <Text profile="fs25_textDefault" id="saleRow1Tier" text="" position="130px 9px" textSize="11px" textColor="0.5 0.8 1 1"/>
-                            <Text profile="fs25_textDefault" id="saleRow1Status" text="" position="185px 9px" textSize="11px" textColor="0.7 0.7 0.7 1"/>
-                            <Text profile="fs25_textDefault" id="saleRow1Time" text="" position="265px 9px" textSize="11px" textColor="0.7 0.7 0.7 1"/>
-                            <!-- Accept button (green, for pending offers) -->
-                            <Bitmap profile="baseReference" id="saleRow1AcceptBtnBg" position="330px 4px" size="36px 24px" imageColor="0.15 0.25 0.15 1" visible="false"/>
-                            <Button profile="financeActionBtn" id="saleRow1AcceptBtn" text="" onClick="onAcceptSale1" position="330px 4px" size="36px 24px" visible="false"/>
-                            <Text profile="fs25_textDefault" id="saleRow1AcceptBtnText" text="YES" position="330px 7px" size="36px 18px" textSize="11px" textBold="true" textAlignment="center" textColor="0.4 1 0.4 1" visible="false"/>
-                            <!-- Decline button (red, for pending offers) -->
-                            <Bitmap profile="baseReference" id="saleRow1DeclineBtnBg" position="370px 4px" size="36px 24px" imageColor="0.25 0.15 0.15 1" visible="false"/>
-                            <Button profile="financeActionBtn" id="saleRow1DeclineBtn" text="" onClick="onDeclineSale1" position="370px 4px" size="36px 24px" visible="false"/>
-                            <Text profile="fs25_textDefault" id="saleRow1DeclineBtnText" text="NO" position="370px 7px" size="36px 18px" textSize="11px" textBold="true" textAlignment="center" textColor="1 0.5 0.5 1" visible="false"/>
-                            <!-- Info button (moved to where $ was) -->
-                            <Bitmap profile="baseReference" id="saleRow1InfoBtnBg" position="340px 4px" size="30px 24px" imageColor="0.18 0.18 0.18 1"/>
-                            <Button profile="financeActionBtn" id="saleRow1InfoBtn" text="" onClick="onInfoSale1" position="340px 4px" size="30px 24px"/>
-                            <Text profile="fs25_textDefault" id="saleRow1InfoBtnText" text="?" position="340px 7px" size="30px 18px" textSize="12px" textBold="true" textAlignment="center"/>
-                            <!-- Cancel listing button (red X, for active listings) -->
-                            <Bitmap profile="baseReference" id="saleRow1CancelBtnBg" position="375px 4px" size="30px 24px" imageColor="0.25 0.15 0.15 1" visible="false"/>
-                            <Button profile="financeActionBtn" id="saleRow1CancelBtn" text="" onClick="onCancelSale1" position="375px 4px" size="30px 24px" visible="false"/>
-                            <Text profile="fs25_textDefault" id="saleRow1CancelBtnText" text="X" position="375px 7px" size="30px 18px" textSize="12px" textBold="true" textAlignment="center" textColor="1 0.5 0.5 1" visible="false"/>
+                        <GuiElement id="saleRow1" position="0px 26px" size="500px 25px" visible="false">
+                            <Bitmap profile="baseReference" id="saleRow1Bg" imageColor="0.08 0.1 0.08 1" size="500px 25px"/>
+                            <Text profile="fs25_textDefault" id="saleRow1Item" text="" position="5px 5px" textSize="11px" textColor="1 1 1 1"/>
+                            <Text profile="fs25_textDefault" id="saleRow1Tier" text="" position="130px 5px" textSize="11px" textColor="0.5 0.8 1 1"/>
+                            <Text profile="fs25_textDefault" id="saleRow1Status" text="" position="185px 5px" textSize="11px" textColor="0.7 0.7 0.7 1"/>
+                            <Text profile="fs25_textDefault" id="saleRow1Time" text="" position="265px 5px" textSize="11px" textColor="0.7 0.7 0.7 1"/>
+                            <!-- Accept button (green, for pending offers) - right aligned -->
+                            <Bitmap profile="baseReference" id="saleRow1AcceptBtnBg" position="410px 1px" size="36px 22px" imageColor="0.15 0.25 0.15 1" visible="false"/>
+                            <Button profile="financeActionBtn" id="saleRow1AcceptBtn" text="" onClick="onAcceptSale1" position="410px 1px" size="36px 22px" visible="false"/>
+                            <Text profile="fs25_textDefault" id="saleRow1AcceptBtnText" text="YES" position="410px 4px" size="36px 18px" textSize="11px" textBold="true" textAlignment="center" textColor="0.4 1 0.4 1" visible="false"/>
+                            <!-- Decline button (red, for pending offers) - right aligned -->
+                            <Bitmap profile="baseReference" id="saleRow1DeclineBtnBg" position="450px 1px" size="36px 22px" imageColor="0.25 0.15 0.15 1" visible="false"/>
+                            <Button profile="financeActionBtn" id="saleRow1DeclineBtn" text="" onClick="onDeclineSale1" position="450px 1px" size="36px 22px" visible="false"/>
+                            <Text profile="fs25_textDefault" id="saleRow1DeclineBtnText" text="NO" position="450px 4px" size="36px 18px" textSize="11px" textBold="true" textAlignment="center" textColor="1 0.5 0.5 1" visible="false"/>
+                            <!-- Info button - right aligned -->
+                            <Bitmap profile="baseReference" id="saleRow1InfoBtnBg" position="440px 1px" size="26px 22px" imageColor="0.18 0.18 0.18 1"/>
+                            <Button profile="financeActionBtn" id="saleRow1InfoBtn" text="" onClick="onInfoSale1" position="440px 1px" size="26px 22px"/>
+                            <Text profile="fs25_textDefault" id="saleRow1InfoBtnText" text="?" position="440px 4px" size="26px 18px" textSize="12px" textBold="true" textAlignment="center"/>
+                            <!-- Cancel listing button (red X, for active listings) - right aligned -->
+                            <Bitmap profile="baseReference" id="saleRow1CancelBtnBg" position="470px 1px" size="26px 22px" imageColor="0.25 0.15 0.15 1" visible="false"/>
+                            <Button profile="financeActionBtn" id="saleRow1CancelBtn" text="" onClick="onCancelSale1" position="470px 1px" size="26px 22px" visible="false"/>
+                            <Text profile="fs25_textDefault" id="saleRow1CancelBtnText" text="X" position="470px 4px" size="26px 18px" textSize="12px" textBold="true" textAlignment="center" textColor="1 0.5 0.5 1" visible="false"/>
                         </GuiElement>
 
                         <!-- Sale Row 2 -->
-                        <GuiElement id="saleRow2" position="0px 1px" size="500px 33px" visible="false">
-                            <Bitmap profile="baseReference" id="saleRow2Bg" imageColor="0.1 0.12 0.1 1" size="500px 33px"/>
-                            <Text profile="fs25_textDefault" id="saleRow2Item" text="" position="5px 9px" textSize="11px" textColor="1 1 1 1"/>
-                            <Text profile="fs25_textDefault" id="saleRow2Tier" text="" position="130px 9px" textSize="11px" textColor="0.5 0.8 1 1"/>
-                            <Text profile="fs25_textDefault" id="saleRow2Status" text="" position="185px 9px" textSize="11px" textColor="0.7 0.7 0.7 1"/>
-                            <Text profile="fs25_textDefault" id="saleRow2Time" text="" position="265px 9px" textSize="11px" textColor="0.7 0.7 0.7 1"/>
-                            <!-- Accept button (green, for pending offers) -->
-                            <Bitmap profile="baseReference" id="saleRow2AcceptBtnBg" position="330px 4px" size="36px 24px" imageColor="0.15 0.25 0.15 1" visible="false"/>
-                            <Button profile="financeActionBtn" id="saleRow2AcceptBtn" text="" onClick="onAcceptSale2" position="330px 4px" size="36px 24px" visible="false"/>
-                            <Text profile="fs25_textDefault" id="saleRow2AcceptBtnText" text="YES" position="330px 7px" size="36px 18px" textSize="11px" textBold="true" textAlignment="center" textColor="0.4 1 0.4 1" visible="false"/>
-                            <!-- Decline button (red, for pending offers) -->
-                            <Bitmap profile="baseReference" id="saleRow2DeclineBtnBg" position="370px 4px" size="36px 24px" imageColor="0.25 0.15 0.15 1" visible="false"/>
-                            <Button profile="financeActionBtn" id="saleRow2DeclineBtn" text="" onClick="onDeclineSale2" position="370px 4px" size="36px 24px" visible="false"/>
-                            <Text profile="fs25_textDefault" id="saleRow2DeclineBtnText" text="NO" position="370px 7px" size="36px 18px" textSize="11px" textBold="true" textAlignment="center" textColor="1 0.5 0.5 1" visible="false"/>
-                            <!-- Info button (moved to where $ was) -->
-                            <Bitmap profile="baseReference" id="saleRow2InfoBtnBg" position="340px 4px" size="30px 24px" imageColor="0.18 0.18 0.18 1"/>
-                            <Button profile="financeActionBtn" id="saleRow2InfoBtn" text="" onClick="onInfoSale2" position="340px 4px" size="30px 24px"/>
-                            <Text profile="fs25_textDefault" id="saleRow2InfoBtnText" text="?" position="340px 7px" size="30px 18px" textSize="12px" textBold="true" textAlignment="center"/>
-                            <!-- Cancel listing button (red X, for active listings) -->
-                            <Bitmap profile="baseReference" id="saleRow2CancelBtnBg" position="375px 4px" size="30px 24px" imageColor="0.25 0.15 0.15 1" visible="false"/>
-                            <Button profile="financeActionBtn" id="saleRow2CancelBtn" text="" onClick="onCancelSale2" position="375px 4px" size="30px 24px" visible="false"/>
-                            <Text profile="fs25_textDefault" id="saleRow2CancelBtnText" text="X" position="375px 7px" size="30px 18px" textSize="12px" textBold="true" textAlignment="center" textColor="1 0.5 0.5 1" visible="false"/>
+                        <GuiElement id="saleRow2" position="0px 1px" size="500px 25px" visible="false">
+                            <Bitmap profile="baseReference" id="saleRow2Bg" imageColor="0.1 0.12 0.1 1" size="500px 25px"/>
+                            <Text profile="fs25_textDefault" id="saleRow2Item" text="" position="5px 5px" textSize="11px" textColor="1 1 1 1"/>
+                            <Text profile="fs25_textDefault" id="saleRow2Tier" text="" position="130px 5px" textSize="11px" textColor="0.5 0.8 1 1"/>
+                            <Text profile="fs25_textDefault" id="saleRow2Status" text="" position="185px 5px" textSize="11px" textColor="0.7 0.7 0.7 1"/>
+                            <Text profile="fs25_textDefault" id="saleRow2Time" text="" position="265px 5px" textSize="11px" textColor="0.7 0.7 0.7 1"/>
+                            <!-- Accept button (green, for pending offers) - right aligned -->
+                            <Bitmap profile="baseReference" id="saleRow2AcceptBtnBg" position="410px 1px" size="36px 22px" imageColor="0.15 0.25 0.15 1" visible="false"/>
+                            <Button profile="financeActionBtn" id="saleRow2AcceptBtn" text="" onClick="onAcceptSale2" position="410px 1px" size="36px 22px" visible="false"/>
+                            <Text profile="fs25_textDefault" id="saleRow2AcceptBtnText" text="YES" position="410px 4px" size="36px 18px" textSize="11px" textBold="true" textAlignment="center" textColor="0.4 1 0.4 1" visible="false"/>
+                            <!-- Decline button (red, for pending offers) - right aligned -->
+                            <Bitmap profile="baseReference" id="saleRow2DeclineBtnBg" position="450px 1px" size="36px 22px" imageColor="0.25 0.15 0.15 1" visible="false"/>
+                            <Button profile="financeActionBtn" id="saleRow2DeclineBtn" text="" onClick="onDeclineSale2" position="450px 1px" size="36px 22px" visible="false"/>
+                            <Text profile="fs25_textDefault" id="saleRow2DeclineBtnText" text="NO" position="450px 4px" size="36px 18px" textSize="11px" textBold="true" textAlignment="center" textColor="1 0.5 0.5 1" visible="false"/>
+                            <!-- Info button - right aligned -->
+                            <Bitmap profile="baseReference" id="saleRow2InfoBtnBg" position="440px 1px" size="26px 22px" imageColor="0.18 0.18 0.18 1"/>
+                            <Button profile="financeActionBtn" id="saleRow2InfoBtn" text="" onClick="onInfoSale2" position="440px 1px" size="26px 22px"/>
+                            <Text profile="fs25_textDefault" id="saleRow2InfoBtnText" text="?" position="440px 4px" size="26px 18px" textSize="12px" textBold="true" textAlignment="center"/>
+                            <!-- Cancel listing button (red X, for active listings) - right aligned -->
+                            <Bitmap profile="baseReference" id="saleRow2CancelBtnBg" position="470px 1px" size="26px 22px" imageColor="0.25 0.15 0.15 1" visible="false"/>
+                            <Button profile="financeActionBtn" id="saleRow2CancelBtn" text="" onClick="onCancelSale2" position="470px 1px" size="26px 22px" visible="false"/>
+                            <Text profile="fs25_textDefault" id="saleRow2CancelBtnText" text="X" position="470px 4px" size="26px 18px" textSize="12px" textBold="true" textAlignment="center" textColor="1 0.5 0.5 1" visible="false"/>
                         </GuiElement>
                     </GuiElement>
                 </GuiElement>

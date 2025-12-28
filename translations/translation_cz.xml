@@ -963,6 +963,8 @@
         <e k="usedplus_uvp_inspectedText" v="Vozidlo bylo prohlédnuto - zobrazte zpravu" />
         <e k="usedplus_button_buyAsIs" v="Koupit jak je" />
         <e k="usedplus_button_inspect" v="Prohlednout" />
+        <e k="usedplus_button_tires" v="Pneumatiky" />
+        <e k="usedplus_button_fluids" v="Kapaliny" />
 
         <!-- Repair Dialog -->
         <e k="usedplus_rp_title" v="Servis vozidla" />
@@ -1200,6 +1202,7 @@
         <e k="usedplus_fmf_noActiveSearches" v="Zadna aktivni vyhledavani. Zacnete z obchodu." />
         <e k="usedplus_fmf_headerPrice" v="CENA" />
         <e k="usedplus_fmf_headerTier" v="UROVEN" />
+        <e k="usedplus_fmf_headerStatus" v="STAV" />
         <e k="usedplus_fmf_headerChance" v="%" />
         <e k="usedplus_fmf_headerTime" v="CAS" />
         <e k="usedplus_fmf_vehiclesForSale" v="Vozidla na prodej" />
@@ -1421,6 +1424,25 @@
 
         <!-- v1.7.0: Kreditni zpravy -->
         <e k="usedplus_loan_useFinancialDashboard" v="Pouzijte Financni panel pro uvery zalozene na kreditu" />
+
+        <!-- v1.8.0: Servisni mista oleje -->
+        <e k="usedplus_oilBarrel_name" v="Servisni sud oleje" />
+        <e k="usedplus_oilBarrel_function" v="Prijedte vozidlem do blizosti pro doplneni motoroveho oleje a hydraulicke kapaliny." />
+        <e k="usedplus_oilBarrel_specUnlimited" v="Neomezeno" />
+        <e k="usedplus_oilTank_name" v="Servisni nadrz oleje" />
+        <e k="usedplus_oilTank_function" v="Velkokapacitni servisni stanice oleje pro doplneni motoroveho oleje a hydraulicke kapaliny." />
+        <e k="usedplus_oil_refillAction" v="Doplnit Motorovy Olej" />
+        <e k="usedplus_hydraulic_refillAction" v="Doplnit Hydraulickou Kapalinu" />
+        <e k="usedplus_oil_refillComplete" v="Olej doplnen - Cena: %s" />
+        <e k="usedplus_hydraulic_refillComplete" v="Hydraulicka kapalina doplnena - Cena: %s" />
+        <e k="usedplus_oil_refillCompleteStorage" v="Olej doplnen ze skladu" />
+        <e k="usedplus_hydraulic_refillCompleteStorage" v="Hydraulicka kapalina doplnena ze skladu" />
+        <e k="usedplus_oil_notEnoughStorage" v="Nedostatek oleje ve skladu" />
+        <e k="usedplus_hydraulic_notEnoughStorage" v="Nedostatek hydraulicke kapaliny ve skladu" />
+        <e k="usedplus_oil_alreadyFull" v="Motorovy olej je jiz plny" />
+        <e k="usedplus_hydraulic_alreadyFull" v="Hydraulicka kapalina je jiz plna" />
+        <e k="usedplus_oil_storageLevel" v="Sklad Oleje: %d / %d L" />
+        <e k="usedplus_hydraulic_storageLevel" v="Sklad Hydrauliky: %d / %d L" />
 
     </elements>
 </l10n>

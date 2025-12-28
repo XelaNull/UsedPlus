@@ -278,6 +278,7 @@ v1.0.0.0 (2025-11-22) - Erstveröffentlichung
 
         <!-- Core utilities (depend on UsedPlusCore) -->
         <sourceFile filename="src/utils/DealUtils.lua"/>  <!-- Deal interface contract and helpers -->
+        <sourceFile filename="src/utils/ModCompatibility.lua"/>  <!--  v1.8.0: RVB/UYT cross-mod integration -->
 
         <!-- Data classes (depend on DealUtils) -->
         <sourceFile filename="src/data/CreditSystem.lua"/>  <!-- Consolidated: CreditScore + CreditHistory -->
@@ -286,6 +287,7 @@ v1.0.0.0 (2025-11-22) - Erstveröffentlichung
         <sourceFile filename="src/data/LandLeaseDeal.lua"/>  <!--  Land leasing -->
         <sourceFile filename="src/data/UsedVehicleSearch.lua"/>
         <sourceFile filename="src/data/VehicleSaleListing.lua"/>  <!--  Agent-based vehicle sales -->
+        <sourceFile filename="src/data/DiagnosisData.lua"/>       <!--  v1.8.0: Field Service Kit diagnosis data -->
 
         <!-- Utility classes (no dependencies except data classes) -->
         <sourceFile filename="src/utils/FinanceCalculations.lua"/>
@@ -323,8 +325,6 @@ v1.0.0.0 (2025-11-22) - Erstveröffentlichung
         <sourceFile filename="src/gui/UsedSearchDialog.lua"/>
         <sourceFile filename="src/gui/FinanceManagerFrame.lua"/>
         <sourceFile filename="src/gui/FinanceDetailFrame.lua"/>
-        <sourceFile filename="src/gui/LandFinanceDialog.lua"/>
-        <sourceFile filename="src/gui/LandLeaseDialog.lua"/>  <!--  Land leasing -->
         <sourceFile filename="src/gui/RepairDialog.lua"/>
         <sourceFile filename="src/gui/RepairFinanceDialog.lua"/>
         <sourceFile filename="src/gui/TiresDialog.lua"/>      <!--  v1.7.0: Tire replacement dialog -->
@@ -335,10 +335,8 @@ v1.0.0.0 (2025-11-22) - Erstveröffentlichung
         <sourceFile filename="src/gui/CreditReportDialog.lua"/>  <!--  Detailed credit report -->
         <sourceFile filename="src/gui/SellVehicleDialog.lua"/>   <!--  Agent-based vehicle sales -->
         <sourceFile filename="src/gui/SaleOfferDialog.lua"/>     <!--  Accept/Decline sale offers -->
-        <sourceFile filename="src/gui/PaymentConfigDialog.lua"/>  <!--  Payment configuration -->
         <sourceFile filename="src/gui/UnifiedPurchaseDialog.lua"/>  <!--  Unified Buy/Finance/Lease dialog -->
         <sourceFile filename="src/gui/UnifiedLandPurchaseDialog.lua"/>  <!--  Land Buy/Finance/Lease dialog -->
-        <sourceFile filename="src/gui/ConfirmationDialog.lua"/>  <!--  Simple reusable confirmation popup -->
         <sourceFile filename="src/gui/DealDetailsDialog.lua"/>    <!--  Finance/Lease deal details popup -->
         <sourceFile filename="src/gui/PaymentHistoryDialog.lua"/>  <!--  Full amortization schedule view -->
         <sourceFile filename="src/gui/SaleListingDetailsDialog.lua"/>  <!--  Sale listing details popup -->
@@ -351,6 +349,7 @@ v1.0.0.0 (2025-11-22) - Erstveröffentlichung
         <sourceFile filename="src/gui/SaleListingInitiatedDialog.lua"/>  <!--  v1.5.0: Styled sale listing confirmation -->
         <sourceFile filename="src/gui/SearchExpiredDialog.lua"/>       <!--  v1.5.1: Search expiration with renewal option -->
         <sourceFile filename="src/gui/SaleExpiredDialog.lua"/>          <!--  v1.5.1: No buyer found dialog -->
+        <sourceFile filename="src/gui/FieldServiceKitDialog.lua"/>    <!--  v1.8.0: Field Service Kit dialog -->
 
         <!-- Extensions (depend on managers, GUI) -->
         <sourceFile filename="src/extensions/ShopConfigScreenExtension.lua"/>
@@ -367,4 +366,35 @@ v1.0.0.0 (2025-11-22) - Erstveröffentlichung
         <!-- Main entry point (MUST be last - depends on everything) -->
         <sourceFile filename="src/main.lua"/>
     </extraSourceFiles>
+
+    <!-- Vehicle Specializations - Hand Tools -->
+    <specializations>
+        <specialization name="FieldServiceKit" className="FieldServiceKit" filename="vehicles/FieldServiceKit.lua"/>
+    </specializations>
+
+    <!-- Vehicle Types - Hand Tools -->
+    <vehicleTypes>
+        <type name="usedPlusFieldServiceKit" parent="handTool" filename="$dataS/scripts/vehicles/Vehicle.lua">
+            <specialization name="FieldServiceKit"/>
+        </type>
+    </vehicleTypes>
+
+    <!-- Placeable Specializations -->
+    <placeableSpecializations>
+        <specialization name="OilServicePoint" className="OilServicePoint" filename="placeables/OilServicePoint.lua"/>
+    </placeableSpecializations>
+
+    <!-- Placeable Types using our specializations -->
+    <placeableTypes>
+        <type name="usedPlusOilServicePoint" parent="simplePlaceable" filename="$dataS/scripts/placeables/Placeable.lua">
+            <specialization name="OilServicePoint"/>
+        </type>
+    </placeableTypes>
+
+    <!-- Placeables & Hand Tools -->
+    <storeItems>
+        <storeItem xmlFilename="placeables/OilBarrel.xml"/>
+        <storeItem xmlFilename="placeables/OilTank.xml"/>
+        <storeItem xmlFilename="vehicles/fieldServiceKit/fieldServiceKit.xml"/>  <!--  v1.8.0: Field Service Kit -->
+    </storeItems>
 </modDesc>

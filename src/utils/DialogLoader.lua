@@ -195,19 +195,7 @@ function DialogLoader.registerAll()
         DialogLoader.register("CreditReportDialog", CreditReportDialog, "gui/CreditReportDialog.xml")
     end
 
-    if PaymentConfigDialog then
-        DialogLoader.register("PaymentConfigDialog", PaymentConfigDialog, "gui/PaymentConfigDialog.xml")
-    end
-
     -- Land dialogs
-    if LandFinanceDialog then
-        DialogLoader.register("LandFinanceDialog", LandFinanceDialog, "gui/LandFinanceDialog.xml")
-    end
-
-    if LandLeaseDialog then
-        DialogLoader.register("LandLeaseDialog", LandLeaseDialog, "gui/LandLeaseDialog.xml")
-    end
-
     if UnifiedLandPurchaseDialog then
         DialogLoader.register("UnifiedLandPurchaseDialog", UnifiedLandPurchaseDialog, "gui/UnifiedLandPurchaseDialog.xml")
     end
@@ -245,11 +233,6 @@ function DialogLoader.registerAll()
 
     if LeaseRenewalDialog then
         DialogLoader.register("LeaseRenewalDialog", LeaseRenewalDialog, "gui/LeaseRenewalDialog.xml")
-    end
-
-    -- Simple confirmation dialog (reusable info popup)
-    if ConfirmationDialog then
-        DialogLoader.register("ConfirmationDialog", ConfirmationDialog, "gui/ConfirmationDialog.xml")
     end
 
     -- Maintenance/Inspection dialogs (Phase 4)

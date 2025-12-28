@@ -148,10 +148,10 @@
             <textAlignment value="center"/>
         </Profile>
 
-        <!-- ========== 3-COLUMN LABELS (70px wide) ========== -->
+        <!-- ========== 3-COLUMN LABELS (100px wide) ========== -->
         <Profile name="sdLabelSmall" extends="fs25_textDefault" with="anchorTopCenter">
-            <size value="70px 18px"/>
-            <textSize value="12px"/>
+            <size value="100px 18px"/>
+            <textSize value="11px"/>
             <textColor value="0.6 0.6 0.6 1"/>
         </Profile>
 

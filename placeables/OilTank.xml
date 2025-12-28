@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8" standalone="no" ?>
+<!--
+    FS25_UsedPlus - Oil Service Tank
+
+    A larger placeable oil service point. Drive a vehicle near it to refill engine oil.
+    Default mode: Infinite supply, cost based on vehicle value.
+
+    Model adapted from: FS25_FuelTanksPack (with acknowledgment)
+
+    v1.8.0 - Oil Service Point System
+-->
+<placeable type="usedPlusOilServicePoint" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../../../shared/xml/schema/placeable.xsd">
+    <storeData>
+        <name>$l10n_usedplus_oilTank_name</name>
+        <image>placeables/store_OilTank.dds</image>
+        <functions>
+            <function>$l10n_usedplus_oilTank_function</function>
+        </functions>
+        <specs>
+            <capacity>$l10n_usedplus_oilBarrel_specUnlimited</capacity>
+        </specs>
+        <price>2500</price>
+        <dailyUpkeep>5</dailyUpkeep>
+        <canBeSold>true</canBeSold>
+        <showInStore>true</showInStore>
+        <lifetime>1000</lifetime>
+        <rotation>0</rotation>
+        <brand>NONE</brand>
+        <species>placeable</species>
+        <category>misc</category>
+        <brush>
+            <type>placeable</type>
+            <category>misc</category>
+            <tab>decorations</tab>
+        </brush>
+        <vertexBufferMemoryUsage>36096</vertexBufferMemoryUsage>
+        <indexBufferMemoryUsage>9216</indexBufferMemoryUsage>
+        <textureMemoryUsage>327680</textureMemoryUsage>
+        <instanceVertexBufferMemoryUsage>0</instanceVertexBufferMemoryUsage>
+        <instanceIndexBufferMemoryUsage>0</instanceIndexBufferMemoryUsage>
+        <audioMemoryUsage>0</audioMemoryUsage>
+    </storeData>
+
+    <base>
+        <filename>placeables/OilTank.i3d</filename>
+        <canBeRenamed>true</canBeRenamed>
+        <boughtWithFarmland>true</boughtWithFarmland>
+    </base>
+
+    <placement useRandomYRotation="false" useManualYRotation="true">
+        <testAreas>
+            <testArea startNode="testAreaStart01" endNode="testAreaEnd01" />
+        </testAreas>
+        <sounds>
+            <place template="siloImp" pitchScale="1.4"/>
+        </sounds>
+    </placement>
+
+    <clearAreas>
+        <clearArea startNode="clearAreaStart01" widthNode="clearAreaWidth01" heightNode="clearAreaHeight01"/>
+    </clearAreas>
+
+    <leveling requireLeveling="true" maxSmoothDistance="1" maxSlope="75" maxEdgeAngle="30">
+        <levelAreas>
+            <levelArea startNode="levelAreaStart01" widthNode="levelAreaWidth01" heightNode="levelAreaHeight01" groundType="gravel"/>
+        </levelAreas>
+    </leveling>
+
+    <triggerMarkers>
+        <triggerMarker node="refillMarker" filename="$data/shared/assets/marker/markerIconWrench.i3d" />
+    </triggerMarkers>
+
+    <hotspots>
+        <hotspot type="LOADING" linkNode="hotspotNode" teleportNode="refillMarker"/>
+    </hotspots>
+
+    <infoTrigger triggerNode="infoTrigger"/>
+
+    <!-- Oil Service Point Configuration -->
+    <oilServicePoint
+        triggerNode="serviceTrigger"
+        oilCostMultiplier="0.01"
+        hydraulicCostMultiplier="0.008"
+        useFillableStorage="false"
+    />
+
+    <!-- i3d mappings from FuelTankSmall structure -->
+    <i3dMappings>
+        <i3dMapping id="clearAreaStart01" node="0>0|0" />
+        <i3dMapping id="clearAreaWidth01" node="0>0|0|0" />
+        <i3dMapping id="clearAreaHeight01" node="0>0|0|1" />
+        <i3dMapping id="levelAreaStart01" node="0>1|0" />
+        <i3dMapping id="levelAreaWidth01" node="0>1|0|0" />
+        <i3dMapping id="levelAreaHeight01" node="0>1|0|1" />
+        <i3dMapping id="testAreaStart01" node="0>2|0" />
+        <i3dMapping id="testAreaEnd01" node="0>2|0|0" />
+        <!-- Service trigger - we need to add this node to the i3d or use existing trigger -->
+        <i3dMapping id="serviceTrigger" node="0>4|2" />
+        <i3dMapping id="refillMarker" node="0>4|2|0" />
+        <i3dMapping id="hotspotNode" node="0>4|4" />
+        <i3dMapping id="infoTrigger" node="0>4|5" />
+    </i3dMappings>
+</placeable>

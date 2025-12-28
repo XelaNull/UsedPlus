@@ -929,16 +929,24 @@ function UsedVehicleManager:applyDirtBasedOnQuality(vehicle, qualityLevel, damag
             local nodeVariation = (math.random() - 0.5) * 0.1  -- ±5% variation per node
             local nodeDirt = math.max(0, math.min(1, finalDirt + nodeVariation))
 
-            -- Use vehicle's setNodeDirtAmount if available
+            -- Set the dirt amount directly on the node data
+            nodeData.dirtAmount = nodeDirt
+            -- Also set dirtAmountSent to trigger proper sync (fixes clean vehicle bug)
+            nodeData.dirtAmountSent = nodeDirt
+
+            -- Use vehicle's setNodeDirtAmount if available for visual update
             if vehicle.setNodeDirtAmount then
                 vehicle:setNodeDirtAmount(nodeData, nodeDirt, true)
-                nodesApplied = nodesApplied + 1
-            else
-                -- Direct assignment fallback
-                nodeData.dirtAmount = nodeDirt
-                nodesApplied = nodesApplied + 1
             end
+            nodesApplied = nodesApplied + 1
         end
+    end
+
+    -- Force a visual update by calling setDirty on the spec if available
+    if washable.setDirty then
+        washable:setDirty()
+    elseif vehicle.setDirty then
+        vehicle:setDirty()
     end
 
     UsedPlus.logDebug(string.format("  Applied dirt to %d washable nodes", nodesApplied))
@@ -1094,14 +1102,25 @@ function UsedVehicleManager:selectRandomConfiguration(storeItem)
                 -- configData is an array of options - pick random index
                 local numOptions = #configData
                 if numOptions > 0 then
-                    randomConfigs[configName] = math.random(1, numOptions)
-                    UsedPlus.logTrace(string.format("  Random config: %s = %d (of %d options)",
-                        configName, randomConfigs[configName], numOptions))
+                    -- IMPORTANT: For wheel configs, skip index 1 if multiple options exist
+                    -- because wheelConfiguration(0) is often a stub without proper wheel data
+                    local minIndex = 1
+                    if configName == "wheel" and numOptions > 1 then
+                        minIndex = 2  -- Start from second option to avoid empty wheel configs
+                    end
+                    randomConfigs[configName] = math.random(minIndex, numOptions)
+                    UsedPlus.logTrace(string.format("  Random config: %s = %d (of %d options, min=%d)",
+                        configName, randomConfigs[configName], numOptions, minIndex))
                 end
             elseif type(configData) == "number" then
                 -- configData is the number of options - pick random
                 if configData > 0 then
-                    randomConfigs[configName] = math.random(1, configData)
+                    -- Same fix for wheel configs
+                    local minIndex = 1
+                    if configName == "wheel" and configData > 1 then
+                        minIndex = 2
+                    end
+                    randomConfigs[configName] = math.random(minIndex, configData)
                 end
             end
         end

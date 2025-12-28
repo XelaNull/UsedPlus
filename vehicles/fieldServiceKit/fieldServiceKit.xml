@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8" standalone="no" ?>
+<!--
+    FS25_UsedPlus - Field Service Kit (Basic)
+
+    A portable toolbox for emergency field repairs.
+    Carry it to a disabled vehicle, diagnose the problem, and apply temporary repairs.
+    Consumable: Kit is used up after one repair.
+
+    Based on: FS25_MobileServiceKit by w33zl (with acknowledgment)
+
+    v1.8.0 - Field Service Kit System
+-->
+<vehicle type="usedPlusFieldServiceKit" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+    <storeData>
+        <name>$l10n_usedplus_fsk_name</name>
+        <functions>
+            <function>$l10n_usedplus_fsk_function</function>
+        </functions>
+        <specs>
+            <tier>$l10n_usedplus_fsk_tier_basic</tier>
+        </specs>
+        <image>vehicles/fieldServiceKit/store_fieldServiceKit.dds</image>
+        <price>5000</price>
+        <allowLeasing>false</allowLeasing>
+        <canBeSold>true</canBeSold>
+        <showInStore>true</showInStore>
+        <rotation>0</rotation>
+        <shopHeight>2</shopHeight>
+        <brand>LIZARDMOTORS</brand>
+        <category>misc</category>
+        <financeCategory>SHOP_HANDTOOL_BUY</financeCategory>
+
+        <storeIconRendering>
+            <settings cameraXRot="-15" cameraYRot="25" />
+        </storeIconRendering>
+    </storeData>
+
+    <base>
+        <typeDesc>$l10n_typeDesc_handTool</typeDesc>
+        <filename>vehicles/fieldServiceKit/fieldServiceKit.i3d</filename>
+        <size width="0.5" length="0.5" height="0.3" />
+        <supportsRadio>false</supportsRadio>
+        <supportsPickup>true</supportsPickup>
+        <input allowed="true"/>
+        <canBeReset>true</canBeReset>
+        <components maxMass="100">
+            <component centerOfMass="0 0.0 0" solverIterationCount="10" mass="25" />
+        </components>
+        <showInVehicleMenu>true</showInVehicleMenu>
+        <mapHotspot type="OTHER"/>
+    </base>
+
+    <!-- Allow strapping down in trailers -->
+    <dynamicMount triggerNode="dynamicMountTrigger" triggerForceAcceleration="5"
+        additionalMountDistance="1.5" jointTransY="0.11" jointLimitToRotY="true"/>
+
+    <tensionBeltObject>
+        <meshNodes>
+            <meshNode node="toolbox_viz"/>
+        </meshNodes>
+    </tensionBeltObject>
+
+    <!-- Field Service Kit configuration -->
+    <fieldServiceKit
+        kitTier="basic"
+        detectionRadius="5.0"
+        playerTriggerNode="playerTrigger"
+        vehicleTriggerNode="vehicleTrigger"
+    />
+
+    <i3dMappings>
+        <i3dMapping id="toolBoxWorkshopMainComponent" node="0" />
+        <i3dMapping id="dynamicMountTrigger" node="0>0|0" />
+        <i3dMapping id="fillTrigger" node="0>0|1" />
+        <i3dMapping id="floorCollision01" node="0>1|0" />
+        <i3dMapping id="toolbox_viz" node="0>3|0" />
+        <i3dMapping id="enterNode" node="0>4|1" />
+        <i3dMapping id="outdoorCamera1" node="0>4|0|0" />
+        <i3dMapping id="markerWrench" node="0>5|0" />
+        <i3dMapping id="warningStripes" node="0>5|1" />
+        <i3dMapping id="vehicleTrigger" node="0>5|2" />
+        <i3dMapping id="playerTrigger" node="0>5|3" />
+    </i3dMappings>
+</vehicle>

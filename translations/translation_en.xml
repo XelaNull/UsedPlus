@@ -993,6 +993,8 @@
         <e k="usedplus_uvp_inspectedText" v="Vehicle has been inspected - view report" />
         <e k="usedplus_button_buyAsIs" v="Buy As-Is" />
         <e k="usedplus_button_inspect" v="Inspect" />
+        <e k="usedplus_button_tires" v="Tires" />
+        <e k="usedplus_button_fluids" v="Fluids" />
 
         <!-- Repair Dialog -->
         <e k="usedplus_rp_title" v="Vehicle Service" />
@@ -1245,6 +1247,7 @@
         <e k="usedplus_fmf_noActiveSearches" v="No active searches. Start from Shop." />
         <e k="usedplus_fmf_headerPrice" v="PRICE" />
         <e k="usedplus_fmf_headerTier" v="TIER" />
+        <e k="usedplus_fmf_headerStatus" v="STATUS" />
         <e k="usedplus_fmf_headerChance" v="%" />
         <e k="usedplus_fmf_headerTime" v="TIME" />
         <e k="usedplus_fmf_vehiclesForSale" v="Vehicles For Sale" />
@@ -1546,6 +1549,148 @@
         <e k="usedplus_fluids_hydraulicLeakWarning" v="HYDRAULIC LEAK DETECTED" />
         <e k="usedplus_fluids_selectFirst" v="Please select at least one service." />
         <e k="usedplus_fluids_refilled" v="Fluids refilled: %s" />
+
+        <!-- v1.8.0: Oil Service Placeables -->
+        <e k="usedplus_oilBarrel_name" v="Oil Service Barrel" />
+        <e k="usedplus_oilBarrel_function" v="Drive a vehicle nearby to refill engine oil and hydraulic fluid." />
+        <e k="usedplus_oilBarrel_specUnlimited" v="Unlimited" />
+        <e k="usedplus_oilTank_name" v="Oil Service Tank" />
+        <e k="usedplus_oilTank_function" v="Large capacity oil service point for refilling engine oil and hydraulic fluid." />
+        <e k="usedplus_oil_refillAction" v="Refill Engine Oil" />
+        <e k="usedplus_hydraulic_refillAction" v="Refill Hydraulic Fluid" />
+        <e k="usedplus_oil_refillComplete" v="Oil refilled - Cost: %s" />
+        <e k="usedplus_hydraulic_refillComplete" v="Hydraulic fluid refilled - Cost: %s" />
+        <e k="usedplus_oil_refillCompleteStorage" v="Oil refilled from storage" />
+        <e k="usedplus_hydraulic_refillCompleteStorage" v="Hydraulic fluid refilled from storage" />
+        <e k="usedplus_oil_notEnoughStorage" v="Not enough oil in storage" />
+        <e k="usedplus_hydraulic_notEnoughStorage" v="Not enough hydraulic fluid in storage" />
+        <e k="usedplus_oil_alreadyFull" v="Engine oil already full" />
+        <e k="usedplus_hydraulic_alreadyFull" v="Hydraulic fluid already full" />
+        <e k="usedplus_oil_storageLevel" v="Oil Storage: %d / %d L" />
+        <e k="usedplus_hydraulic_storageLevel" v="Hydraulic Storage: %d / %d L" />
+
+        <!-- v1.8.0: Field Service Kit with OBD Scanner -->
+        <e k="usedplus_fsk_name" v="Field Service Kit (OBD Scanner)" />
+        <e k="usedplus_fsk_function" v="Portable OBD diagnostic scanner for emergency field repairs. Connects to vehicle diagnostics port to read fault codes and sensor data. Consumable - single use." />
+        <e k="usedplus_fsk_tier_basic" v="Basic OBD" />
+        <e k="usedplus_fsk_activate" v="Connect OBD Scanner" />
+        <e k="usedplus_fsk_title" v="OBD DIAGNOSTIC SCANNER - FIELD SERVICE" />
+        <e k="usedplus_fsk_vehicle" v="Connected to:" />
+        <e k="usedplus_fsk_status" v="Vehicle Status:" />
+        <e k="usedplus_fsk_status_disabled" v="FAULT - INOPERABLE" />
+        <e k="usedplus_fsk_status_needs_service" v="SERVICE REQUIRED" />
+        <e k="usedplus_fsk_select_system" v="OBD scan detected faults in multiple systems. Which system do you want to diagnose?" />
+        <e k="usedplus_fsk_reliability" v="System Health" />
+        <e k="usedplus_fsk_system_engine" v="Engine ECU" />
+        <e k="usedplus_fsk_system_electrical" v="Electrical System" />
+        <e k="usedplus_fsk_system_hydraulic" v="Hydraulic Control" />
+        <e k="usedplus_fsk_warning_choose" v="Choose the system most likely at fault - misdiagnosis reduces repair effectiveness" />
+        <e k="usedplus_fsk_diagnosis" v="OBD FAULT ANALYSIS" />
+        <e k="usedplus_fsk_symptoms_observed" v="OBD SCANNER READINGS:" />
+        <e k="usedplus_fsk_diagnosis_question" v="Based on these diagnostic codes, what is the root cause?" />
+
+        <!-- Engine diagnostic readings (as scanner output) -->
+        <e k="usedplus_fsk_symptom_engine_misfiring" v="Cylinder misfire detected - irregular combustion pattern" />
+        <e k="usedplus_fsk_symptom_engine_black_smoke" v="Exhaust sensor: Rich fuel mixture / incomplete combustion" />
+        <e k="usedplus_fsk_symptom_engine_power_loss_gradual" v="Power output: 40% below rated - declining trend" />
+        <e k="usedplus_fsk_symptom_engine_hard_start" v="Starter motor cycles: Excessive cranking required" />
+        <e k="usedplus_fsk_symptom_engine_stalling" v="RPM fluctuation: Engine stalling under load" />
+        <e k="usedplus_fsk_symptom_engine_sputtering" v="Fuel delivery: Intermittent flow detected" />
+        <e k="usedplus_fsk_symptom_engine_rough_idle" v="Idle quality: Unstable RPM at rest" />
+        <e k="usedplus_fsk_symptom_engine_misfiring_high_rpm" v="High RPM misfire: Ignition timing fault" />
+        <e k="usedplus_fsk_symptom_engine_poor_acceleration" v="Throttle response: Delayed / weak acceleration" />
+        <e k="usedplus_fsk_symptom_engine_backfiring" v="Timing analysis: Combustion occurring in exhaust" />
+        <e k="usedplus_fsk_symptom_engine_wont_start" v="Engine status: No ignition - cranks but won't fire" />
+        <e k="usedplus_fsk_symptom_engine_timing_off" v="Valve timing: Out of specification" />
+
+        <!-- Engine diagnoses -->
+        <e k="usedplus_fsk_diag_fuel_filter" v="Fuel filter clogged" />
+        <e k="usedplus_fsk_diag_spark_plugs" v="Spark plugs fouled" />
+        <e k="usedplus_fsk_diag_air_filter" v="Air filter blocked" />
+        <e k="usedplus_fsk_diag_timing_belt" v="Timing belt slipped" />
+
+        <!-- Electrical diagnostic readings -->
+        <e k="usedplus_fsk_symptom_elec_no_crank" v="Starter circuit: No current to starter motor" />
+        <e k="usedplus_fsk_symptom_elec_no_lights" v="Lighting circuit: Zero voltage detected" />
+        <e k="usedplus_fsk_symptom_elec_clicking" v="Relay status: Rapid clicking - insufficient power" />
+        <e k="usedplus_fsk_symptom_elec_random_shutdowns" v="Power stability: Unexpected system shutdowns" />
+        <e k="usedplus_fsk_symptom_elec_specific_systems_fail" v="Circuit analysis: Isolated system failures" />
+        <e k="usedplus_fsk_symptom_elec_partial_power" v="Power distribution: Some circuits dead" />
+        <e k="usedplus_fsk_symptom_elec_starts_then_dies" v="Run time: Engine dies shortly after start" />
+        <e k="usedplus_fsk_symptom_elec_dim_lights" v="Voltage level: Below normal - lights dim at idle" />
+        <e k="usedplus_fsk_symptom_elec_battery_warning" v="Battery status: Not charging while running" />
+        <e k="usedplus_fsk_symptom_elec_intermittent" v="Connection quality: Intermittent power drops" />
+        <e k="usedplus_fsk_symptom_elec_works_when_wiggling" v="Wire harness: Movement-sensitive connections" />
+        <e k="usedplus_fsk_symptom_elec_flickering" v="Power output: Fluctuating voltage levels" />
+
+        <!-- Electrical diagnoses -->
+        <e k="usedplus_fsk_diag_battery" v="Battery dead/disconnected" />
+        <e k="usedplus_fsk_diag_fuse" v="Blown fuse" />
+        <e k="usedplus_fsk_diag_alternator" v="Alternator failing" />
+        <e k="usedplus_fsk_diag_wiring" v="Loose wiring connection" />
+
+        <!-- Hydraulic diagnostic readings -->
+        <e k="usedplus_fsk_symptom_hyd_slow_response" v="Response time: Hydraulic actuators slow to move" />
+        <e k="usedplus_fsk_symptom_hyd_weak_lift" v="Lift capacity: Below rated lifting force" />
+        <e k="usedplus_fsk_symptom_hyd_low_pressure" v="System pressure: 40% below operating spec" />
+        <e k="usedplus_fsk_symptom_hyd_jerky" v="Movement quality: Jerky/stuttering operation" />
+        <e k="usedplus_fsk_symptom_hyd_spongy" v="Control feel: Spongy/soft pedal response" />
+        <e k="usedplus_fsk_symptom_hyd_inconsistent" v="Pressure stability: Fluctuating readings" />
+        <e k="usedplus_fsk_symptom_hyd_grinding" v="Pump noise: Grinding/cavitation sounds" />
+        <e k="usedplus_fsk_symptom_hyd_overheating" v="Fluid temp: Overheating detected (95C+)" />
+        <e k="usedplus_fsk_symptom_hyd_whining" v="Pump noise: High-pitched whine under load" />
+        <e k="usedplus_fsk_symptom_hyd_visible_leak" v="Leak detector: External fluid loss detected" />
+        <e k="usedplus_fsk_symptom_hyd_oil_spots" v="Fluid level: Dropping - external leak likely" />
+        <e k="usedplus_fsk_symptom_hyd_pressure_drop" v="Pressure trend: Gradual decline over time" />
+
+        <!-- Hydraulic diagnoses -->
+        <e k="usedplus_fsk_diag_hyd_fluid" v="Low fluid level" />
+        <e k="usedplus_fsk_diag_hyd_air" v="Air in hydraulic lines" />
+        <e k="usedplus_fsk_diag_hyd_pump" v="Hydraulic pump wear" />
+        <e k="usedplus_fsk_diag_hyd_seals" v="Seal/gasket failure" />
+
+        <!-- Repair descriptions -->
+        <e k="usedplus_fsk_repair_air_filter" v="Cleared blocked air filter - airflow restored." />
+        <e k="usedplus_fsk_repair_fuel_filter" v="Cleaned fuel filter - fuel flow restored." />
+        <e k="usedplus_fsk_repair_spark_plugs" v="Cleaned/gapped spark plugs - ignition improved." />
+        <e k="usedplus_fsk_repair_timing" v="Adjusted timing components - sync restored." />
+        <e k="usedplus_fsk_repair_battery" v="Cleaned terminals and jump-started - power restored." />
+        <e k="usedplus_fsk_repair_fuse" v="Replaced blown fuse with spare." />
+        <e k="usedplus_fsk_repair_alternator" v="Temporary alternator bypass - limited charging." />
+        <e k="usedplus_fsk_repair_wiring" v="Secured loose connections - circuit restored." />
+        <e k="usedplus_fsk_repair_hyd_fluid" v="Topped up hydraulic fluid from kit reserves." />
+        <e k="usedplus_fsk_repair_hyd_bleed" v="Bled air from hydraulic lines." />
+        <e k="usedplus_fsk_repair_hyd_pump" v="Applied temporary pump seal treatment." />
+        <e k="usedplus_fsk_repair_hyd_seals" v="Applied emergency seal compound." />
+
+        <!-- Result messages -->
+        <e k="usedplus_fsk_result_title_perfect" v="REPAIR SUCCESSFUL" />
+        <e k="usedplus_fsk_result_title_good" v="PARTIAL REPAIR" />
+        <e k="usedplus_fsk_result_title_poor" v="MINIMAL REPAIR" />
+        <e k="usedplus_fsk_result_perfect" v="Correct diagnosis! Targeted repair applied." />
+        <e k="usedplus_fsk_result_good" v="Right system, but diagnosis was off. General repairs applied." />
+        <e k="usedplus_fsk_result_poor" v="Wrong system identified. Only basic maintenance applied." />
+        <e k="usedplus_fsk_results" v="REPAIR RESULTS" />
+        <e k="usedplus_fsk_before" v="Before:" />
+        <e k="usedplus_fsk_after" v="After:" />
+        <e k="usedplus_fsk_feedback_perfect" v="Correct diagnosis!" />
+        <e k="usedplus_fsk_feedback_partial" v="Right system, but the specific cause was different." />
+        <e k="usedplus_fsk_feedback_wrong" v="The actual problem was in a different system." />
+        <e k="usedplus_fsk_temp_repair" v="TEMPORARY FIELD REPAIR" />
+        <e k="usedplus_fsk_temp_repair_desc" v="This is an emergency fix. Visit a proper workshop for full service." />
+        <e k="usedplus_fsk_kit_consumed" v="Field Service Kit has been used up." />
+        <e k="usedplus_fsk_cannot_cancel" v="Repair in progress - cannot cancel at this stage." />
+
+        <!-- Tire repair -->
+        <e k="usedplus_fsk_tire_repair" v="FLAT TIRE DETECTED - Click to Repair" />
+        <e k="usedplus_fsk_tire_repair_title" v="TIRE EMERGENCY REPAIR" />
+        <e k="usedplus_fsk_tire_choose" v="Choose repair method:" />
+        <e k="usedplus_fsk_tire_patch" v="PATCH" />
+        <e k="usedplus_fsk_tire_patch_desc" v="Quick temporary fix" />
+        <e k="usedplus_fsk_tire_patch_result" v="Restores to 30% condition" />
+        <e k="usedplus_fsk_tire_plug" v="PLUG" />
+        <e k="usedplus_fsk_tire_plug_desc" v="Better emergency repair" />
+        <e k="usedplus_fsk_tire_plug_result" v="Restores to 50% condition" />
 
     </elements>
 </l10n>

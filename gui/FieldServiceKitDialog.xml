@@ -1,0 +1,397 @@
+<?xml version="1.0" encoding="utf-8" standalone="no" ?>
+<!--
+    FS25_UsedPlus - Field Service Kit Dialog
+
+    Multi-step dialog for emergency field repairs:
+    1. System Selection - Choose Engine/Electrical/Hydraulic
+    2. Diagnosis - Review symptoms, pick cause
+    3. Results - See repair outcome
+
+    v1.8.0 - Field Service Kit System
+-->
+<GUI>
+    <Dialogs>
+        <FieldServiceKitDialog derivedFrom="MessageDialog" createSelf="true" class="FieldServiceKitDialog"
+            dialogProfile="fs25_dialog" backgroundProfile="fs25_dialogBg">
+
+            <!-- Dialog container: 780px wide, 600px tall -->
+            <GuiElement profile="dialogBg" id="dialogElement" size="780px 600px">
+                <ThreePartBitmap profile="fs25_dialogBgMiddle" />
+                <ThreePartBitmap profile="fs25_dialogBgTop" />
+                <ThreePartBitmap profile="fs25_dialogBgBottom" />
+
+                <GuiElement profile="fs25_dialogContentContainer">
+
+                    <!-- Title -->
+                    <Text profile="fs25_dialogTitle" position="0px -25px" id="dialogTitle"
+                        text="$l10n_usedplus_fsk_title" textSize="22px"/>
+
+                    <!-- ========== STEP 1: SYSTEM SELECTION ========== -->
+                    <GuiElement id="systemSelectContainer" position="0px -60px" size="720px 450px">
+
+                        <!-- Vehicle info bar -->
+                        <GuiElement profile="fskSectionBg" position="0px 0px" size="720px 60px">
+                            <Text profile="fskLabel" id="vehicleNameLabel" position="-340px -15px"
+                                text="$l10n_usedplus_fsk_vehicle"/>
+                            <Text profile="fskValue" id="vehicleNameText" position="-200px -15px" text=""/>
+
+                            <Text profile="fskLabel" position="100px -15px" text="$l10n_usedplus_fsk_status"/>
+                            <Text profile="fskValueLarge" id="statusText" position="200px -15px" text=""/>
+                        </GuiElement>
+
+                        <!-- Instruction text -->
+                        <Text profile="fskInstruction" position="0px -80px"
+                            text="$l10n_usedplus_fsk_select_system"/>
+
+                        <!-- System selection buttons -->
+                        <GuiElement position="0px -120px" size="720px 180px">
+
+                            <!-- ENGINE button -->
+                            <Button profile="fskSystemButton" id="engineButton" position="-240px -10px"
+                                size="200px 150px" onClick="onEngineClick">
+                                <Text profile="fskSystemIcon" position="0px -30px" text="ENGINE"/>
+                                <Text profile="fskSystemLabel" position="0px -70px"
+                                    text="$l10n_usedplus_fsk_system_engine"/>
+                                <Text profile="fskReliabilityLabel" position="0px -100px"
+                                    text="$l10n_usedplus_fsk_reliability"/>
+                                <Text profile="fskReliabilityValue" id="engineRelText" position="0px -120px" text=""/>
+                            </Button>
+
+                            <!-- ELECTRICAL button -->
+                            <Button profile="fskSystemButton" id="electricalButton" position="0px -10px"
+                                size="200px 150px" onClick="onElectricalClick">
+                                <Text profile="fskSystemIcon" position="0px -30px" text="ELEC"/>
+                                <Text profile="fskSystemLabel" position="0px -70px"
+                                    text="$l10n_usedplus_fsk_system_electrical"/>
+                                <Text profile="fskReliabilityLabel" position="0px -100px"
+                                    text="$l10n_usedplus_fsk_reliability"/>
+                                <Text profile="fskReliabilityValue" id="electricalRelText" position="0px -120px" text=""/>
+                            </Button>
+
+                            <!-- HYDRAULIC button -->
+                            <Button profile="fskSystemButton" id="hydraulicButton" position="240px -10px"
+                                size="200px 150px" onClick="onHydraulicClick">
+                                <Text profile="fskSystemIcon" position="0px -30px" text="HYD"/>
+                                <Text profile="fskSystemLabel" position="0px -70px"
+                                    text="$l10n_usedplus_fsk_system_hydraulic"/>
+                                <Text profile="fskReliabilityLabel" position="0px -100px"
+                                    text="$l10n_usedplus_fsk_reliability"/>
+                                <Text profile="fskReliabilityValue" id="hydraulicRelText" position="0px -120px" text=""/>
+                            </Button>
+                        </GuiElement>
+
+                        <!-- Tire repair button (only shown if flat tire detected) -->
+                        <Button profile="fskTireButton" id="tireButton" position="0px -320px"
+                            size="300px 40px" onClick="onTireClick">
+                            <Text profile="fskTireButtonText" position="0px -12px"
+                                text="$l10n_usedplus_fsk_tire_repair"/>
+                        </Button>
+
+                        <!-- Warning text -->
+                        <Text profile="fskWarning" position="0px -380px"
+                            text="$l10n_usedplus_fsk_warning_choose"/>
+                    </GuiElement>
+
+                    <!-- ========== STEP 2: DIAGNOSIS ========== -->
+                    <GuiElement id="diagnosisContainer" position="0px -60px" size="720px 450px" visible="false">
+
+                        <!-- System being diagnosed -->
+                        <Text profile="fskSectionHeader" id="systemNameText" position="0px -10px" text=""/>
+
+                        <!-- Symptoms observed -->
+                        <GuiElement profile="fskSectionBg" position="0px -50px" size="720px 120px">
+                            <Text profile="fskSubHeader" position="-340px -15px"
+                                text="$l10n_usedplus_fsk_symptoms_observed"/>
+                            <Text profile="fskSymptom" id="symptom1Text" position="-340px -40px" text=""/>
+                            <Text profile="fskSymptom" id="symptom2Text" position="-340px -65px" text=""/>
+                            <Text profile="fskSymptom" id="symptom3Text" position="-340px -90px" text=""/>
+                        </GuiElement>
+
+                        <!-- Diagnosis question -->
+                        <Text profile="fskInstruction" position="0px -190px"
+                            text="$l10n_usedplus_fsk_diagnosis_question"/>
+
+                        <!-- Diagnosis buttons -->
+                        <Button profile="fskDiagButton" id="diagButton1" position="0px -230px"
+                            size="680px 40px" onClick="onDiagnosis1Click"/>
+                        <Button profile="fskDiagButton" id="diagButton2" position="0px -280px"
+                            size="680px 40px" onClick="onDiagnosis2Click"/>
+                        <Button profile="fskDiagButton" id="diagButton3" position="0px -330px"
+                            size="680px 40px" onClick="onDiagnosis3Click"/>
+                        <Button profile="fskDiagButton" id="diagButton4" position="0px -380px"
+                            size="680px 40px" onClick="onDiagnosis4Click"/>
+                    </GuiElement>
+
+                    <!-- ========== STEP 3: RESULTS ========== -->
+                    <GuiElement id="resultsContainer" position="0px -60px" size="720px 450px" visible="false">
+
+                        <!-- Result title -->
+                        <Text profile="fskResultTitle" id="resultTitleText" position="0px -20px" text=""/>
+
+                        <!-- Result message -->
+                        <Text profile="fskResultMessage" id="resultMessageText" position="0px -60px" text=""/>
+
+                        <!-- Before/After comparison -->
+                        <GuiElement profile="fskSectionBg" position="0px -100px" size="720px 100px">
+                            <Text profile="fskSubHeader" position="0px -15px"
+                                text="$l10n_usedplus_fsk_results"/>
+
+                            <Text profile="fskLabel" position="-200px -45px"
+                                text="$l10n_usedplus_fsk_before"/>
+                            <Text profile="fskValue" id="beforeRelText" position="-100px -45px" text=""/>
+
+                            <Text profile="fskLabel" position="50px -45px"
+                                text="$l10n_usedplus_fsk_after"/>
+                            <Text profile="fskValue" id="afterRelText" position="150px -45px" text=""/>
+
+                            <Text profile="fskBoostValue" id="boostText" position="250px -45px" text=""/>
+
+                            <Text profile="fskFeedback" id="diagnosisFeedbackText" position="0px -75px" text=""/>
+                        </GuiElement>
+
+                        <!-- Warning about temporary repair -->
+                        <GuiElement profile="fskWarningBox" position="0px -230px" size="720px 80px">
+                            <Text profile="fskWarningIcon" position="-330px -25px" text="!"/>
+                            <Text profile="fskWarningTitle" position="-270px -20px"
+                                text="$l10n_usedplus_fsk_temp_repair"/>
+                            <Text profile="fskWarningText" position="0px -50px"
+                                text="$l10n_usedplus_fsk_temp_repair_desc"/>
+                        </GuiElement>
+
+                        <!-- Kit consumed notice -->
+                        <Text profile="fskConsumed" position="0px -340px"
+                            text="$l10n_usedplus_fsk_kit_consumed"/>
+                    </GuiElement>
+
+                    <!-- ========== STEP 4: TIRE REPAIR ========== -->
+                    <GuiElement id="tireRepairContainer" position="0px -60px" size="720px 450px" visible="false">
+
+                        <Text profile="fskSectionHeader" position="0px -10px"
+                            text="$l10n_usedplus_fsk_tire_repair_title"/>
+
+                        <Text profile="fskInstruction" position="0px -50px"
+                            text="$l10n_usedplus_fsk_tire_choose"/>
+
+                        <!-- Patch option -->
+                        <Button profile="fskTireOptionButton" id="patchButton" position="-180px -100px"
+                            size="320px 120px" onClick="onTirePatchClick">
+                            <Text profile="fskTireOptionTitle" position="0px -25px"
+                                text="$l10n_usedplus_fsk_tire_patch"/>
+                            <Text profile="fskTireOptionDesc" position="0px -55px"
+                                text="$l10n_usedplus_fsk_tire_patch_desc"/>
+                            <Text profile="fskTireOptionResult" position="0px -85px"
+                                text="$l10n_usedplus_fsk_tire_patch_result"/>
+                        </Button>
+
+                        <!-- Plug option -->
+                        <Button profile="fskTireOptionButton" id="plugButton" position="180px -100px"
+                            size="320px 120px" onClick="onTirePlugClick">
+                            <Text profile="fskTireOptionTitle" position="0px -25px"
+                                text="$l10n_usedplus_fsk_tire_plug"/>
+                            <Text profile="fskTireOptionDesc" position="0px -55px"
+                                text="$l10n_usedplus_fsk_tire_plug_desc"/>
+                            <Text profile="fskTireOptionResult" position="0px -85px"
+                                text="$l10n_usedplus_fsk_tire_plug_result"/>
+                        </Button>
+                    </GuiElement>
+
+                </GuiElement>
+
+                <!-- Button box at bottom -->
+                <BoxLayout profile="fs25_dialogButtonBox">
+                    <Button profile="buttonOK" id="okButton" text="$l10n_button_ok"
+                        onClick="onOkClick" visible="false"/>
+                    <Bitmap profile="fs25_dialogButtonBoxSeparator"/>
+                    <Button profile="buttonBack" id="cancelButton" text="$l10n_button_cancel"
+                        onClick="onCancelClick"/>
+                </BoxLayout>
+
+            </GuiElement>
+
+        </FieldServiceKitDialog>
+    </Dialogs>
+
+    <GUIProfiles>
+        <!-- Section background -->
+        <Profile name="fskSectionBg" extends="fs25_guiElement" with="anchorTopCenter">
+            <color value="0.05 0.05 0.05 0.7"/>
+        </Profile>
+
+        <!-- Labels and values -->
+        <Profile name="fskLabel" extends="fs25_textDefault" with="anchorTopLeft">
+            <textSize value="14px"/>
+            <color value="0.7 0.7 0.7 1"/>
+        </Profile>
+
+        <Profile name="fskValue" extends="fs25_textDefault" with="anchorTopLeft">
+            <textSize value="14px"/>
+            <color value="1 1 1 1"/>
+        </Profile>
+
+        <Profile name="fskValueLarge" extends="fs25_textDefault" with="anchorTopLeft">
+            <textSize value="16px"/>
+            <bold value="true"/>
+        </Profile>
+
+        <!-- Instruction text -->
+        <Profile name="fskInstruction" extends="fs25_textDefault" with="anchorTopCenter">
+            <textSize value="16px"/>
+            <color value="0.9 0.9 0.9 1"/>
+            <textAlignment value="Center"/>
+        </Profile>
+
+        <!-- System selection buttons -->
+        <Profile name="fskSystemButton" extends="buttonActivate" with="anchorTopCenter">
+            <color value="0.15 0.15 0.15 0.9"/>
+            <borderSize value="2px"/>
+        </Profile>
+
+        <Profile name="fskSystemIcon" extends="fs25_textDefault" with="anchorTopCenter">
+            <textSize value="24px"/>
+            <bold value="true"/>
+            <color value="0.8 0.8 0.8 1"/>
+            <textAlignment value="Center"/>
+        </Profile>
+
+        <Profile name="fskSystemLabel" extends="fs25_textDefault" with="anchorTopCenter">
+            <textSize value="14px"/>
+            <color value="1 1 1 1"/>
+            <textAlignment value="Center"/>
+        </Profile>
+
+        <Profile name="fskReliabilityLabel" extends="fs25_textDefault" with="anchorTopCenter">
+            <textSize value="11px"/>
+            <color value="0.6 0.6 0.6 1"/>
+            <textAlignment value="Center"/>
+        </Profile>
+
+        <Profile name="fskReliabilityValue" extends="fs25_textDefault" with="anchorTopCenter">
+            <textSize value="18px"/>
+            <bold value="true"/>
+            <textAlignment value="Center"/>
+        </Profile>
+
+        <!-- Tire button -->
+        <Profile name="fskTireButton" extends="buttonActivate" with="anchorTopCenter">
+            <color value="0.3 0.2 0.1 0.9"/>
+        </Profile>
+
+        <Profile name="fskTireButtonText" extends="fs25_textDefault" with="anchorTopCenter">
+            <textSize value="14px"/>
+            <color value="1 0.8 0.4 1"/>
+            <textAlignment value="Center"/>
+        </Profile>
+
+        <!-- Warning text -->
+        <Profile name="fskWarning" extends="fs25_textDefault" with="anchorTopCenter">
+            <textSize value="12px"/>
+            <color value="1 0.6 0 1"/>
+            <textAlignment value="Center"/>
+        </Profile>
+
+        <!-- Section headers -->
+        <Profile name="fskSectionHeader" extends="fs25_textDefault" with="anchorTopCenter">
+            <textSize value="18px"/>
+            <bold value="true"/>
+            <color value="1 1 1 1"/>
+            <textAlignment value="Center"/>
+        </Profile>
+
+        <Profile name="fskSubHeader" extends="fs25_textDefault" with="anchorTopLeft">
+            <textSize value="14px"/>
+            <bold value="true"/>
+            <color value="0.8 0.8 0.8 1"/>
+        </Profile>
+
+        <!-- Symptoms -->
+        <Profile name="fskSymptom" extends="fs25_textDefault" with="anchorTopLeft">
+            <textSize value="13px"/>
+            <color value="1 0.9 0.7 1"/>
+        </Profile>
+
+        <!-- Diagnosis buttons -->
+        <Profile name="fskDiagButton" extends="buttonActivate" with="anchorTopCenter">
+            <textSize value="14px"/>
+            <textAlignment value="Left"/>
+        </Profile>
+
+        <!-- Results -->
+        <Profile name="fskResultTitle" extends="fs25_textDefault" with="anchorTopCenter">
+            <textSize value="22px"/>
+            <bold value="true"/>
+            <textAlignment value="Center"/>
+        </Profile>
+
+        <Profile name="fskResultMessage" extends="fs25_textDefault" with="anchorTopCenter">
+            <textSize value="14px"/>
+            <color value="0.9 0.9 0.9 1"/>
+            <textAlignment value="Center"/>
+        </Profile>
+
+        <Profile name="fskBoostValue" extends="fs25_textDefault" with="anchorTopLeft">
+            <textSize value="16px"/>
+            <bold value="true"/>
+        </Profile>
+
+        <Profile name="fskFeedback" extends="fs25_textDefault" with="anchorTopCenter">
+            <textSize value="13px"/>
+            <textAlignment value="Center"/>
+        </Profile>
+
+        <!-- Warning box -->
+        <Profile name="fskWarningBox" extends="fs25_guiElement" with="anchorTopCenter">
+            <color value="0.3 0.2 0 0.8"/>
+            <borderSize value="2px"/>
+            <borderColor value="1 0.6 0 1"/>
+        </Profile>
+
+        <Profile name="fskWarningIcon" extends="fs25_textDefault" with="anchorTopLeft">
+            <textSize value="28px"/>
+            <bold value="true"/>
+            <color value="1 0.6 0 1"/>
+        </Profile>
+
+        <Profile name="fskWarningTitle" extends="fs25_textDefault" with="anchorTopLeft">
+            <textSize value="14px"/>
+            <bold value="true"/>
+            <color value="1 0.8 0.3 1"/>
+        </Profile>
+
+        <Profile name="fskWarningText" extends="fs25_textDefault" with="anchorTopCenter">
+            <textSize value="12px"/>
+            <color value="0.9 0.9 0.9 1"/>
+            <textAlignment value="Center"/>
+        </Profile>
+
+        <!-- Kit consumed notice -->
+        <Profile name="fskConsumed" extends="fs25_textDefault" with="anchorTopCenter">
+            <textSize value="13px"/>
+            <color value="0.6 0.6 0.6 1"/>
+            <textAlignment value="Center"/>
+        </Profile>
+
+        <!-- Tire repair options -->
+        <Profile name="fskTireOptionButton" extends="buttonActivate" with="anchorTopCenter">
+            <color value="0.12 0.12 0.12 0.9"/>
+        </Profile>
+
+        <Profile name="fskTireOptionTitle" extends="fs25_textDefault" with="anchorTopCenter">
+            <textSize value="16px"/>
+            <bold value="true"/>
+            <color value="1 1 1 1"/>
+            <textAlignment value="Center"/>
+        </Profile>
+
+        <Profile name="fskTireOptionDesc" extends="fs25_textDefault" with="anchorTopCenter">
+            <textSize value="12px"/>
+            <color value="0.8 0.8 0.8 1"/>
+            <textAlignment value="Center"/>
+        </Profile>
+
+        <Profile name="fskTireOptionResult" extends="fs25_textDefault" with="anchorTopCenter">
+            <textSize value="13px"/>
+            <color value="0.4 0.8 0.4 1"/>
+            <textAlignment value="Center"/>
+        </Profile>
+    </GUIProfiles>
+</GUI>

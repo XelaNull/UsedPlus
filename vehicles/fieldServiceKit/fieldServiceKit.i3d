@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<i3D name="toolboxWorkshop.i3d" version="1.6" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://i3d.giants.ch/schema/i3d-1.6.xsd">
+  <Asset>
+    <Export program="GIANTS Editor 64bit" version="10.0.3"/>
+  </Asset>
+
+  <Files>
+    <File fileId="3" filename="$data/objects/pallets/liquidTank/fertilizerTank_normal.png"/>
+    <File fileId="4" filename="$data/objects/pallets/liquidTank/fertilizerTank_specular.png"/>
+    <File fileId="5" filename="$data/objects/pallets/liquidTank/helmDecal_diffuse.png"/>
+    <File fileId="10" filename="$data/placeables/mapEU/pianoFactory/props/toolBox_diffuse.png"/>
+    <File fileId="11" filename="$data/placeables/mapEU/pianoFactory/props/toolBox_normal.png"/>
+    <File fileId="12" filename="$data/placeables/mapEU/pianoFactory/props/toolBox_specular.png"/>
+    <File fileId="8" filename="$data/shaders/decalShader.xml"/>
+    <File fileId="6" filename="$data/shared/default_normal.png"/>
+    <File fileId="7" filename="$data/shared/default_specular.png"/>
+    <File fileId="13" filename="$data/shared/warningStripes_diffuse.png"/>
+    <File fileId="14" filename="$data/shared/warningStripes_normal.png"/>
+    <File fileId="15" filename="$data/shared/warningStripes_specular.png"/>
+    <File fileId="9" filename="$data/store/brands/brand_lizardGoods.dds"/>
+  </Files>
+
+
+  <Materials>
+    <Material name="cortevaDecal_mat" materialId="5" alphaBlending="true" customShaderId="8">
+      <Texture fileId="9"/>
+      <Normalmap fileId="6"/>
+      <Glossmap fileId="7"/>
+    </Material>
+    <Material name="fertilizerTank_mat" materialId="6">
+      <Normalmap fileId="3"/>
+      <Glossmap fileId="4"/>
+    </Material>
+    <Material name="helmDecal_mat" materialId="7" alphaBlending="true" customShaderId="8">
+      <Texture fileId="5"/>
+      <Normalmap fileId="6"/>
+      <Glossmap fileId="7"/>
+    </Material>
+    <Material name="lambert1" materialId="8" diffuseColor="0.494118 0.494118 0.494118 1">
+    </Material>
+    <Material name="lambert1" materialId="9" diffuseColor="0.501961 0.501961 0.501961 1">
+    </Material>
+    <Material name="toolBox_mat" materialId="10">
+      <Texture fileId="10"/>
+      <Normalmap fileId="11"/>
+      <Glossmap fileId="12"/>
+    </Material>
+    <Material name="warningStripes_mat" materialId="11">
+      <Texture fileId="13"/>
+      <Normalmap fileId="14"/>
+      <Glossmap fileId="15"/>
+    </Material>
+  </Materials>
+
+
+  <Shapes externalShapesFile="toolboxWorkshop.i3d.shapes">
+  </Shapes>
+
+  <Scene>
+    <Shape name="toolBoxWorkshopMainComponent" lockedgroup="true" shapeId="1" dynamic="true" compound="true" collisionFilterGroup="0x10004" collisionFilterMask="0xfe3ffb83" staticFriction="1" dynamicFriction="1" density="0.07" nodeId="26" castsShadows="true" receiveShadows="true" nonRenderable="true" materialIds="8">
+      <TransformGroup name="triggers" nodeId="27">
+        <Shape name="dynamicMountTrigger" translation="-0.006497 0.077686 -0.021384" shapeId="2" kinematic="true" trigger="true" collisionFilterGroup="0x20000000" collisionFilterMask="0x20000" clipDistance="100" nodeId="28" castsShadows="true" receiveShadows="true" nonRenderable="true" materialIds="9"/>
+        <Shape name="fillTrigger" translation="0 1.46276 0" shapeId="3" visibility="false" kinematic="true" compound="true" trigger="true" collisionFilterGroup="0x20000000" collisionFilterMask="0x40000000" clipDistance="300" nodeId="29" castsShadows="true" receiveShadows="true" nonRenderable="true" materialIds="9"/>
+        <Shape name="dischargeTrigger" shapeId="4" visibility="false" kinematic="true" compound="true" trigger="true" collisionFilterGroup="0x20000000" collisionFilterMask="0x40000000" nodeId="30" castsShadows="true" receiveShadows="true" nonRenderable="true" materialIds="9"/>
+        <TransformGroup name="dischargeNode" translation="0 0.116633 0.818496" nodeId="31"/>
+        <Shape name="exactFillRootNode" shapeId="4" visibility="false" kinematic="true" compound="true" collisionFilterGroup="0x40000000" collisionFilterMask="0x20000000" nodeId="32" castsShadows="true" receiveShadows="true" nonRenderable="true" materialIds="9"/>
+        <Camera name="devCamera" translation="-0.822627 0.499306 -0.15919" rotation="164.873 -66.2785 -180" visibility="false" nodeId="33" fov="60" nearClip="0.1" farClip="1000" orthographicHeight="1"/>
+      </TransformGroup>
+      <TransformGroup name="collisions" nodeId="34">
+        <Shape name="floorCollision01" translation="-0.006497 0.077686 0.00713076" shapeId="5" compoundChild="true" collisionFilterGroup="0x10000" collisionFilterMask="0xfe3dfb83" staticFriction="1" dynamicFriction="1" clipDistance="100" nodeId="35" castsShadows="true" receiveShadows="true" nonRenderable="true" materialIds="9"/>
+      </TransformGroup>
+      <TransformGroup name="configurations" nodeId="37">
+        <Shape name="helmConfiguration" shapeId="6" visibility="false" nodeId="38" castsShadows="true" receiveShadows="true" materialIds="6">
+          <Shape name="decalHelmLiquidHerbicide" shapeId="7" visibility="false" clipDistance="60" nodeId="39" castsShadows="false" receiveShadows="true" decalLayer="1" materialIds="7"/>
+          <Shape name="decalHelmLiquidFertilizer" shapeId="8" visibility="false" clipDistance="60" nodeId="40" castsShadows="false" receiveShadows="true" decalLayer="1" materialIds="7"/>
+          <Shape name="solar" shapeId="7" visibility="false" clipDistance="60" nodeId="41" castsShadows="false" receiveShadows="true" decalLayer="1" materialIds="7"/>
+        </Shape>
+        <Shape name="lizardLogo" translation="0 -1 0" shapeId="9" visibility="false" clipDistance="60" nodeId="42" castsShadows="true" receiveShadows="true" materialIds="5"/>
+      </TransformGroup>
+      <TransformGroup name="visible" nodeId="43">
+        <Shape name="toolbox_viz" rotation="0 180 0" shapeId="10" clipDistance="60" nodeId="44" castsShadows="true" receiveShadows="true" materialIds="10"/>
+      </TransformGroup>
+      <TransformGroup name="gameplay" nodeId="45">
+        <TransformGroup name="outdoorCameraTarget" translation="0 1.3035 -1.73472e-18" nodeId="46">
+          <Camera name="outdoorCamera1" translation="-0.0584146 1.52846 -0.0315851" rotation="-9.20329 -0 0" nodeId="47" fov="93.4322" nearClip="0.3" farClip="5000" orthographicHeight="1"/>
+          <TransformGroup name="cameraRotate" translation="0 0.627101 0.972731" nodeId="48"/>
+        </TransformGroup>
+        <TransformGroup name="enterNode" translation="0 0.943807 0.902917" nodeId="49"/>
+      </TransformGroup>
+      <TransformGroup name="workshop" nodeId="50">
+        <TransformGroup name="markerWrench" translation="0 0 -2" nodeId="51"/>
+        <Shape name="warningStripes" translation="0 0.03 5.86444" shapeId="11" visibility="false" clipDistance="100" nodeId="52" castsShadows="false" receiveShadows="true" nonRenderable="true" terrainDecal="true" materialIds="11"/>
+        <Shape name="vehicleTrigger" translation="0 0 -0.53556" shapeId="12" kinematic="true" trigger="true" collisionFilterGroup="0x20000000" collisionFilterMask="0x10000" clipDistance="300" nodeId="53" castsShadows="true" receiveShadows="true" nonRenderable="true" materialIds="9"/>
+        <Shape name="playerTrigger" translation="0 0 -1.67503" shapeId="13" kinematic="true" trigger="true" collisionFilterGroup="0x20000000" collisionFilterMask="0x110000" clipDistance="300" nodeId="54" castsShadows="true" receiveShadows="true" nonRenderable="true" materialIds="9"/>
+      </TransformGroup>
+    </Shape>
+  </Scene>
+
+</i3D>

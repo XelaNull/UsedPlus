@@ -968,6 +968,8 @@
         <e k="usedplus_uvp_inspectedText" v="Veicolo ispezionato - visualizzi il rapporto" />
         <e k="usedplus_button_buyAsIs" v="Acquista Come È" />
         <e k="usedplus_button_inspect" v="Ispeziona" />
+        <e k="usedplus_button_tires" v="Pneumatici" />
+        <e k="usedplus_button_fluids" v="Fluidi" />
 
         <!-- Repair Dialog -->
         <e k="usedplus_rp_title" v="Servizio Veicolo" />
@@ -1205,6 +1207,7 @@
         <e k="usedplus_fmf_noActiveSearches" v="Nessuna ricerca attiva. Inizi dal Negozio." />
         <e k="usedplus_fmf_headerPrice" v="PREZZO" />
         <e k="usedplus_fmf_headerTier" v="LIVELLO" />
+        <e k="usedplus_fmf_headerStatus" v="STATO" />
         <e k="usedplus_fmf_headerChance" v="%" />
         <e k="usedplus_fmf_headerTime" v="TEMPO" />
         <e k="usedplus_fmf_vehiclesForSale" v="Veicoli in Vendita" />
@@ -1426,6 +1429,25 @@
 
         <!-- v1.7.0: Messaggi relativi al Credito -->
         <e k="usedplus_loan_useFinancialDashboard" v="Usa il Pannello Finanziario per prestiti basati sul credito" />
+
+        <!-- v1.8.0: Punti di Servizio Olio -->
+        <e k="usedplus_oilBarrel_name" v="Barile Servizio Olio" />
+        <e k="usedplus_oilBarrel_function" v="Guida un veicolo nelle vicinanze per rifornire olio motore e liquido idraulico." />
+        <e k="usedplus_oilBarrel_specUnlimited" v="Illimitato" />
+        <e k="usedplus_oilTank_name" v="Serbatoio Servizio Olio" />
+        <e k="usedplus_oilTank_function" v="Stazione di servizio olio ad alta capacità per rifornire olio motore e liquido idraulico." />
+        <e k="usedplus_oil_refillAction" v="Riempi Olio Motore" />
+        <e k="usedplus_hydraulic_refillAction" v="Riempi Liquido Idraulico" />
+        <e k="usedplus_oil_refillComplete" v="Olio rifornito - Costo: %s" />
+        <e k="usedplus_hydraulic_refillComplete" v="Liquido idraulico rifornito - Costo: %s" />
+        <e k="usedplus_oil_refillCompleteStorage" v="Olio rifornito dallo stoccaggio" />
+        <e k="usedplus_hydraulic_refillCompleteStorage" v="Liquido idraulico rifornito dallo stoccaggio" />
+        <e k="usedplus_oil_notEnoughStorage" v="Olio insufficiente nello stoccaggio" />
+        <e k="usedplus_hydraulic_notEnoughStorage" v="Liquido idraulico insufficiente nello stoccaggio" />
+        <e k="usedplus_oil_alreadyFull" v="Olio motore già pieno" />
+        <e k="usedplus_hydraulic_alreadyFull" v="Liquido idraulico già pieno" />
+        <e k="usedplus_oil_storageLevel" v="Stoccaggio Olio: %d / %d L" />
+        <e k="usedplus_hydraulic_storageLevel" v="Stoccaggio Idraulico: %d / %d L" />
 
     </elements>
 </l10n>

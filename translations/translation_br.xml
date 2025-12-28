@@ -968,6 +968,8 @@
         <e k="usedplus_uvp_inspectedText" v="Veículo foi inspecionado - ver relatório" />
         <e k="usedplus_button_buyAsIs" v="Comprar Como Está" />
         <e k="usedplus_button_inspect" v="Inspecionar" />
+        <e k="usedplus_button_tires" v="Pneus" />
+        <e k="usedplus_button_fluids" v="Fluidos" />
 
         <!-- Repair Dialog -->
         <e k="usedplus_rp_title" v="Serviço do Veículo" />
@@ -1205,6 +1207,7 @@
         <e k="usedplus_fmf_noActiveSearches" v="Nenhuma busca ativa. Inicie pela Loja." />
         <e k="usedplus_fmf_headerPrice" v="PREÇO" />
         <e k="usedplus_fmf_headerTier" v="NÍVEL" />
+        <e k="usedplus_fmf_headerStatus" v="STATUS" />
         <e k="usedplus_fmf_headerChance" v="%" />
         <e k="usedplus_fmf_headerTime" v="TEMPO" />
         <e k="usedplus_fmf_vehiclesForSale" v="Veículos à Venda" />
@@ -1426,6 +1429,25 @@
 
         <!-- v1.7.0: Mensagens relacionadas a Crédito -->
         <e k="usedplus_loan_useFinancialDashboard" v="Use o Painel Financeiro para empréstimos baseados em crédito" />
+
+        <!-- v1.8.0: Pontos de Serviço de Óleo -->
+        <e k="usedplus_oilBarrel_name" v="Barril de Serviço de Óleo" />
+        <e k="usedplus_oilBarrel_function" v="Dirija um veículo próximo para reabastecer óleo do motor e fluido hidráulico." />
+        <e k="usedplus_oilBarrel_specUnlimited" v="Ilimitado" />
+        <e k="usedplus_oilTank_name" v="Tanque de Serviço de Óleo" />
+        <e k="usedplus_oilTank_function" v="Estação de serviço de óleo de grande capacidade para reabastecer óleo do motor e fluido hidráulico." />
+        <e k="usedplus_oil_refillAction" v="Reabastecer Óleo do Motor" />
+        <e k="usedplus_hydraulic_refillAction" v="Reabastecer Fluido Hidráulico" />
+        <e k="usedplus_oil_refillComplete" v="Óleo reabastecido - Custo: %s" />
+        <e k="usedplus_hydraulic_refillComplete" v="Fluido hidráulico reabastecido - Custo: %s" />
+        <e k="usedplus_oil_refillCompleteStorage" v="Óleo reabastecido do armazenamento" />
+        <e k="usedplus_hydraulic_refillCompleteStorage" v="Fluido hidráulico reabastecido do armazenamento" />
+        <e k="usedplus_oil_notEnoughStorage" v="Óleo insuficiente no armazenamento" />
+        <e k="usedplus_hydraulic_notEnoughStorage" v="Fluido hidráulico insuficiente no armazenamento" />
+        <e k="usedplus_oil_alreadyFull" v="Óleo do motor já cheio" />
+        <e k="usedplus_hydraulic_alreadyFull" v="Fluido hidráulico já cheio" />
+        <e k="usedplus_oil_storageLevel" v="Armazém Óleo: %d / %d L" />
+        <e k="usedplus_hydraulic_storageLevel" v="Armazém Hidráulico: %d / %d L" />
 
     </elements>
 </l10n>

@@ -968,6 +968,8 @@
         <e k="usedplus_uvp_inspectedText" v="Le vehicule a ete inspecte - voir le rapport" />
         <e k="usedplus_button_buyAsIs" v="Acheter Tel Quel" />
         <e k="usedplus_button_inspect" v="Inspecter" />
+        <e k="usedplus_button_tires" v="Pneus" />
+        <e k="usedplus_button_fluids" v="Fluides" />
 
         <!-- Repair Dialog -->
         <e k="usedplus_rp_title" v="Service Vehicule" />
@@ -1205,6 +1207,7 @@
         <e k="usedplus_fmf_noActiveSearches" v="Aucune recherche active. Lancez depuis le Magasin." />
         <e k="usedplus_fmf_headerPrice" v="PRIX" />
         <e k="usedplus_fmf_headerTier" v="NIVEAU" />
+        <e k="usedplus_fmf_headerStatus" v="STATUT" />
         <e k="usedplus_fmf_headerChance" v="%" />
         <e k="usedplus_fmf_headerTime" v="TEMPS" />
         <e k="usedplus_fmf_vehiclesForSale" v="Vehicules en Vente" />
@@ -1426,6 +1429,25 @@
 
         <!-- v1.7.0: Messages liés au Crédit -->
         <e k="usedplus_loan_useFinancialDashboard" v="Utilisez le Tableau de Bord Financier pour les prêts basés sur le crédit" />
+
+        <!-- v1.8.0: Points de Service Huile -->
+        <e k="usedplus_oilBarrel_name" v="Baril de Service Huile" />
+        <e k="usedplus_oilBarrel_function" v="Conduisez un véhicule à proximité pour faire le plein d'huile moteur et de liquide hydraulique." />
+        <e k="usedplus_oilBarrel_specUnlimited" v="Illimité" />
+        <e k="usedplus_oilTank_name" v="Réservoir de Service Huile" />
+        <e k="usedplus_oilTank_function" v="Station de service huile grande capacité pour le remplissage d'huile moteur et de liquide hydraulique." />
+        <e k="usedplus_oil_refillAction" v="Remplir Huile Moteur" />
+        <e k="usedplus_hydraulic_refillAction" v="Remplir Liquide Hydraulique" />
+        <e k="usedplus_oil_refillComplete" v="Huile remplie - Coût: %s" />
+        <e k="usedplus_hydraulic_refillComplete" v="Liquide hydraulique rempli - Coût: %s" />
+        <e k="usedplus_oil_refillCompleteStorage" v="Huile remplie depuis le stockage" />
+        <e k="usedplus_hydraulic_refillCompleteStorage" v="Liquide hydraulique rempli depuis le stockage" />
+        <e k="usedplus_oil_notEnoughStorage" v="Pas assez d'huile en stock" />
+        <e k="usedplus_hydraulic_notEnoughStorage" v="Pas assez de liquide hydraulique en stock" />
+        <e k="usedplus_oil_alreadyFull" v="Huile moteur déjà pleine" />
+        <e k="usedplus_hydraulic_alreadyFull" v="Liquide hydraulique déjà plein" />
+        <e k="usedplus_oil_storageLevel" v="Stock Huile: %d / %d L" />
+        <e k="usedplus_hydraulic_storageLevel" v="Stock Hydraulique: %d / %d L" />
 
     </elements>
 </l10n>

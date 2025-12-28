@@ -116,6 +116,9 @@ Mission00.loadMission00Finished = Utils.appendedFunction(
         end
 
         UsedPlus.instance:initialize()
+
+        -- v1.8.0: Initialize cross-mod compatibility (RVB, UYT detection)
+        ModCompatibility.init()
     end
 )
 

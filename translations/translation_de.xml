@@ -914,6 +914,8 @@
         <e k="usedplus_uvp_inspectedText" v="Fahrzeug wurde inspiziert - Bericht anzeigen" />
         <e k="usedplus_button_buyAsIs" v="Kaufen wie besehen" />
         <e k="usedplus_button_inspect" v="Inspizieren" />
+        <e k="usedplus_button_tires" v="Reifen" />
+        <e k="usedplus_button_fluids" v="Flüssigkeiten" />
 
         <!-- Reparatur-Dialog -->
         <e k="usedplus_rp_title" v="Fahrzeugservice" />
@@ -1166,6 +1168,7 @@
         <e k="usedplus_fmf_noActiveSearches" v="Keine aktiven Suchen. Im Shop starten." />
         <e k="usedplus_fmf_headerPrice" v="PREIS" />
         <e k="usedplus_fmf_headerTier" v="EBENE" />
+        <e k="usedplus_fmf_headerStatus" v="STATUS" />
         <e k="usedplus_fmf_headerChance" v="%" />
         <e k="usedplus_fmf_headerTime" v="ZEIT" />
         <e k="usedplus_fmf_vehiclesForSale" v="Fahrzeuge zum Verkauf" />
@@ -1389,6 +1392,25 @@
 
         <!-- v1.7.0: Kreditbezogene Meldungen -->
         <e k="usedplus_loan_useFinancialDashboard" v="Nutze das Finanz-Dashboard für kreditbasierte Darlehen" />
+
+        <!-- v1.8.0: Ölservice-Platzierbare -->
+        <e k="usedplus_oilBarrel_name" v="Ölservice-Fass" />
+        <e k="usedplus_oilBarrel_function" v="Fahre ein Fahrzeug in die Nähe um Motoröl und Hydraulikflüssigkeit nachzufüllen." />
+        <e k="usedplus_oilBarrel_specUnlimited" v="Unbegrenzt" />
+        <e k="usedplus_oilTank_name" v="Ölservice-Tank" />
+        <e k="usedplus_oilTank_function" v="Große Kapazität Ölservice-Station zum Nachfüllen von Motoröl und Hydraulikflüssigkeit." />
+        <e k="usedplus_oil_refillAction" v="Motoröl nachfüllen" />
+        <e k="usedplus_hydraulic_refillAction" v="Hydraulikflüssigkeit nachfüllen" />
+        <e k="usedplus_oil_refillComplete" v="Öl nachgefüllt - Kosten: %s" />
+        <e k="usedplus_hydraulic_refillComplete" v="Hydraulikflüssigkeit nachgefüllt - Kosten: %s" />
+        <e k="usedplus_oil_refillCompleteStorage" v="Öl aus Lager nachgefüllt" />
+        <e k="usedplus_hydraulic_refillCompleteStorage" v="Hydraulikflüssigkeit aus Lager nachgefüllt" />
+        <e k="usedplus_oil_notEnoughStorage" v="Nicht genug Öl im Lager" />
+        <e k="usedplus_hydraulic_notEnoughStorage" v="Nicht genug Hydraulikflüssigkeit im Lager" />
+        <e k="usedplus_oil_alreadyFull" v="Motoröl bereits voll" />
+        <e k="usedplus_hydraulic_alreadyFull" v="Hydraulikflüssigkeit bereits voll" />
+        <e k="usedplus_oil_storageLevel" v="Öllager: %d / %d L" />
+        <e k="usedplus_hydraulic_storageLevel" v="Hydrauliklager: %d / %d L" />
 
     </elements>
 </l10n>
