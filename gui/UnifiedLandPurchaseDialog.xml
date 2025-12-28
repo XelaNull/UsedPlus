@@ -11,7 +11,7 @@
     <GuiElement profile="newLayer" />
     <Bitmap profile="dialogFullscreenBg" id="dialogBg" />
 
-    <GuiElement profile="dialogBg" id="dialogElement" size="720px 720px">
+    <GuiElement profile="dialogBg" id="dialogElement" size="720px 580px">
         <ThreePartBitmap profile="fs25_dialogBgMiddle" />
         <ThreePartBitmap profile="fs25_dialogBgTop" />
         <ThreePartBitmap profile="fs25_dialogBgBottom" />
@@ -22,39 +22,35 @@
             <Text profile="fs25_dialogTitle" id="dialogTitleElement" position="0px -25px" text="$l10n_usedplus_land_title"/>
 
             <!-- ========== SECTION 1: Land Details ========== -->
-            <!-- Two-column layout: Field info left, Price breakdown right -->
+            <!-- Horizontal label-value pairs in two columns -->
             <GuiElement profile="lpLandSection" position="0px -55px">
                 <Bitmap profile="lpLandSectionBg" position="0px 0px"/>
                 <Text profile="lpSectionHeader" position="0px -5px" text="$l10n_usedplus_lp_sectionDetails"/>
 
-                <!-- Left Column: Field Info -->
-                <GuiElement profile="lpColumn" position="-170px -28px">
-                    <Text profile="lpDetailLabel" position="0px 0px" text="$l10n_usedplus_lp_field"/>
-                    <Text profile="lpLandName" id="landNameText" position="0px -16px" text=""/>
+                <!-- Left Column: Field Info (label:value on same line) -->
+                <Text profile="lpDetailLabel" position="-240px -30px" text="$l10n_usedplus_lp_field"/>
+                <Text profile="lpLandName" id="landNameText" position="-100px -30px" text=""/>
 
-                    <Text profile="lpDetailLabel" position="0px -40px" text="$l10n_usedplus_lp_size"/>
-                    <Text profile="lpLandSize" id="landSizeText" position="0px -56px" text=""/>
+                <Text profile="lpDetailLabel" position="-240px -55px" text="$l10n_usedplus_lp_size"/>
+                <Text profile="lpLandSize" id="landSizeText" position="-100px -55px" text=""/>
 
-                    <Text profile="lpDetailLabel" position="0px -80px" text="$l10n_usedplus_lp_perHa"/>
-                    <Text profile="lpPricePerHa" id="landPricePerHaText" position="0px -96px" text=""/>
-                </GuiElement>
+                <Text profile="lpDetailLabel" position="-240px -80px" text="$l10n_usedplus_lp_perHa"/>
+                <Text profile="lpPricePerHa" id="landPricePerHaText" position="-100px -80px" text=""/>
 
-                <!-- Right Column: Price Breakdown -->
-                <GuiElement profile="lpColumn" position="130px -28px">
-                    <Text profile="lpDetailLabel" position="0px 0px" text="$l10n_usedplus_lp_basePrice"/>
-                    <Text profile="lpBasePrice" id="basePriceText" position="0px -16px" text=""/>
+                <!-- Right Column: Price Breakdown (label:value on same line) -->
+                <Text profile="lpDetailLabel" position="60px -30px" text="$l10n_usedplus_lp_basePrice"/>
+                <Text profile="lpBasePrice" id="basePriceText" position="200px -30px" text=""/>
 
-                    <Text profile="lpDetailLabel" position="0px -40px" text="$l10n_usedplus_lp_creditAdjust"/>
-                    <Text profile="lpCreditAdjust" id="creditAdjustmentText" position="0px -56px" text=""/>
+                <Text profile="lpDetailLabel" position="60px -55px" text="$l10n_usedplus_lp_creditAdjust"/>
+                <Text profile="lpCreditAdjust" id="creditAdjustmentText" position="200px -55px" text=""/>
 
-                    <Text profile="lpDetailLabel" position="0px -80px" text="$l10n_usedplus_lp_yourPrice"/>
-                    <Text profile="lpYourPrice" id="landPriceText" position="0px -96px" text=""/>
-                </GuiElement>
+                <Text profile="lpDetailLabel" position="60px -80px" text="$l10n_usedplus_lp_yourPrice"/>
+                <Text profile="lpYourPrice" id="landPriceText" position="200px -80px" text=""/>
             </GuiElement>
 
             <!-- ========== SECTION 2: Purchase Mode Selector ========== -->
-            <!-- 10px gap after Land Details (130px) = -55 - 130 - 10 = -195 -->
-            <GuiElement profile="lpModeSection" position="0px -195px">
+            <!-- 10px gap after Land Details (105px) = -55 - 105 - 10 = -170 -->
+            <GuiElement profile="lpModeSection" position="0px -170px">
                 <Bitmap profile="lpModeSectionBg" position="0px 0px"/>
                 <Text profile="lpSectionHeader" position="0px -5px" text="$l10n_usedplus_land_purchaseMethod"/>
                 <Text profile="lpHelpText" id="modeHelpText" position="0px -23px" text="$l10n_usedplus_lp_methodHelp"/>
@@ -62,8 +58,8 @@
             </GuiElement>
 
             <!-- ========== SECTION 3A: Cash Mode ========== -->
-            <!-- 10px gap after Mode Section (85px) = -195 - 85 - 10 = -290 -->
-            <GuiElement profile="lpPaymentSection" id="cashSection" position="0px -290px" visible="true">
+            <!-- 10px gap after Mode Section (85px) = -170 - 85 - 10 = -265 -->
+            <GuiElement profile="lpPaymentSection" id="cashSection" position="0px -265px" visible="true">
                 <Bitmap profile="lpPaymentSectionBg" position="0px 0px"/>
                 <Text profile="lpSectionHeader" position="0px -5px" text="$l10n_usedplus_land_paymentSummary"/>
                 <Text profile="lpHelpText" id="cashHelpText" position="0px -23px" text="$l10n_usedplus_lp_cashHelp"/>
@@ -82,7 +78,7 @@
             </GuiElement>
 
             <!-- ========== SECTION 3B: Finance Mode ========== -->
-            <GuiElement profile="lpPaymentSectionLarge" id="financeSection" position="0px -290px" visible="false">
+            <GuiElement profile="lpPaymentSectionLarge" id="financeSection" position="0px -265px" visible="false">
                 <Bitmap profile="lpPaymentSectionLargeBg" position="0px 0px"/>
                 <Text profile="lpSectionHeader" position="0px -5px" text="$l10n_usedplus_land_financeTerms"/>
                 <Text profile="lpHelpText" id="financeHelpText" position="0px -23px" text="$l10n_usedplus_lp_financeHelp"/>
@@ -114,7 +110,7 @@
             </GuiElement>
 
             <!-- ========== SECTION 3C: Lease Mode ========== -->
-            <GuiElement profile="lpPaymentSectionLarge" id="leaseSection" position="0px -290px" visible="false">
+            <GuiElement profile="lpPaymentSectionLarge" id="leaseSection" position="0px -265px" visible="false">
                 <Bitmap profile="lpPaymentSectionLargeBg" position="0px 0px"/>
                 <Text profile="lpSectionHeader" position="0px -5px" text="$l10n_usedplus_land_leaseTerms"/>
                 <Text profile="lpHelpText" id="leaseHelpText" position="0px -23px" text="$l10n_usedplus_lp_leaseHelp"/>
@@ -165,7 +161,7 @@
     <GUIProfiles>
         <!-- ========== SECTION CONTAINERS ========== -->
         <Profile name="lpLandSection" extends="emptyPanel" with="anchorTopCenter">
-            <size value="680px 130px"/>
+            <size value="680px 105px"/>
         </Profile>
 
         <Profile name="lpModeSection" extends="emptyPanel" with="anchorTopCenter">
@@ -183,7 +179,7 @@
         <!-- ========== SECTION BACKGROUNDS ========== -->
         <!-- Land details: dark blue-tinted background -->
         <Profile name="lpLandSectionBg" extends="baseReference" with="anchorTopCenter">
-            <size value="680px 130px"/>
+            <size value="680px 105px"/>
             <imageColor value="0.08 0.1 0.12 0.9"/>
         </Profile>
 
