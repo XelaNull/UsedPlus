@@ -21,9 +21,11 @@
    - [Trade-In System](#10-trade-in-system) ✅ IMPLEMENTED
    - [Finance Manager GUI](#11-finance-manager-gui) ✅ IMPLEMENTED
    - [Financial Dashboard](#12-financial-dashboard) ✅ IMPLEMENTED
-   - [Payment Configuration](#13-payment-configuration-system) ❌ NOT STARTED
+   - [Payment Configuration](#13-payment-configuration-system) ✅ IMPLEMENTED
    - [Vehicle Maintenance System](#14-vehicle-maintenance-system) ✅ IMPLEMENTED (Phase 5)
-   - [Vehicle Malfunctions](#15-vehicle-malfunctions) ✅ IMPLEMENTED (Phase 5)
+   - [Field Service Kit](#15-field-service-kit) ✅ IMPLEMENTED (v1.8.0)
+   - [Vehicle Malfunctions](#16-vehicle-malfunctions) ✅ IMPLEMENTED (Phase 5)
+   - [Cross-Mod Compatibility](#17-cross-mod-compatibility-system) ✅ IMPLEMENTED (v1.8.0)
 3. [Technical Architecture](#technical-architecture)
 4. [Implementation Status](#implementation-status)
 
@@ -50,8 +52,10 @@
 | **Finance Manager** | ESC menu for managing all financial deals | ✅ Complete |
 | **Dashboard** | Comprehensive financial overview with credit history | ✅ Complete |
 | **Maintenance** | Three-component reliability (engine, electrical, hydraulic) | ✅ Complete |
+| **Field Service Kit** | OBD diagnostic minigame for emergency field repairs | ✅ Complete |
 | **Malfunctions** | Realistic breakdowns based on component health | ✅ Complete |
-| **Payment Config** | Per-loan payment customization (skip, min, extra) | ❌ Not Started |
+| **Payment Config** | Per-loan payment customization (skip, min, extra) | ✅ Complete |
+| **Cross-Mod Compat** | Integration with RVB, UYT; conflict detection | ✅ Complete |
 
 ### Core Philosophy
 
@@ -409,35 +413,33 @@ Comprehensive financial overview.
 
 ### 13. Payment Configuration System
 
-**Status:** ❌ NOT STARTED
+**Status:** ✅ IMPLEMENTED (Simplified)
 
 Allow players to customize payment amounts per loan.
 
-#### Core Concepts
+#### Design Decision
+After discussion, we chose a **simplified implementation** that focuses on the most common use cases:
+- **No Skip option** - Players generally find a way to make payments; skip creates complexity with negative amortization
+- **Minimum payment** available for tight months
+- **Extra payment multipliers** for paying down loans faster
+
+#### Payment Options
 
 | Payment Type | Description | Credit Impact |
 |--------------|-------------|---------------|
-| **Skip** | $0 payment, interest accrues to balance | -25 |
-| **Partial** | Less than minimum, some negative amortization | -10 |
-| **Minimum** | Interest-only, balance unchanged | 0 |
+| **Minimum** | Interest-only payment, balance unchanged | 0 |
 | **Standard** | Original amortized payment | +5 |
-| **Extra** | Above standard, reduces principal faster | +5 |
-| **Custom** | Player-defined amount | Based on tier |
+| **1.5x Extra** | 50% extra reduces principal faster | +5 |
+| **2x Extra** | Double payment for aggressive payoff | +5 |
 
 #### Minimum Payment Formula
 ```
 Minimum = Current Balance × (Annual Rate / 12)
 ```
-This is the interest-only amount. Paying only this keeps balance unchanged.
+This is the interest-only amount. Paying only this keeps balance unchanged but avoids default.
 
-#### Negative Amortization
-When payment < minimum interest:
-- Unpaid interest adds to principal
-- Balance grows over time
-- "Underwater" warning when balance > original price
-
-#### Term Recalculation Formula
-For extra payments, calculate new payoff months:
+#### Extra Payment Benefits
+For extra payments, term shortens:
 ```
 n = -log(1 - (P × r) / M) / log(1 + r)
 
@@ -448,53 +450,14 @@ M = Configured payment amount
 n = Remaining months to payoff
 ```
 
-#### UI: Payment Configuration Dialog
-Access from Finance Manager → "Configure Payments" button
-
-```
-┌────────────────────────────────────────────────────────────────────────────┐
-│ Configure Monthly Payments                                                 │
-├────────────────────────────────────────────────────────────────────────────┤
-│ Available Cash: $45,230          Credit Score: 720 (Good)                 │
-│                           Minimum    Standard     Configured              │
-│ Total Monthly Due:        $4,850     $8,650       $6,450                  │
-│                                                                            │
-│ ┌────────────────────────────────────────────────────────────────────────┐ │
-│ │  Loan                Balance      Min      Std      Payment Setting   │ │
-│ │  JD 8R 410          $245,000   $1,020   $4,250   [Standard      ▼]   │ │
-│ │  Case Magnum        $180,000   $750     $3,200   [+$500 Extra   ▼]   │ │
-│ │  Field 12 (Land)    $320,000   $1,330   $2,600   [Minimum       ▼]   │ │
-│ │  Cash Loan           $50,000   $210     $833     [Skip          ▼]   │ │
-│ └────────────────────────────────────────────────────────────────────────┘ │
-│                                                                            │
-│ Impact Preview:                                                            │
-│ ⚠ SKIP on Cash Loan: +$210 to balance, -25 credit                        │
-│ ✓ EXTRA on Case Magnum: Payoff 8 months early, save $2,400               │
-├────────────────────────────────────────────────────────────────────────────┤
-│     [Reset All to Standard]                    [Save Configuration]       │
-└────────────────────────────────────────────────────────────────────────────┘
-```
-
-#### Dropdown Options Per Loan
-- Skip ($0)
-- Minimum ($X interest-only)
-- Standard ($Y amortized)
-- +$500 Extra
-- +$1,000 Extra
-- +$2,000 Extra
-- Double Payment
-- Custom Amount...
-- Pay Off Now
+#### Access Points
+- Finance Manager → Deal Details → Configure Payment button
+- Quick payment options in deal detail view
 
 #### Technical Implementation
-- `PaymentConfigDialog.lua` - Configuration dialog
+- Payment multiplier stored in `FinanceDeal.paymentMultiplier`
 - `SetPaymentConfigEvent.lua` - Multiplayer sync
-- `FinanceDeal.lua` additions:
-  - `configuredPayment` - player's chosen amount
-  - `minimumPayment` - calculated interest-only
-  - `paymentMode` - enum (SKIP/MIN/STD/EXTRA/CUSTOM)
-  - `accruedInterest` - tracks negative amortization
-  - `processConfiguredPayment()` - replaces auto-payment
+- Standard payment automatically deducted; extra payments require sufficient funds
 
 ---
 
@@ -535,7 +498,65 @@ Comprehensive reliability and maintenance system for vehicles.
 
 ---
 
-### 15. Vehicle Malfunctions
+### 15. Field Service Kit
+
+**Status:** ✅ FULLY IMPLEMENTED (v1.8.0)
+
+Portable emergency repair system with OBD diagnostic minigame.
+
+#### Concept
+When a vehicle breaks down in the field mid-work, the player can purchase a Field Service Kit - a consumable diagnostic and repair tool. The kit connects to the vehicle's OBD (On-Board Diagnostics) port and presents diagnostic readings that the player must interpret to diagnose the problem.
+
+#### Kit Tiers
+
+| Tier | Price | Reliability Boost | Diagnosis Accuracy |
+|------|-------|-------------------|-------------------|
+| **Basic** | $5,000 | 15-25% | Standard readings |
+| **Professional** | $12,000 | 20-35% | Enhanced readings |
+| **Master** | $25,000 | 30-50% | Complete diagnostics |
+
+#### Gameplay Flow
+1. Old tractor's reliability is shot, engine misfires, dies in field
+2. Player buys Field Service Kit from shop ($5,000 for Basic)
+3. Player carries kit to disabled vehicle (it's a hand tool)
+4. Player activates kit near vehicle - OBD scanner dialog opens
+5. **System Selection**: Choose Engine, Electrical, or Hydraulic to diagnose
+6. **OBD Diagnostic Reading**: Scanner displays 3 diagnostic codes/readings
+7. **Diagnosis Choice**: Player picks from 4 possible diagnoses
+8. **Outcome**: Correct diagnosis = better repair outcome
+9. Kit is consumed regardless of outcome (single use)
+
+#### OBD Diagnostic Readings
+The kit's scanner outputs diagnostic trouble codes and sensor readings:
+- Engine: Cylinder misfire codes, compression readings, fuel pressure, timing analysis
+- Electrical: Voltage irregularities, ground faults, sensor failures, battery health
+- Hydraulic: Pressure readings, flow rates, contamination detection, seal integrity
+
+Players use deductive reasoning to match readings to root causes.
+
+#### Outcome Tiers
+
+| Outcome | Condition | Effect |
+|---------|-----------|--------|
+| **Perfect** | Correct system + correct diagnosis | 25% reliability boost, vehicle re-enabled |
+| **Good** | Correct system + wrong diagnosis | 15% reliability boost, vehicle re-enabled |
+| **Poor** | Wrong system entirely | 5% boost, vehicle barely functional |
+
+#### Tire Repair Mode
+Kit also supports emergency tire repair:
+- **Patch**: $50 materials, moderate reliability (60% tread restored)
+- **Plug**: $25 materials, lower reliability (40% tread restored)
+
+#### Technical Implementation
+- `DiagnosisData.lua` - Scenario definitions, outcome calculations
+- `FieldServiceKit.lua` - Vehicle specialization (hand tool)
+- `FieldServiceKitDialog.lua` - Multi-step diagnostic dialog
+- `fieldServiceKit.xml` - Store item definition
+- Model adapted from MobileServiceKit by w33zl (with acknowledgment)
+
+---
+
+### 16. Vehicle Malfunctions
 
 **Status:** ✅ FULLY IMPLEMENTED (Phase 5)
 
@@ -565,6 +586,53 @@ Realistic breakdown events based on component health.
 
 #### Fuel System Malfunctions
 - **Fuel Leak**: Tank slowly drains fuel when parked or running
+
+---
+
+### 17. Cross-Mod Compatibility System
+
+**Status:** ✅ IMPLEMENTED (v1.8.2 - Deep Integration)
+
+Intelligent integration with popular vehicle maintenance and financial mods.
+
+#### Deeply Integrated Mods (v1.8.2+)
+
+| Mod | Integration Type | Details |
+|-----|------------------|---------|
+| **Real Vehicle Breakdowns** | Full Integration | Derives reliability from RVB part health, provides "symptoms before failure" |
+| **Use Up Your Tyres** | Full Integration | Syncs tire condition from UYT wear, defers flat tire triggers |
+| **EnhancedLoanSystem** | Deep Integration | ELS loans display in Finance Manager, Pay Early button works with ELS API |
+| **HirePurchasing** | Deep Integration | HP leases display in Finance Manager for unified financial view |
+| **Employment** | Deep Integration | Worker wages included in monthly obligations total |
+
+#### "Unified Financial Dashboard" Philosophy (v1.8.2)
+- **Single View** - See ALL financial obligations in Finance Manager
+- **Cross-Mod Data** - ELS loans, HP leases, Employment wages displayed together
+- **Pay Early Works** - Make payments on ELS loans directly from UsedPlus
+- **Complete Budget** - Monthly total includes all sources for accurate planning
+
+#### "Symptoms Before Failure" Philosophy
+- **UsedPlus = Journey** - Gradual symptoms warn you failure is coming
+- **RVB = Destination** - Catastrophic failure when parts exhausted
+- Together they create seamless realistic experience
+
+#### ModCompatibility Utility (`src/utils/ModCompatibility.lua`)
+- Detects RVB via `g_currentMission.vehicleBreakdowns`
+- Detects UYT via `UseYourTyres` global
+- Detects ELS via `g_els_loanManager`
+- Detects HP via `g_currentMission.LeasingOptions`
+- Detects Employment via `g_currentMission.employmentSystem`
+- Provides data access functions for cross-mod integration:
+  - `getELSLoans()`, `payELSLoan()` - ELS loan display and payment
+  - `getHPLeases()` - HP lease display
+  - `getEmploymentMonthlyCost()` - Worker wages
+  - `getFarmlandCount()`, `getFarmlandValue()` - Asset tracking
+
+#### Compatible Mods (Feature Deferral)
+- **BuyUsedEquipment** - UsedPlus hides Search button, BUE handles used search
+- **AdvancedMaintenance** - Both maintenance systems work via function chaining
+
+See **COMPATIBILITY.md** for detailed technical analysis.
 
 ---
 

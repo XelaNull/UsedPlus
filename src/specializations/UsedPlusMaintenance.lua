@@ -639,6 +639,21 @@ function UsedPlusMaintenance:getCanMotorRun(superFunc)
         end
     end
 
+    -- v1.8.1: Chain to AdvancedMaintenance's damage check if installed
+    -- This allows both maintenance systems to work together:
+    -- - UsedPlus: Gradual symptoms (stalling, overheating, speed degradation)
+    -- - AdvancedMaintenance: Damage-based engine block (catastrophic failures)
+    if ModCompatibility.advancedMaintenanceInstalled then
+        local shouldChain, chainFunc = ModCompatibility.getAdvancedMaintenanceChain(self)
+        if shouldChain and chainFunc then
+            local amResult = chainFunc()
+            if amResult == false then
+                -- AM says engine can't run (damage too high)
+                return false
+            end
+        end
+    end
+
     -- Normal check
     return superFunc(self)
 end
@@ -658,7 +673,10 @@ function UsedPlusMaintenance:setSteeringInput(superFunc, inputValue, isAnalog, d
     end
 
     local config = UsedPlusMaintenance.CONFIG
-    local hydraulicReliability = spec.hydraulicReliability or 1.0
+    -- v1.8.0: Use ModCompatibility to get hydraulic reliability
+    -- Note: RVB doesn't have hydraulic parts, so this uses native UsedPlus reliability
+    -- Steering pull is a UNIQUE UsedPlus feature that complements RVB!
+    local hydraulicReliability = ModCompatibility.getHydraulicReliability(self)
 
     -- Get current speed (used by multiple effects)
     local speed = 0
@@ -1412,6 +1430,11 @@ function UsedPlusMaintenance:onUpdate(dt, isActiveForInput, isActiveForInputIgno
 
     -- v1.7.0: Process fuel leak (drains fuel from tank)
     UsedPlusMaintenance.processFuelLeak(self, dt)
+
+    -- v1.8.0: Sync data from external mods (RVB, UYT)
+    -- This keeps our reliability and tire data in sync when other mods are managing those systems
+    ModCompatibility.syncTireConditionFromUYT(self)
+    ModCompatibility.syncReliabilityFromRVB(self)
 end
 
 --[[
@@ -1863,8 +1886,15 @@ end
 
     A vehicle with 50% engine reliability will have ~5x the failure rate of a 100% one.
     Damage now AMPLIFIES failure rate rather than gating it entirely.
+
+    v1.8.0: Added optional reliabilityOverride parameter for ModCompatibility integration
+    When RVB is installed, callers pass in reliability derived from RVB part health
+
+    @param vehicle - The vehicle to check
+    @param failureType - "engine", "hydraulic", or "electrical"
+    @param reliabilityOverride - Optional: use this reliability instead of spec value
 ]]
-function UsedPlusMaintenance.calculateFailureProbability(vehicle, failureType)
+function UsedPlusMaintenance.calculateFailureProbability(vehicle, failureType, reliabilityOverride)
     local spec = vehicle.spec_usedPlusMaintenance
     if spec == nil then return 0 end
 
@@ -1886,14 +1916,19 @@ function UsedPlusMaintenance.calculateFailureProbability(vehicle, failureType)
         load = vehicle:getMotorLoadPercentage() or 0
     end
 
-    -- Get relevant reliability score
-    local reliability = 1.0
-    if failureType == "engine" then
-        reliability = spec.engineReliability or 1.0
-    elseif failureType == "hydraulic" then
-        reliability = spec.hydraulicReliability or 1.0
-    elseif failureType == "electrical" then
-        reliability = spec.electricalReliability or 1.0
+    -- v1.8.0: Use override if provided (from ModCompatibility)
+    -- Otherwise fall back to spec values
+    local reliability = reliabilityOverride
+    if reliability == nil then
+        if failureType == "engine" then
+            reliability = spec.engineReliability or 1.0
+        elseif failureType == "hydraulic" then
+            reliability = spec.hydraulicReliability or 1.0
+        elseif failureType == "electrical" then
+            reliability = spec.electricalReliability or 1.0
+        else
+            reliability = 1.0
+        end
     end
 
     -- v1.5.1 REBALANCED: Low reliability = MUCH higher failure rates
@@ -1933,6 +1968,12 @@ end
 --[[
     Check for engine stall
     Stalling more likely with high damage + low reliability + high load
+
+    v1.8.0: "Symptoms Before Failure" integration
+    Our stalls are TEMPORARY (engine dies but restarts after cooldown)
+    RVB's ENGINE FAULT is PERMANENT (7km/h cap until repaired)
+    We provide the "symptoms", RVB provides the "failure"
+    So we KEEP our stalls active even when RVB is installed!
 ]]
 function UsedPlusMaintenance.checkEngineStall(vehicle)
     local spec = vehicle.spec_usedPlusMaintenance
@@ -1948,11 +1989,15 @@ function UsedPlusMaintenance.checkEngineStall(vehicle)
         return
     end
 
-    -- Calculate stall probability
-    local stallChance = UsedPlusMaintenance.calculateFailureProbability(vehicle, "engine")
+    -- v1.8.0: Use ModCompatibility to get engine reliability
+    -- If RVB installed, this provides "symptom stalls" based on RVB part health
+    local engineReliability = ModCompatibility.getEngineReliability(vehicle)
+
+    -- Calculate stall probability using the compatibility-aware reliability
+    local stallChance = UsedPlusMaintenance.calculateFailureProbability(vehicle, "engine", engineReliability)
 
     if math.random() < stallChance then
-        -- STALL!
+        -- STALL! (temporary - player can restart after cooldown)
         UsedPlusMaintenance.triggerEngineStall(vehicle)
     end
 end
@@ -2038,6 +2083,10 @@ end
     v1.5.1: Called when player enters a vehicle
     Used to check for "first-start" stall on poor reliability vehicles
     This simulates an engine that has trouble starting
+
+    v1.8.0: Uses ModCompatibility to get engine reliability
+    Works with both native UsedPlus and RVB-derived health
+    This is a "symptom" that RVB doesn't have - hard starting!
 ]]
 function UsedPlusMaintenance:onEnterVehicle(isControlling)
     if not isControlling then return end  -- Only process for controlling player
@@ -2046,8 +2095,12 @@ function UsedPlusMaintenance:onEnterVehicle(isControlling)
     local spec = self.spec_usedPlusMaintenance
     if spec == nil then return end
 
+    -- v1.8.0: Use ModCompatibility to get engine reliability
+    -- If RVB installed, this is derived from RVB part health
+    -- This provides "first-start stalling" symptom that RVB doesn't have!
+    local engineReliability = ModCompatibility.getEngineReliability(self)
+
     -- Only check on poor reliability vehicles
-    local engineReliability = spec.engineReliability or 1.0
     if engineReliability >= 0.5 then
         return  -- Good enough reliability, no first-start issues
     end
@@ -2072,8 +2125,9 @@ function UsedPlusMaintenance:onEnterVehicle(isControlling)
         spec.firstStartStallPending = true
         spec.firstStartStallTimer = 500  -- 500ms delay
 
-        UsedPlus.logDebug(string.format("First-start stall scheduled for %s (reliability: %d%%)",
-            self:getName(), math.floor(engineReliability * 100)))
+        UsedPlus.logDebug(string.format("First-start stall scheduled for %s (reliability: %d%%, source: %s)",
+            self:getName(), math.floor(engineReliability * 100),
+            ModCompatibility.rvbInstalled and "RVB" or "UsedPlus"))
     end
 end
 
@@ -2097,12 +2151,18 @@ function UsedPlusMaintenance.calculateSpeedLimit(vehicle)
         damage = vehicle:getDamageAmount() or 0
     end
 
+    -- v1.8.0: Use ModCompatibility to get engine reliability
+    -- If RVB is installed, this returns health derived from RVB parts
+    -- Otherwise, returns our native engineReliability
+    -- This enables "symptoms before failure" - we provide gradual degradation
+    -- leading up to RVB's final failure event
+    local engineReliability = ModCompatibility.getEngineReliability(vehicle)
+
     -- Calculate speed factor from RELIABILITY (applies even at 0% damage!)
     -- 100% reliability = 100% speed
     -- 50% reliability = 70% speed
     -- 10% reliability = 46% speed
-    -- 0% reliability = 40% speed (absolute minimum)
-    local engineReliability = spec.engineReliability or 1.0
+    -- 0% reliability = 40% speed (absolute minimum before RVB's 7km/h kicks in)
     local reliabilitySpeedFactor = 0.4 + (engineReliability * 0.6)
 
     -- Damage ALSO reduces speed (stacks with reliability)
@@ -2110,8 +2170,9 @@ function UsedPlusMaintenance.calculateSpeedLimit(vehicle)
     local damageSpeedFactor = 1 - (damage * maxReduction)
 
     -- v1.7.0: Flat tire severely limits speed
+    -- v1.8.0: Skip flat tire logic if UYT/RVB handles tires
     local flatTireSpeedFactor = 1.0
-    if spec.hasFlatTire and config.enableFlatTire then
+    if spec.hasFlatTire and config.enableFlatTire and not ModCompatibility.shouldDeferTireFailure() then
         flatTireSpeedFactor = config.flatTireSpeedReduction  -- 0.5 = 50% max speed
     end
 
@@ -2216,9 +2277,14 @@ function UsedPlusMaintenance.checkHydraulicDrift(vehicle, dt)
     local spec = vehicle.spec_usedPlusMaintenance
     if spec == nil then return end
 
+    -- v1.8.0: Use ModCompatibility to get hydraulic reliability
+    -- Note: RVB doesn't have hydraulic parts, so this will use native UsedPlus reliability
+    -- This is a UNIQUE UsedPlus feature that complements RVB!
+    local hydraulicReliability = ModCompatibility.getHydraulicReliability(vehicle)
+
     -- Only drift if hydraulic reliability is below threshold
     -- BALANCE NOTE (v1.2): Removed damage gate - low reliability causes drift even when repaired
-    if spec.hydraulicReliability >= UsedPlusMaintenance.CONFIG.hydraulicDriftThreshold then
+    if hydraulicReliability >= UsedPlusMaintenance.CONFIG.hydraulicDriftThreshold then
         -- Reset warning flags when hydraulics are healthy (so warnings trigger again if they degrade)
         spec.hasShownDriftWarning = false
         spec.hasShownDriftMidpointWarning = false
@@ -2228,7 +2294,7 @@ function UsedPlusMaintenance.checkHydraulicDrift(vehicle, dt)
     -- v1.4.0: Show one-time warning when drift conditions are first detected
     -- v1.6.0: Only show if player is controlling this vehicle
     if not spec.hasShownDriftWarning and UsedPlusMaintenance.shouldShowWarning(vehicle) then
-        local reliabilityPercent = math.floor(spec.hydraulicReliability * 100)
+        local reliabilityPercent = math.floor(hydraulicReliability * 100)
         g_currentMission:showBlinkingWarning(
             string.format(g_i18n:getText("usedPlus_hydraulicWeak") or "Hydraulics weak (%d%%) - implements may drift!", reliabilityPercent),
             4000
@@ -2246,7 +2312,7 @@ function UsedPlusMaintenance.checkHydraulicDrift(vehicle, dt)
     -- Calculate drift speed based on reliability (lower = faster drift)
     -- Damage amplifies drift speed (up to 3x at 100% damage)
     local baseSpeed = UsedPlusMaintenance.CONFIG.hydraulicDriftSpeed
-    local reliabilityFactor = 1 - spec.hydraulicReliability  -- 0.5 reliability = 0.5 factor
+    local reliabilityFactor = 1 - hydraulicReliability  -- 0.5 reliability = 0.5 factor
     local damageMultiplier = 1.0 + (damage * 2.0)  -- 0% damage = 1x, 100% = 3x
     local driftSpeed = baseSpeed * reliabilityFactor * damageMultiplier * (dt / 1000)  -- Convert to per-second
 
@@ -2972,6 +3038,7 @@ end
 --[[
     Check for tire-related malfunctions (flat tire, low traction)
     Called every 1 second from periodic checks
+    v1.8.0: Defers flat tire trigger to UYT/RVB when those mods are installed
 ]]
 function UsedPlusMaintenance.checkTireMalfunctions(vehicle)
     local spec = vehicle.spec_usedPlusMaintenance
@@ -2982,8 +3049,15 @@ function UsedPlusMaintenance.checkTireMalfunctions(vehicle)
     -- Skip if already have flat tire
     if spec.hasFlatTire then return end
 
+    -- v1.8.0: Defer flat tire triggering to UYT or RVB if installed
+    -- These mods have their own tire failure mechanics - we don't want double failures
+    -- Our tire CONDITION still degrades (for low traction warnings, steering pull, etc.)
+    -- But the actual FLAT TIRE event is handled by the other mod
+    local shouldDeferFlatTire = ModCompatibility.shouldDeferTireFailure()
+
     -- Check for flat tire (only if tires are worn and vehicle is moving)
-    if config.enableFlatTire and spec.tireCondition < config.flatTireThreshold then
+    -- v1.8.0: Skip flat tire trigger if UYT/RVB handles it
+    if config.enableFlatTire and spec.tireCondition < config.flatTireThreshold and not shouldDeferFlatTire then
         -- Calculate chance based on tire condition and quality
         local conditionFactor = 1 - (spec.tireCondition / config.flatTireThreshold)
         local chance = config.flatTireBaseChance * conditionFactor * (spec.tireFailureMultiplier or 1.0)

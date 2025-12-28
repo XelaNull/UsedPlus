@@ -62,13 +62,22 @@ function FinanceManagerFrame.new()
         end
     }
 
-    self:setMenuButtonInfo({
+    -- v1.8.1: Build button list conditionally based on mod compatibility
+    -- If EnhancedLoanSystem is installed, hide Take Loan button (ELS handles loans)
+    local buttons = {
         self.btnBack,
         self.btnNextPage,
         self.btnPreviousPage,
-        self.btnDashboard,
-        self.btnTakeLoan
-    })
+        self.btnDashboard
+    }
+
+    if ModCompatibility.shouldShowTakeLoanOption() then
+        table.insert(buttons, self.btnTakeLoan)
+    else
+        UsedPlus.logDebug("Take Loan button hidden - EnhancedLoanSystem detected")
+    end
+
+    self:setMenuButtonInfo(buttons)
 
     return self
 end
@@ -435,20 +444,133 @@ function FinanceManagerFrame:updateFinancesSection(farmId, farm)
                     rowIndex = rowIndex + 1
                 end
             end
+        end
+    end
 
-            -- Hide empty text if we have deals
-            if rowIndex > 0 and self.financeEmptyText then
-                self.financeEmptyText:setVisible(false)
+    -- v1.8.1: Add ELS loans if EnhancedLoanSystem is installed
+    if ModCompatibility.enhancedLoanSystemInstalled then
+        local elsLoans = ModCompatibility.getELSLoans(farmId)
+        for _, pseudoDeal in ipairs(elsLoans) do
+            if rowIndex < FinanceManagerFrame.MAX_FINANCE_ROWS then
+                -- Store pseudo-deal reference
+                table.insert(self.activeDeals, pseudoDeal)
+
+                local dealType = "ELS"  -- EnhancedLoanSystem marker
+                local itemName = pseudoDeal.itemName or "ELS Loan"
+
+                -- Truncate item name if too long
+                if #itemName > 20 then
+                    itemName = string.sub(itemName, 1, 18) .. ".."
+                end
+
+                -- Financial details
+                local currentBalance = pseudoDeal.currentBalance or 0
+                local monthlyPayment = pseudoDeal.monthlyPayment or 0
+                local interestRate = (pseudoDeal.interestRate or 0) * 100
+                local termMonths = pseudoDeal.termMonths or 0
+                local monthsPaid = pseudoDeal.monthsPaid or 0
+
+                -- Accumulate totals
+                totalFinanced = totalFinanced + currentBalance
+                totalMonthly = totalMonthly + monthlyPayment
+                dealCount = dealCount + 1
+
+                -- Format values
+                local balanceStr = g_i18n:formatMoney(currentBalance, 0, true, true)
+                local monthlyStr = g_i18n:formatMoney(monthlyPayment, 0, true, true)
+                local progressStr = string.format("%d/%d", monthsPaid, termMonths)
+                local remainingMonths = math.max(0, termMonths - monthsPaid)
+                local remainingStr = string.format("%dmo", remainingMonths)
+
+                -- Update row elements
+                local row = self.financeRows[rowIndex]
+                if row then
+                    if row.row then row.row:setVisible(true) end
+                    if row.type then row.type:setText(dealType) end
+                    if row.item then row.item:setText(itemName) end
+                    if row.balance then row.balance:setText(balanceStr) end
+                    if row.monthly then row.monthly:setText(monthlyStr) end
+                    if row.progress then row.progress:setText(progressStr) end
+                    if row.remaining then row.remaining:setText(remainingStr) end
+                end
+
+                rowIndex = rowIndex + 1
             end
         end
     end
+
+    -- v1.8.1: Add HP leases if HirePurchasing is installed
+    if ModCompatibility.hirePurchasingInstalled then
+        local hpLeases = ModCompatibility.getHPLeases(farmId)
+        for _, pseudoDeal in ipairs(hpLeases) do
+            if rowIndex < FinanceManagerFrame.MAX_FINANCE_ROWS then
+                -- Store pseudo-deal reference
+                table.insert(self.activeDeals, pseudoDeal)
+
+                local dealType = "HP"  -- HirePurchasing marker
+                local itemName = pseudoDeal.itemName or "HP Lease"
+
+                -- Truncate item name if too long
+                if #itemName > 20 then
+                    itemName = string.sub(itemName, 1, 18) .. ".."
+                end
+
+                -- Financial details
+                local currentBalance = pseudoDeal.currentBalance or 0
+                local monthlyPayment = pseudoDeal.monthlyPayment or 0
+                local termMonths = pseudoDeal.termMonths or 0
+                local monthsPaid = pseudoDeal.monthsPaid or 0
+
+                -- Accumulate totals
+                totalFinanced = totalFinanced + currentBalance
+                totalMonthly = totalMonthly + monthlyPayment
+                dealCount = dealCount + 1
+
+                -- Format values
+                local balanceStr = g_i18n:formatMoney(currentBalance, 0, true, true)
+                local monthlyStr = g_i18n:formatMoney(monthlyPayment, 0, true, true)
+                local progressStr = string.format("%d/%d", monthsPaid, termMonths)
+                local remainingMonths = math.max(0, termMonths - monthsPaid)
+                local remainingStr = string.format("%dmo", remainingMonths)
+
+                -- Update row elements
+                local row = self.financeRows[rowIndex]
+                if row then
+                    if row.row then row.row:setVisible(true) end
+                    if row.type then row.type:setText(dealType) end
+                    if row.item then row.item:setText(itemName) end
+                    if row.balance then row.balance:setText(balanceStr) end
+                    if row.monthly then row.monthly:setText(monthlyStr) end
+                    if row.progress then row.progress:setText(progressStr) end
+                    if row.remaining then row.remaining:setText(remainingStr) end
+                end
+
+                rowIndex = rowIndex + 1
+            end
+        end
+    end
+
+    -- Hide empty text if we have ANY rows (vanilla loan OR UsedPlus deals OR ELS/HP)
+    if rowIndex > 0 and self.financeEmptyText then
+        self.financeEmptyText:setVisible(false)
+    end
+
+    -- v1.8.1 Phase 2: Add Employment wages to monthly obligations if Employment mod is installed
+    local employmentWages = ModCompatibility.getEmploymentMonthlyCost(g_currentMission.playerUserId)
+    local hasEmployment = employmentWages > 0
 
     -- Update summary bar
     if self.totalFinancedText then
         self.totalFinancedText:setText(g_i18n:formatMoney(totalFinanced, 0, true, true))
     end
     if self.monthlyTotalText then
-        self.monthlyTotalText:setText(g_i18n:formatMoney(totalMonthly, 0, true, true) .. "/mo")
+        local displayMonthly = totalMonthly + employmentWages
+        local monthlyStr = g_i18n:formatMoney(displayMonthly, 0, true, true) .. "/mo"
+        if hasEmployment then
+            -- Show that employment wages are included
+            monthlyStr = monthlyStr .. "*"
+        end
+        self.monthlyTotalText:setText(monthlyStr)
     end
     if self.totalInterestText then
         self.totalInterestText:setText(g_i18n:formatMoney(totalInterestPaid, 0, true, true))
@@ -875,8 +997,11 @@ function FinanceManagerFrame:updateSaleListings(farmId)
         end
     end
 
+    local maxSales = FinanceManagerFrame.MAX_SALE_ROWS
+
     if self.saleEmptyText then
         self.saleEmptyText:setVisible(true)
+        self.saleEmptyText:setText(string.format("No listings (0/%d). Sell from Garage menu.", maxSales))
     end
 
     -- Clear active listings for button handlers
@@ -997,13 +1122,13 @@ function FinanceManagerFrame:updateSaleListings(farmId)
         end
     end
 
-    -- Update listings count text
+    -- Update listings count text (format: "X/3" or "X/3 (Y offers!)")
     if self.saleListingsCountText then
         if pendingOffers > 0 then
-            self.saleListingsCountText:setText(string.format("%d listings (%d offers!)", listingCount, pendingOffers))
+            self.saleListingsCountText:setText(string.format("%d/%d (%d offers!)", listingCount, maxSales, pendingOffers))
             self.saleListingsCountText:setTextColor(0.4, 1, 0.4, 1)  -- Green if offers pending
         else
-            self.saleListingsCountText:setText(string.format("%d listings", listingCount))
+            self.saleListingsCountText:setText(string.format("%d/%d", listingCount, maxSales))
             self.saleListingsCountText:setTextColor(0.6, 0.6, 0.6, 1)  -- Gray normal
         end
     end
@@ -1594,7 +1719,14 @@ function FinanceManagerFrame:updateStatsSection(farmId, farm)
         self.interestAdjustText:setText(adjText)
     end
     if self.assetsText then
-        self.assetsText:setText(string.format(g_i18n:getText("usedplus_manager_assetsLabel"), g_i18n:formatMoney(assets, 0, true, true)))
+        -- v1.8.1 Phase 2: Show farmland count in assets display
+        local farmlandCount = ModCompatibility.getFarmlandCount(farmId)
+        local assetsStr = g_i18n:formatMoney(assets, 0, true, true)
+        if farmlandCount > 0 then
+            self.assetsText:setText(string.format("Assets: %s (%d fields)", assetsStr, farmlandCount))
+        else
+            self.assetsText:setText(string.format(g_i18n:getText("usedplus_manager_assetsLabel"), assetsStr))
+        end
     end
     if self.debtText then
         self.debtText:setText(string.format(g_i18n:getText("usedplus_manager_debtLabel"), g_i18n:formatMoney(debt, 0, true, true)))
@@ -1909,6 +2041,18 @@ function FinanceManagerFrame:showPaymentOptionsDialog(deal, farm)
     local monthlyPayment = deal.monthlyPayment or 0
     local itemName = deal.itemName or "Unknown"
     local farmMoney = farm.money or 0
+
+    -- v1.8.1: Handle ELS loans (external mod)
+    if deal.isELSLoan then
+        self:showELSPaymentDialog(deal, farm)
+        return
+    end
+
+    -- v1.8.1: Handle HP leases (external mod)
+    if deal.isHPLease then
+        self:showHPPaymentDialog(deal, farm)
+        return
+    end
 
     -- Check deal type: 2=vehicle lease, 3=land lease
     local isVehicleLease = (deal.dealType == 2)
@@ -2669,10 +2813,237 @@ function FinanceManagerFrame:processPayment(deal, amount)
 end
 
 --[[
+    v1.8.1: Show payment dialog for EnhancedLoanSystem loans
+    Allows making payments through ELS's own payment system
+    @param pseudoDeal - Pseudo-deal object with ELS loan reference
+    @param farm - The player's farm
+]]
+function FinanceManagerFrame:showELSPaymentDialog(pseudoDeal, farm)
+    local currentBalance = pseudoDeal.currentBalance or 0
+    local monthlyPayment = pseudoDeal.monthlyPayment or 0
+    local itemName = pseudoDeal.itemName or "ELS Loan"
+    local farmMoney = farm.money or 0
+    local interestRate = (pseudoDeal.interestRate or 0) * 100
+
+    local balanceStr = g_i18n:formatMoney(currentBalance, 0, true, true)
+    local monthlyStr = g_i18n:formatMoney(monthlyPayment, 0, true, true)
+    local moneyStr = g_i18n:formatMoney(farmMoney, 0, true, true)
+    local rateStr = string.format("%.2f%%", interestRate)
+
+    -- Determine what payments are possible
+    local canPayMonthly = farmMoney >= monthlyPayment and monthlyPayment > 0
+    local canPayFull = farmMoney >= currentBalance and currentBalance > 0
+
+    -- Build message
+    local message = string.format(
+        "%s\n\n" ..
+        "Balance: %s\n" ..
+        "Monthly: %s\n" ..
+        "Interest Rate: %s\n" ..
+        "Your Money: %s\n\n" ..
+        "(Managed by EnhancedLoanSystem)",
+        itemName, balanceStr, monthlyStr, rateStr, moneyStr
+    )
+
+    -- Store deal reference for callback
+    self.pendingELSDeal = pseudoDeal
+    self.pendingELSMonthlyAmount = monthlyPayment
+
+    if canPayMonthly then
+        YesNoDialog.show(
+            function(yes)
+                if yes then
+                    self:onELSPaymentConfirm()
+                end
+            end,
+            nil,
+            message .. "\n\nMake monthly payment of " .. monthlyStr .. "?",
+            "ELS Loan Payment"
+        )
+    elseif canPayFull then
+        -- Full payoff
+        YesNoDialog.show(
+            function(yes)
+                if yes then
+                    self:onELSPayoffConfirm()
+                end
+            end,
+            nil,
+            message .. "\n\nPay off entire loan of " .. balanceStr .. "?",
+            "ELS Loan Payoff"
+        )
+    else
+        g_currentMission:addIngameNotification(
+            FSBaseMission.INGAME_NOTIFICATION_INFO,
+            "Insufficient funds for ELS loan payment"
+        )
+    end
+end
+
+--[[
+    v1.8.1: Callback for ELS monthly payment confirmation
+]]
+function FinanceManagerFrame:onELSPaymentConfirm()
+    if self.pendingELSDeal and self.pendingELSMonthlyAmount then
+        local farm = g_farmManager:getFarmByUserId(g_currentMission.playerUserId)
+        if farm and farm.money >= self.pendingELSMonthlyAmount then
+            local success = ModCompatibility.payELSLoan(self.pendingELSDeal, self.pendingELSMonthlyAmount)
+            if success then
+                g_currentMission:addIngameNotification(
+                    FSBaseMission.INGAME_NOTIFICATION_OK,
+                    string.format("ELS loan payment processed: %s", g_i18n:formatMoney(self.pendingELSMonthlyAmount, 0, true, true))
+                )
+            else
+                g_currentMission:addIngameNotification(
+                    FSBaseMission.INGAME_NOTIFICATION_CRITICAL,
+                    "ELS loan payment failed"
+                )
+            end
+        end
+    end
+    self.pendingELSDeal = nil
+    self.pendingELSMonthlyAmount = nil
+    self:updateDisplay()
+end
+
+--[[
+    v1.8.1: Callback for ELS full payoff confirmation
+]]
+function FinanceManagerFrame:onELSPayoffConfirm()
+    if self.pendingELSDeal then
+        local farm = g_farmManager:getFarmByUserId(g_currentMission.playerUserId)
+        local amount = self.pendingELSDeal.currentBalance or 0
+        if farm and farm.money >= amount then
+            local success = ModCompatibility.payELSLoan(self.pendingELSDeal, amount)
+            if success then
+                g_currentMission:addIngameNotification(
+                    FSBaseMission.INGAME_NOTIFICATION_OK,
+                    string.format("ELS loan paid off: %s", g_i18n:formatMoney(amount, 0, true, true))
+                )
+            else
+                g_currentMission:addIngameNotification(
+                    FSBaseMission.INGAME_NOTIFICATION_CRITICAL,
+                    "ELS loan payoff failed"
+                )
+            end
+        end
+    end
+    self.pendingELSDeal = nil
+    self.pendingELSMonthlyAmount = nil
+    self:updateDisplay()
+end
+
+--[[
+    v1.8.1: Show payment dialog for HirePurchasing leases
+    Allows settling HP leases through HP's own payment system
+    @param pseudoDeal - Pseudo-deal object with HP lease reference
+    @param farm - The player's farm
+]]
+function FinanceManagerFrame:showHPPaymentDialog(pseudoDeal, farm)
+    local currentBalance = pseudoDeal.currentBalance or 0
+    local monthlyPayment = pseudoDeal.monthlyPayment or 0
+    local itemName = pseudoDeal.itemName or "HP Lease"
+    local farmMoney = farm.money or 0
+    local termMonths = pseudoDeal.termMonths or 0
+    local monthsPaid = pseudoDeal.monthsPaid or 0
+    local remainingMonths = math.max(0, termMonths - monthsPaid)
+
+    local balanceStr = g_i18n:formatMoney(currentBalance, 0, true, true)
+    local monthlyStr = g_i18n:formatMoney(monthlyPayment, 0, true, true)
+    local moneyStr = g_i18n:formatMoney(farmMoney, 0, true, true)
+
+    -- Determine what payments are possible
+    local canPayMonthly = farmMoney >= monthlyPayment and monthlyPayment > 0
+    local canSettleEarly = farmMoney >= currentBalance and currentBalance > 0
+
+    -- Build message
+    local message = string.format(
+        "%s\n\n" ..
+        "Remaining Balance: %s\n" ..
+        "Monthly Payment: %s\n" ..
+        "Remaining: %d months\n" ..
+        "Your Money: %s\n\n" ..
+        "(Managed by HirePurchasing)",
+        itemName, balanceStr, monthlyStr, remainingMonths, moneyStr
+    )
+
+    -- Store deal reference for callback
+    self.pendingHPDeal = pseudoDeal
+    self.pendingHPMonthlyAmount = monthlyPayment
+
+    -- HP manages payments automatically - inform the user
+    -- Show info dialog since we can only display, not control HP leases
+    InfoDialog.show(
+        message .. "\n\nNote: HirePurchasing manages payments automatically each hour.",
+        "HP Lease Info"
+    )
+end
+
+--[[
+    v1.8.1: Callback for HP monthly payment confirmation
+]]
+function FinanceManagerFrame:onHPPaymentConfirm()
+    if self.pendingHPDeal and self.pendingHPMonthlyAmount then
+        local farm = g_farmManager:getFarmByUserId(g_currentMission.playerUserId)
+        if farm and farm.money >= self.pendingHPMonthlyAmount then
+            local success = ModCompatibility.payHPLease(self.pendingHPDeal, self.pendingHPMonthlyAmount)
+            if success then
+                g_currentMission:addIngameNotification(
+                    FSBaseMission.INGAME_NOTIFICATION_OK,
+                    string.format("HP lease payment processed: %s", g_i18n:formatMoney(self.pendingHPMonthlyAmount, 0, true, true))
+                )
+            else
+                g_currentMission:addIngameNotification(
+                    FSBaseMission.INGAME_NOTIFICATION_CRITICAL,
+                    "HP lease payment failed"
+                )
+            end
+        end
+    end
+    self.pendingHPDeal = nil
+    self.pendingHPMonthlyAmount = nil
+    self:updateDisplay()
+end
+
+--[[
+    v1.8.1: Callback for HP early settlement confirmation
+]]
+function FinanceManagerFrame:onHPSettleConfirm()
+    if self.pendingHPDeal then
+        local farm = g_farmManager:getFarmByUserId(g_currentMission.playerUserId)
+        local success = ModCompatibility.settleHPLease(self.pendingHPDeal)
+        if success then
+            g_currentMission:addIngameNotification(
+                FSBaseMission.INGAME_NOTIFICATION_OK,
+                "HP lease settled successfully"
+            )
+        else
+            g_currentMission:addIngameNotification(
+                FSBaseMission.INGAME_NOTIFICATION_CRITICAL,
+                "HP lease settlement failed"
+            )
+        end
+    end
+    self.pendingHPDeal = nil
+    self.pendingHPMonthlyAmount = nil
+    self:updateDisplay()
+end
+
+--[[
      Take Loan button clicked - opens TakeLoanDialog
      Refactored to use DialogLoader for centralized loading
+     v1.8.1: Blocked when EnhancedLoanSystem is detected
 ]]
 function FinanceManagerFrame:onTakeLoanClick()
+    -- v1.8.1: Safety check - don't open if ELS handles loans
+    if not ModCompatibility.shouldShowTakeLoanOption() then
+        g_currentMission:addIngameNotification(
+            FSBaseMission.INGAME_NOTIFICATION_INFO,
+            "Loans are managed by EnhancedLoanSystem"
+        )
+        return
+    end
+
     -- Get current player's farm
     local farm = g_farmManager:getFarmByUserId(g_currentMission.playerUserId)
     if not farm then

@@ -388,8 +388,16 @@ end
     Register deal in manager
     Adds to both global list and farm-specific list
     Records credit history event for new debt
+    v1.8.1: Blocks cash loans when EnhancedLoanSystem is detected
 ]]
 function FinanceManager:registerDeal(deal)
+    -- v1.8.1: Block cash loans when EnhancedLoanSystem is installed
+    -- ELS handles all loan functionality, we only track vehicle financing and leases
+    if deal.dealType == 3 and not ModCompatibility.shouldEnableLoanSystem() then
+        UsedPlus.logInfo("Cash loan blocked - EnhancedLoanSystem handles loans")
+        return false
+    end
+
     -- Assign unique ID if not already set
     if deal.id == nil then
         deal.id = self.nextDealId

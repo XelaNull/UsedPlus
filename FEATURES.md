@@ -138,6 +138,46 @@ Real consequences for neglecting maintenance:
 
 ---
 
+## FIELD SERVICE KIT
+
+Emergency repair system for disabled vehicles in the field.
+
+### OBD Diagnostic Scanner
+* Portable diagnostic tool that connects to vehicle's OBD (On-Board Diagnostics) port
+* Purchase from shop as a consumable hand tool ($5,000 for Basic kit)
+* Carry to disabled vehicle and activate to begin diagnosis
+* Scanner reads fault codes and sensor data from vehicle systems
+
+### Diagnostic Minigame
+* Choose which system to diagnose: Engine, Electrical, or Hydraulic
+* Scanner displays 3 diagnostic readings (fault codes, sensor values, test results)
+* Interpret readings to identify the root cause from 4 possible diagnoses
+* Correct diagnosis = better repair outcome
+* Tests your mechanical knowledge and deductive reasoning
+
+### Kit Tiers
+* **Basic Kit** ($5,000): Standard OBD readings, 15-25% reliability restoration
+* **Professional Kit** ($12,000): Enhanced diagnostics, 20-35% reliability restoration
+* **Master Kit** ($25,000): Complete diagnostics, 30-50% reliability restoration
+
+### Repair Outcomes
+* **Perfect Diagnosis**: Correct system + correct cause = maximum reliability boost
+* **Good Diagnosis**: Correct system + wrong cause = moderate reliability boost
+* **Poor Diagnosis**: Wrong system entirely = minimal boost, vehicle barely functional
+* Vehicle is re-enabled regardless of outcome (you can limp home)
+
+### Tire Repair Mode
+* Emergency flat tire repair without needing a tow
+* **Patch Repair** ($50): Moderate fix, 60% tread restored
+* **Plug Repair** ($25): Quick fix, 40% tread restored
+
+### Consumable Item
+* Kit is consumed after one use, regardless of diagnosis accuracy
+* Encourages players to learn vehicle systems for better outcomes
+* Stock up on kits for long field work sessions
+
+---
+
 ## USED VEHICLE MARKETPLACE
 
 ### Agent-Based Vehicle Searching
@@ -224,6 +264,36 @@ Real consequences for neglecting maintenance:
 ### Map Integration
 * "Buy", "Finance", and "Lease" options for farmland from map view
 * Repair option when clicking owned vehicles on map
+
+---
+
+## CROSS-MOD INTEGRATION (v1.8.2+)
+
+### Unified Financial Dashboard
+* **EnhancedLoanSystem**: ELS loans display in Finance Manager with "ELS" type marker
+* **HirePurchasing**: HP leases display in Finance Manager with "HP" type marker
+* **Employment**: Worker wages included in monthly obligations total
+* See ALL financial obligations from multiple mods in one unified view
+
+### Pay Early Integration
+* Make payments on ELS loans directly from UsedPlus Finance Manager
+* Click "Pay Early" on ELS loans to make monthly or full payoff payments
+* UsedPlus calls ELS payment API for seamless integration
+
+### Maintenance Integration
+* **Real Vehicle Breakdowns**: UsedPlus provides "symptoms before failure" using RVB part health
+* **Use Up Your Tyres**: Tire condition syncs from UYT wear data
+* **AdvancedMaintenance**: Both systems work together via function chaining
+
+### Financial Visibility
+* Monthly total shows loans + leases + employment wages (marked with * when wages included)
+* Assets display shows farmland count: "Assets: $X (Y fields)"
+* Complete picture of monthly cash requirements for accurate budgeting
+
+### Compatible Mods
+* **BuyUsedEquipment**: UsedPlus hides Search button, BUE handles used search
+* **CrudeOilProduction**: Pure production mod, fully compatible
+* **SpecialOffers**: Notification utility, works alongside
 
 ---
 

@@ -56,8 +56,12 @@ function ShopConfigScreenExtension.applyCustomizations(self, storeItem)
     ShopConfigScreenExtension.currentStoreItem = storeItem
     ShopConfigScreenExtension.currentShopScreen = self
 
+    -- v1.8.1: Check if HirePurchasing handles financing
+    -- If HP is installed, skip Finance button creation (HP provides its own)
+    local shouldShowFinance = ModCompatibility.shouldShowFinanceButton()
+
     -- Create Finance button (between Buy and Search Used)
-    if not self.usedPlusFinanceButton and buyButton then
+    if shouldShowFinance and not self.usedPlusFinanceButton and buyButton then
         local parent = buyButton.parent
         self.usedPlusFinanceButton = buyButton:clone(parent)
         self.usedPlusFinanceButton.name = "usedPlusFinanceButton"
@@ -92,10 +96,16 @@ function ShopConfigScreenExtension.applyCustomizations(self, storeItem)
         end
 
         UsedPlus.logDebug("Finance button created with inputActionName: MENU_EXTRA_2")
+    elseif not shouldShowFinance then
+        UsedPlus.logDebug("Finance button skipped - HirePurchasing detected")
     end
 
+    -- v1.8.1: Check if BuyUsedEquipment handles used search
+    -- If BUE is installed, skip Search Used button creation (BUE provides its own)
+    local shouldShowSearch = ModCompatibility.shouldShowSearchButton()
+
     -- Create Search Used button (after Finance)
-    if not self.usedPlusSearchButton and buyButton then
+    if shouldShowSearch and not self.usedPlusSearchButton and buyButton then
         local parent = buyButton.parent
 
         -- Log what the Buy button uses for reference
@@ -137,6 +147,8 @@ function ShopConfigScreenExtension.applyCustomizations(self, storeItem)
         end
 
         UsedPlus.logDebug("Search Used button created with inputActionName: MENU_EXTRA_1")
+    elseif not shouldShowSearch then
+        UsedPlus.logDebug("Search Used button skipped - BuyUsedEquipment detected")
     end
 
     -- Update Search Used callback EVERY TIME setStoreItem is called
@@ -156,11 +168,26 @@ function ShopConfigScreenExtension.applyCustomizations(self, storeItem)
         self.usedPlusInspectButton = buyButton:clone(parent)
         self.usedPlusInspectButton.name = "usedPlusInspectButton"
         self.usedPlusInspectButton.inputActionName = "MENU_EXTRA_1"  -- Q key typically
-        self.usedPlusInspectButton:setText("Inspect")
+        self.usedPlusInspectButton:setText(g_i18n:getText("usedplus_button_inspect") or "Inspect")
         self.usedPlusInspectButton:setVisible(false)  -- Hidden by default, shown for owned vehicles
 
         UsedPlus.logDebug("Inspect button created in shop")
     end
+
+    -- Create Tires button for owned vehicles (tire replacement service)
+    if not self.usedPlusTiresButton and buyButton then
+        local parent = buyButton.parent
+        self.usedPlusTiresButton = buyButton:clone(parent)
+        self.usedPlusTiresButton.name = "usedPlusTiresButton"
+        self.usedPlusTiresButton.inputActionName = "MENU_EXTRA_3"
+        self.usedPlusTiresButton:setText(g_i18n:getText("usedplus_button_tires") or "Tires")
+        self.usedPlusTiresButton:setVisible(false)  -- Hidden by default, shown for owned vehicles
+
+        UsedPlus.logDebug("Tires button created in shop")
+    end
+
+    -- NOTE: Fluids button removed in v1.8.0 - Players now use Oil Service Barrel/Tank placeables
+    -- to refill engine oil and hydraulic fluid by driving near them
 end
 
 --[[
@@ -254,8 +281,11 @@ function ShopConfigScreenExtension.updateButtonsHook(self, storeItem, vehicle, s
         end
 
         -- Update Finance button visibility and callback (button created in applyCustomizations)
+        -- v1.8.1: Also check if HirePurchasing handles financing
         if self.usedPlusFinanceButton then
-            local showFinanceButton = not isOwnedVehicle and ShopConfigScreenExtension.canFinanceItem(storeItem)
+            local showFinanceButton = ModCompatibility.shouldShowFinanceButton() and
+                                       not isOwnedVehicle and
+                                       ShopConfigScreenExtension.canFinanceItem(storeItem)
             self.usedPlusFinanceButton:setVisible(showFinanceButton)
             self.usedPlusFinanceButton:setDisabled(not showFinanceButton)
 
@@ -269,22 +299,42 @@ function ShopConfigScreenExtension.updateButtonsHook(self, storeItem, vehicle, s
         -- Show/hide Inspect button based on whether this is an owned vehicle
         if self.usedPlusInspectButton then
             self.usedPlusInspectButton:setVisible(isOwnedVehicle)
-            self.usedPlusInspectButton:setDisabled(not isOwnedVehicle)  -- Enable for owned vehicles
+            self.usedPlusInspectButton:setDisabled(not isOwnedVehicle)
 
             if isOwnedVehicle then
-                -- Set the click callback with the current vehicle
                 self.usedPlusInspectButton.onClickCallback = function()
                     ShopConfigScreenExtension.onInspectClick(self, vehicle)
                 end
-                local vehicleName = vehicle.getName and vehicle:getName() or "Unknown"
-                UsedPlus.logDebug("Inspect button shown for owned vehicle: " .. tostring(vehicleName))
             end
         end
 
+        -- Show/hide Tires button for owned vehicles (tire service)
+        if self.usedPlusTiresButton then
+            self.usedPlusTiresButton:setVisible(isOwnedVehicle)
+            self.usedPlusTiresButton:setDisabled(not isOwnedVehicle)
+
+            if isOwnedVehicle then
+                self.usedPlusTiresButton.onClickCallback = function()
+                    ShopConfigScreenExtension.onTiresClick(self, vehicle)
+                end
+            end
+        end
+
+        -- NOTE: Fluids button removed in v1.8.0 - use Oil Service Barrel/Tank placeables
+
+        if isOwnedVehicle then
+            local vehicleName = vehicle.getName and vehicle:getName() or "Unknown"
+            UsedPlus.logDebug("Service buttons shown for owned vehicle: " .. tostring(vehicleName))
+        end
+
         -- Hide Search Used button for owned vehicles (can't search for something you own)
+        -- v1.8.1: Also check if BuyUsedEquipment handles used search
         if self.usedPlusSearchButton then
             local isNewItem = vehicle == nil and saleItem == nil
-            self.usedPlusSearchButton:setVisible(isNewItem and ShopConfigScreenExtension.canSearchItem(storeItem))
+            local showSearchButton = ModCompatibility.shouldShowSearchButton() and
+                                      isNewItem and
+                                      ShopConfigScreenExtension.canSearchItem(storeItem)
+            self.usedPlusSearchButton:setVisible(showSearchButton)
         end
     end)
 
@@ -549,5 +599,26 @@ function ShopConfigScreenExtension.onInspectClick(shopScreen, vehicle)
 
     InfoDialog.show(info)
 end
+
+--[[
+    Tires button click handler
+    Shows TiresDialog for tire replacement service
+]]
+function ShopConfigScreenExtension.onTiresClick(shopScreen, vehicle)
+    if vehicle == nil then
+        UsedPlus.logDebug("Tires clicked but no vehicle")
+        return
+    end
+
+    UsedPlus.logDebug("Tires button clicked for: " .. tostring(vehicle:getName()))
+
+    g_shopConfigScreen:playSample(GuiSoundPlayer.SOUND_SAMPLES.CLICK)
+
+    -- Use DialogLoader for centralized lazy loading
+    local farmId = g_currentMission:getFarmId()
+    DialogLoader.show("TiresDialog", "setVehicle", vehicle, farmId)
+end
+
+-- NOTE: onFluidsClick removed in v1.8.0 - use Oil Service Barrel/Tank placeables
 
 UsedPlus.logInfo("ShopConfigScreenExtension loaded")

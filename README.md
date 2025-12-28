@@ -216,10 +216,31 @@ UsedPlus **replaces several vanilla systems** to provide the full financial expe
 | Farmland Buy | Unified Land Purchase Dialog (Cash/Finance/Lease) |
 | Workshop Repair | Partial Repair/Repaint with finance option |
 
-- Works with most other mods
-- Multiplayer compatible (all features sync)
-- **MobileServiceKit** by w33zl - Full compatibility! Use UsedPlus's partial repair features from the portable toolbox
-- Mods that also modify these vanilla systems may conflict
+### Cross-Mod Compatibility (v1.8.2+)
+
+UsedPlus automatically detects and **deeply integrates** with popular mods:
+
+| Mod | Status | How It Works |
+|-----|--------|--------------|
+| **Real Vehicle Breakdowns** | INTEGRATED | UsedPlus provides "symptoms before failure" using RVB part health |
+| **Use Up Your Tyres** | INTEGRATED | Tire condition syncs from UYT, flat tire triggers deferred |
+| **EnhancedLoanSystem** | INTEGRATED | ELS loans display in Finance Manager, Pay Early works with ELS |
+| **HirePurchasing** | INTEGRATED | HP leases display in Finance Manager for unified view |
+| **Employment** | INTEGRATED | Worker wages included in monthly obligations |
+| **CrudeOilProduction** | COMPATIBLE | Pure production mod, no conflicts |
+| **SpecialOffers** | COMPATIBLE | Notification utility, works alongside |
+| **MobileServiceKit** | COMPATIBLE | Use partial repair from portable toolbox |
+| **BuyUsedEquipment** | COMPATIBLE | UsedPlus hides Search button, BUE handles used search |
+| **AdvancedMaintenance** | COMPATIBLE | Both maintenance systems work together (function chaining) |
+
+**All popular financial and maintenance mods are now deeply integrated!** See **COMPATIBILITY.md** for technical details.
+
+### Best Experience Setup
+Run UsedPlus with these mods for the ultimate financial and maintenance experience:
+- **Real Vehicle Breakdowns + Use Up Your Tyres** - Gradual symptoms leading to catastrophic failures
+- **EnhancedLoanSystem + HirePurchasing** - All loans/leases visible in Finance Manager
+- **Employment** - Worker wages included in monthly obligations for complete budget visibility
+- Open Finance Manager (Shift+F) to see ALL your financial obligations in one unified dashboard
 
 ---
 
@@ -300,7 +321,11 @@ These mods were studied for our pattern documentation, helping us understand FS2
 
 ### Special Thanks
 
-- **w33zl** for MobileServiceKit - a fantastic portable toolbox that inspired us to ensure UsedPlus works seamlessly with mobile workshops
+- **w33zl** for MobileServiceKit - the portable toolbox that became the foundation for UsedPlus's **Field Service Kit** system. The 3D model, i3d structure, and hand tool mechanics were adapted directly from this excellent mod. Our diagnosis minigame and consumable kit mechanics are built on top of w33zl's solid foundation.
+
+- **Gian FS** for the Fuel Barrel placeable - the 3D model and structure served as the foundation for our **Oil Barrel** oil service point.
+
+- **WMD Modding** for FuelTanksPack - the 3D model and placeable structure served as the foundation for our **Oil Tank** oil service point.
 
 To all mod authors who share their work openly - you make the FS modding community what it is. Your willingness to let others learn from your code enables mods like UsedPlus to exist.
 
