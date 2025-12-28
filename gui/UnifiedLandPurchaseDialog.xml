@@ -28,7 +28,7 @@
                 <Text profile="lpSectionHeader" position="0px -5px" text="$l10n_usedplus_lp_sectionDetails"/>
 
                 <!-- Left Column: Field Info -->
-                <GuiElement position="-170px -28px" size="280px 100px">
+                <GuiElement profile="lpColumn" position="-170px -28px">
                     <Text profile="lpDetailLabel" position="0px 0px" text="$l10n_usedplus_lp_field"/>
                     <Text profile="lpLandName" id="landNameText" position="0px -16px" text=""/>
 
@@ -40,7 +40,7 @@
                 </GuiElement>
 
                 <!-- Right Column: Price Breakdown -->
-                <GuiElement position="130px -28px" size="280px 100px">
+                <GuiElement profile="lpColumn" position="130px -28px">
                     <Text profile="lpDetailLabel" position="0px 0px" text="$l10n_usedplus_lp_basePrice"/>
                     <Text profile="lpBasePrice" id="basePriceText" position="0px -16px" text=""/>
 
@@ -221,45 +221,51 @@
             <textAlignment value="center"/>
         </Profile>
 
+        <!-- ========== COLUMN CONTAINER ========== -->
+        <Profile name="lpColumn" extends="emptyPanel" with="anchorTopCenter">
+            <size value="280px 100px"/>
+        </Profile>
+
         <!-- ========== LAND DETAILS ========== -->
-        <Profile name="lpDetailLabel" extends="fs25_textDefault" with="anchorTopLeft">
+        <!-- NOTE: All profiles use anchorTopCenter per CLAUDE.md - anchorTopLeft causes misalignment -->
+        <Profile name="lpDetailLabel" extends="fs25_textDefault" with="anchorTopCenter">
             <size value="200px 16px"/>
             <textSize value="12px"/>
             <textColor value="0.6 0.6 0.6 1"/>
         </Profile>
 
-        <Profile name="lpLandName" extends="fs25_textDefault" with="anchorTopLeft">
+        <Profile name="lpLandName" extends="fs25_textDefault" with="anchorTopCenter">
             <size value="250px 22px"/>
             <textSize value="18px"/>
             <textBold value="true"/>
         </Profile>
 
-        <Profile name="lpLandSize" extends="fs25_textDefault" with="anchorTopLeft">
+        <Profile name="lpLandSize" extends="fs25_textDefault" with="anchorTopCenter">
             <size value="200px 18px"/>
             <textSize value="14px"/>
             <textColor value="0.8 0.8 0.8 1"/>
         </Profile>
 
-        <Profile name="lpPricePerHa" extends="fs25_textDefault" with="anchorTopLeft">
+        <Profile name="lpPricePerHa" extends="fs25_textDefault" with="anchorTopCenter">
             <size value="200px 16px"/>
             <textSize value="13px"/>
             <textColor value="0.7 0.7 0.7 1"/>
         </Profile>
 
-        <Profile name="lpBasePrice" extends="fs25_textDefault" with="anchorTopLeft">
+        <Profile name="lpBasePrice" extends="fs25_textDefault" with="anchorTopCenter">
             <size value="200px 18px"/>
             <textSize value="14px"/>
             <textColor value="0.8 0.8 0.8 1"/>
         </Profile>
 
-        <Profile name="lpCreditAdjust" extends="fs25_textDefault" with="anchorTopLeft">
+        <Profile name="lpCreditAdjust" extends="fs25_textDefault" with="anchorTopCenter">
             <size value="200px 18px"/>
             <textSize value="13px"/>
             <textBold value="true"/>
             <!-- Color set dynamically via Lua based on adjustment direction -->
         </Profile>
 
-        <Profile name="lpYourPrice" extends="fs25_textDefault" with="anchorTopLeft">
+        <Profile name="lpYourPrice" extends="fs25_textDefault" with="anchorTopCenter">
             <size value="200px 22px"/>
             <textSize value="16px"/>
             <textBold value="true"/>
