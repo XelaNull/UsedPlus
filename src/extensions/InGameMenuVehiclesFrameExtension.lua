@@ -83,7 +83,9 @@ function InGameMenuVehiclesFrameExtension:hookYesNoDialog()
         UsedPlus.logDebug(string.format("YesNoDialog.show intercepted: text='%s', isSell=%s",
             tostring(text):sub(1, 50), tostring(isSellConfirmation)))
 
-        if isSellConfirmation and g_vehicleSaleManager and UsedPlus and UsedPlus.instance then
+        -- v1.4.0: Check settings system for vehicle sale feature toggle
+        local saleEnabled = not UsedPlusSettings or UsedPlusSettings:isSystemEnabled("VehicleSale")
+        if isSellConfirmation and saleEnabled and g_vehicleSaleManager and UsedPlus and UsedPlus.instance then
             -- Try to get the vehicle from the current context
             local vehicle = nil
 

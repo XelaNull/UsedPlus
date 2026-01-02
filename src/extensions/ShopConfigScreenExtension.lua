@@ -258,11 +258,13 @@ function ShopConfigScreenExtension.updateButtonsHook(self, storeItem, vehicle, s
             end
         end
 
+        -- v1.4.0: Check settings system for lease feature toggle
         if self.leaseButton then
-            if isOwnedVehicle then
-                -- OWNED VEHICLE: Restore original game callback
+            local leaseEnabled = not UsedPlusSettings or UsedPlusSettings:isSystemEnabled("Lease")
+            if isOwnedVehicle or not leaseEnabled then
+                -- OWNED VEHICLE or LEASE DISABLED: Restore original game callback
                 self.leaseButton.onClickCallback = self.usedPlusOriginalLeaseCallback
-                UsedPlus.logDebug("Lease button: restored original callback for owned vehicle")
+                UsedPlus.logDebug("Lease button: restored original callback for owned vehicle or disabled system")
             else
                 -- NEW ITEM: Set our UnifiedPurchaseDialog callback
                 local shopScreen = self
@@ -282,8 +284,11 @@ function ShopConfigScreenExtension.updateButtonsHook(self, storeItem, vehicle, s
 
         -- Update Finance button visibility and callback (button created in applyCustomizations)
         -- v1.8.1: Also check if HirePurchasing handles financing
+        -- v1.4.0: Check settings system for feature toggles
         if self.usedPlusFinanceButton then
-            local showFinanceButton = ModCompatibility.shouldShowFinanceButton() and
+            local financeEnabled = not UsedPlusSettings or UsedPlusSettings:isSystemEnabled("Finance")
+            local showFinanceButton = financeEnabled and
+                                       ModCompatibility.shouldShowFinanceButton() and
                                        not isOwnedVehicle and
                                        ShopConfigScreenExtension.canFinanceItem(storeItem)
             self.usedPlusFinanceButton:setVisible(showFinanceButton)
@@ -309,11 +314,14 @@ function ShopConfigScreenExtension.updateButtonsHook(self, storeItem, vehicle, s
         end
 
         -- Show/hide Tires button for owned vehicles (tire service)
+        -- v1.4.0: Check settings system for tire wear feature toggle
         if self.usedPlusTiresButton then
-            self.usedPlusTiresButton:setVisible(isOwnedVehicle)
-            self.usedPlusTiresButton:setDisabled(not isOwnedVehicle)
+            local tireWearEnabled = not UsedPlusSettings or UsedPlusSettings:isSystemEnabled("TireWear")
+            local showTiresButton = tireWearEnabled and isOwnedVehicle
+            self.usedPlusTiresButton:setVisible(showTiresButton)
+            self.usedPlusTiresButton:setDisabled(not showTiresButton)
 
-            if isOwnedVehicle then
+            if showTiresButton then
                 self.usedPlusTiresButton.onClickCallback = function()
                     ShopConfigScreenExtension.onTiresClick(self, vehicle)
                 end
@@ -329,9 +337,12 @@ function ShopConfigScreenExtension.updateButtonsHook(self, storeItem, vehicle, s
 
         -- Hide Search Used button for owned vehicles (can't search for something you own)
         -- v1.8.1: Also check if BuyUsedEquipment handles used search
+        -- v1.4.0: Check settings system for used vehicle search feature toggle
         if self.usedPlusSearchButton then
+            local searchEnabled = not UsedPlusSettings or UsedPlusSettings:isSystemEnabled("UsedVehicleSearch")
             local isNewItem = vehicle == nil and saleItem == nil
-            local showSearchButton = ModCompatibility.shouldShowSearchButton() and
+            local showSearchButton = searchEnabled and
+                                      ModCompatibility.shouldShowSearchButton() and
                                       isNewItem and
                                       ShopConfigScreenExtension.canSearchItem(storeItem)
             self.usedPlusSearchButton:setVisible(showSearchButton)
@@ -374,6 +385,14 @@ function ShopConfigScreenExtension.canFinanceItem(storeItem)
         return false
     end
 
+    -- v1.9.8: Exclude hand tools from financing (Field Service Kit, etc.)
+    -- These are simple objects that should use vanilla buy dialog, not UnifiedPurchaseDialog
+    -- Hand tools have financeCategory="SHOP_HANDTOOL_BUY" in their storeData
+    if storeItem.financeCategory == "SHOP_HANDTOOL_BUY" then
+        UsedPlus.logDebug("canFinanceItem: Excluding hand tool: " .. tostring(storeItem.name))
+        return false
+    end
+
     -- Check minimum financing amount
     -- Banks don't process loans for trivially small amounts
     local price = storeItem.price or 0
@@ -392,13 +411,22 @@ function ShopConfigScreenExtension.canSearchItem(storeItem)
         return false
     end
 
-    -- Can only search for vehicles
-    return storeItem.species == StoreSpecies.VEHICLE
+    -- Can only search for vehicles (not hand tools)
+    if storeItem.species ~= StoreSpecies.VEHICLE then
+        return false
+    end
+
+    -- v1.9.8: Exclude hand tools from used search (Field Service Kit, etc.)
+    if storeItem.financeCategory == "SHOP_HANDTOOL_BUY" then
+        return false
+    end
+
+    return true
 end
 
 --[[
     Can this item be leased?
-    Leasing is vehicles only (not land, not placeables)
+    Leasing is vehicles only (not land, not placeables, not hand tools)
     Also requires minimum value threshold
 ]]
 function ShopConfigScreenExtension.canLeaseItem(storeItem)
@@ -408,6 +436,11 @@ function ShopConfigScreenExtension.canLeaseItem(storeItem)
 
     -- Can only lease vehicles (not placeables or land)
     if storeItem.species ~= StoreSpecies.VEHICLE then
+        return false
+    end
+
+    -- v1.9.8: Exclude hand tools from leasing (Field Service Kit, etc.)
+    if storeItem.financeCategory == "SHOP_HANDTOOL_BUY" then
         return false
     end
 

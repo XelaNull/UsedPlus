@@ -325,6 +325,16 @@ end
 FSBaseMission.loadItemsFinished = Utils.appendedFunction(
     FSBaseMission.loadItemsFinished,
     function(mission, missionInfo, missionDynamicInfo)
+        -- v1.4.0: Initialize settings system first (before managers load)
+        if UsedPlusSettings and UsedPlusSettings.init then
+            local savegameDirectory = nil
+            if missionInfo and missionInfo.savegameDirectory then
+                savegameDirectory = missionInfo.savegameDirectory
+            end
+            UsedPlusSettings:init(savegameDirectory)
+            UsedPlus.logInfo("Settings system initialized")
+        end
+
         if g_financeManager then
             g_financeManager:loadFromXMLFile(missionInfo)
         end

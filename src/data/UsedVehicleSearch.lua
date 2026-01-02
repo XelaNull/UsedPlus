@@ -248,10 +248,18 @@ function UsedVehicleSearch:calculateSearchParams()
     self.monthsElapsed = 0
     self.lastCheckDay = g_currentMission.environment.currentDay
 
-    -- Apply quality modifier to monthly success chance
+    -- Apply quality modifier and global settings modifier to monthly success chance
     local qualityTier = UsedVehicleSearch.QUALITY_TIERS[self.qualityLevel]
     local qualityModifier = qualityTier and qualityTier.successModifier or 0
-    self.monthlySuccessChance = math.max(0.05, math.min(0.95, tier.monthlySuccessChance + qualityModifier))
+
+    -- Get global success modifier from settings (default 75% = 1.0 multiplier)
+    -- E.g., 90% setting = 1.2 multiplier, 60% setting = 0.8 multiplier
+    local settingsPercent = UsedPlusSettings and UsedPlusSettings:get("searchSuccessPercent") or 75
+    local globalModifier = settingsPercent / 75
+
+    -- Apply: base chance × global modifier + quality modifier
+    local adjustedChance = (tier.monthlySuccessChance * globalModifier) + qualityModifier
+    self.monthlySuccessChance = math.max(0.05, math.min(0.95, adjustedChance))
 
     -- Limits
     self.maxListings = tier.maxListings
@@ -494,11 +502,27 @@ function UsedVehicleSearch:generateFoundVehicleDetails()
     -- Condition is inverse of damage (for compatibility)
     local foundCondition = 1.0 - foundDamage
 
+    -- Apply condition limits from settings (e.g., min 40%, max 95%)
+    local conditionMin = UsedPlusSettings and (UsedPlusSettings:get("usedConditionMin") / 100) or 0.40
+    local conditionMax = UsedPlusSettings and (UsedPlusSettings:get("usedConditionMax") / 100) or 0.95
+    foundCondition = math.max(conditionMin, math.min(conditionMax, foundCondition))
+    foundDamage = 1.0 - foundCondition  -- Recalculate damage from clamped condition
+
     -- Price from range with small variance
     local priceRangeMin = qualityTier.priceRangeMin or 0.30
     local priceRangeMax = qualityTier.priceRangeMax or 0.50
     local priceMultiplier = priceRangeMin + (math.random() * (priceRangeMax - priceRangeMin))
     local priceVariance = 0.95 + (math.random() * 0.10)  -- 95-105% variance
+
+    -- Apply condition price multiplier from settings (affects how much condition impacts price)
+    -- >1.0 = condition matters more (good condition = higher price, poor = lower)
+    -- <1.0 = condition matters less (prices more uniform regardless of condition)
+    local conditionMultiplier = UsedPlusSettings and UsedPlusSettings:get("conditionPriceMultiplier") or 1.0
+    -- Adjust price based on condition deviation from 70% baseline
+    local conditionDeviation = (foundCondition - 0.70) * conditionMultiplier
+    priceMultiplier = priceMultiplier + (conditionDeviation * 0.2)  -- ±20% max impact
+    priceMultiplier = math.max(0.15, math.min(0.98, priceMultiplier))  -- Clamp to reasonable range
+
     local basePrice = math.floor(self.basePrice * priceMultiplier * priceVariance)
 
     -- Calculate commission (added to asking price)

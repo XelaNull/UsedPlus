@@ -15,14 +15,28 @@
     - Save/load sale listings to savegame
     - Remove vehicle from farm when sold
 
+    v1.9.7: Queue-based offer presentation
+    - Added offerShownToUser flag to prevent race conditions
+    - showNextPendingOffer() ensures offers are shown one at a time
+    - After each dialog closes, checks for more pending offers
+    - Handles case where multiple offers arrive in same tick
+
     This is a global singleton: g_vehicleSaleManager
 ]]
 
 VehicleSaleManager = {}
 local VehicleSaleManager_mt = Class(VehicleSaleManager)
 
--- Maximum concurrent sale listings per farm (UI only supports 3 rows)
+-- Maximum concurrent sale listings per farm (default, overridden by settings)
 VehicleSaleManager.MAX_LISTINGS_PER_FARM = 3
+
+--[[
+    Get maximum allowed sale listings per farm from settings
+    @return number - max listings allowed
+]]
+function VehicleSaleManager.getMaxListingsPerFarm()
+    return UsedPlusSettings and UsedPlusSettings:get("maxListingsPerFarm") or VehicleSaleManager.MAX_LISTINGS_PER_FARM
+end
 
 --[[
     Constructor
@@ -38,6 +52,9 @@ function VehicleSaleManager.new()
     -- Event subscriptions
     self.isServer = false
     self.isClient = false
+
+    -- v1.9.7: Flag to check for pending offers on first hour tick after load
+    self.checkPendingOnFirstTick = false
 
     return self
 end
@@ -58,6 +75,16 @@ function VehicleSaleManager:loadMapFinished()
         g_messageCenter:subscribe(MessageType.HOUR_CHANGED, self.onHourChanged, self)
         UsedPlus.logDebug("VehicleSaleManager subscribed to HOUR_CHANGED")
     end
+
+    -- v1.9.7: Check for any pending offers that weren't shown before save
+    -- Subscribe to HOUR_CHANGED on client to check for pending offers after first hour tick
+    -- This ensures UI is ready before showing dialogs
+    if self.isClient and not self.isServer then
+        self.checkPendingOnFirstTick = true
+    elseif self.isClient then
+        -- In single-player (both server and client), check on first hour tick
+        self.checkPendingOnFirstTick = true
+    end
 end
 
 --[[
@@ -67,6 +94,15 @@ end
 ]]
 function VehicleSaleManager:onHourChanged()
     if not self.isServer then return end
+
+    -- v1.9.7: Check for pending offers from previous session on first tick
+    if self.checkPendingOnFirstTick then
+        self.checkPendingOnFirstTick = false
+        local shown = self:showNextPendingOffer()
+        if shown then
+            UsedPlus.logDebug("onHourChanged: Showed pending offer from previous session")
+        end
+    end
 
     local totalListings = self:getTotalListingCount()
     UsedPlus.logTrace(string.format("HOUR_CHANGED - Processing sale queue (total active: %d)", totalListings))
@@ -124,52 +160,22 @@ end
 
 --[[
     Handle new offer received
-    Shows notification first (to alert player), then SaleOfferDialog for decision
-    Pattern matches UsedVehicleManager.notifyVehicleFound() for consistency
-    v1.9.5: Fixed auto-show by checking g_currentMission.isLoading and using DialogLoader directly
+    v1.9.7: Refactored to use queue-based presentation pattern
+    - Sends notification to alert player
+    - Calls showNextPendingOffer() which checks offerShownToUser flag
+    - This prevents race conditions when multiple offers arrive in same tick
 ]]
 function VehicleSaleManager:onOfferReceived(farmId, listing)
     UsedPlus.logDebug(string.format("onOfferReceived ENTERED for %s: $%d",
         listing.vehicleName, listing.currentOffer))
 
-    -- Check if game is ready (matches working pattern from UsedVehicleManager.notifyVehicleFound)
+    -- Check if game is ready
     if g_currentMission == nil or g_currentMission.isLoading then
         UsedPlus.logDebug("onOfferReceived: Skipping - mission not ready or loading")
         return
     end
 
-    -- Check if this is the local player's farm (for dialog display)
-    -- v1.9.5: Use multiple methods to get player's farm ID
-    local isLocalFarm = false
-    local playerFarmId = nil
-
-    -- Method 1: Try g_currentMission.player.farmId
-    if g_currentMission.player and g_currentMission.player.farmId then
-        playerFarmId = g_currentMission.player.farmId
-    end
-
-    -- Method 2: Try g_farmManager:getFarmByUserId if player method fails
-    if playerFarmId == nil and g_currentMission.playerUserId then
-        local farm = g_farmManager:getFarmByUserId(g_currentMission.playerUserId)
-        if farm then
-            playerFarmId = farm.farmId
-        end
-    end
-
-    -- Method 3: In single-player, assume farm 1 if still nil
-    if playerFarmId == nil and g_currentMission:getIsServer() then
-        playerFarmId = 1  -- Default farm in single-player
-    end
-
-    isLocalFarm = (playerFarmId ~= nil and playerFarmId == farmId)
-
-    -- Detect single-player: server is running AND only local connection (no dedicated server)
-    local isSinglePlayer = g_currentMission:getIsServer() and not g_currentMission.missionDynamicInfo.isMultiplayer
-
-    UsedPlus.logDebug(string.format("onOfferReceived: farmId=%s, playerFarmId=%s, isLocalFarm=%s, isSinglePlayer=%s",
-        tostring(farmId), tostring(playerFarmId), tostring(isLocalFarm), tostring(isSinglePlayer)))
-
-    -- Step 1: Show notification to alert the player (always, like used vehicle search does)
+    -- Step 1: Show notification to alert the player (always)
     local notifyMessage = string.format(
         g_i18n:getText("usedplus_notify_saleOffer") or "Buyer found for %s! Offering %s",
         listing.vehicleName,
@@ -180,35 +186,31 @@ function VehicleSaleManager:onOfferReceived(farmId, listing)
         notifyMessage
     )
 
-    -- Show dialog in single-player OR when this is our farm in multiplayer
+    -- Step 2: Determine if we should show dialog for this farm
+    local playerFarmId = nil
+    if g_currentMission.player and g_currentMission.player.farmId then
+        playerFarmId = g_currentMission.player.farmId
+    elseif g_currentMission.playerUserId then
+        local farm = g_farmManager:getFarmByUserId(g_currentMission.playerUserId)
+        if farm then
+            playerFarmId = farm.farmId
+        end
+    end
+    if playerFarmId == nil and g_currentMission:getIsServer() then
+        playerFarmId = 1  -- Default farm in single-player
+    end
+
+    local isLocalFarm = (playerFarmId ~= nil and playerFarmId == farmId)
+    local isSinglePlayer = g_currentMission:getIsServer() and not g_currentMission.missionDynamicInfo.isMultiplayer
     local shouldShowDialog = isSinglePlayer or isLocalFarm
 
-    UsedPlus.logDebug(string.format("onOfferReceived: shouldShowDialog=%s", tostring(shouldShowDialog)))
+    UsedPlus.logDebug(string.format("onOfferReceived: farmId=%s, playerFarmId=%s, shouldShow=%s",
+        tostring(farmId), tostring(playerFarmId), tostring(shouldShowDialog)))
 
+    -- Step 3: Use queue-based presentation - showNextPendingOffer checks offerShownToUser flag
+    -- This ensures if another dialog is open, this offer waits its turn
     if shouldShowDialog then
-        -- Step 2: Create callback to handle player decision
-        local listingId = listing.id
-        local callback = function(accepted)
-            UsedPlus.logDebug(string.format("SaleOfferDialog callback: accepted=%s, listingId=%s",
-                tostring(accepted), tostring(listingId)))
-            if accepted then
-                -- Send accept to server (works for SP and MP)
-                SaleListingActionEvent.sendToServer(listingId, SaleListingActionEvent.ACTION_ACCEPT)
-            else
-                -- Send decline to server
-                SaleListingActionEvent.sendToServer(listingId, SaleListingActionEvent.ACTION_DECLINE)
-            end
-        end
-
-        -- Step 3: Show the decision dialog using DialogLoader directly (matches working pattern)
-        UsedPlus.logDebug(string.format("onOfferReceived: About to show SaleOfferDialog for listing %s", listing.id))
-
-        if DialogLoader and DialogLoader.show then
-            local success = DialogLoader.show("SaleOfferDialog", "setListing", listing, callback)
-            UsedPlus.logDebug(string.format("onOfferReceived: DialogLoader.show returned %s", tostring(success)))
-        else
-            UsedPlus.logWarn("onOfferReceived: DialogLoader not available")
-        end
+        self:showNextPendingOffer(farmId)
     end
 end
 
@@ -224,6 +226,90 @@ function VehicleSaleManager:onOfferExpired(farmId, listing)
         FSBaseMission.INGAME_NOTIFICATION_INFO,
         string.format("Offer expired for %s. Agent continues searching...", listing.vehicleName)
     )
+end
+
+--[[
+    Show the next pending offer that hasn't been shown to user yet
+    Called after dialog closes to ensure all offers are eventually presented
+    v1.9.7: Added to fix race condition when multiple offers arrive in same tick
+    @param farmId - Optional farm ID to filter by, nil = check all farms
+    @return true if a dialog was shown
+]]
+function VehicleSaleManager:showNextPendingOffer(farmId)
+    -- Check if game is ready
+    if g_currentMission == nil or g_currentMission.isLoading then
+        UsedPlus.logTrace("showNextPendingOffer: Skipping - mission not ready")
+        return false
+    end
+
+    -- Determine which farm to check
+    local targetFarmId = farmId
+
+    -- If no farm specified, get player's farm
+    if targetFarmId == nil then
+        if g_currentMission.player and g_currentMission.player.farmId then
+            targetFarmId = g_currentMission.player.farmId
+        elseif g_currentMission.playerUserId then
+            local farm = g_farmManager:getFarmByUserId(g_currentMission.playerUserId)
+            if farm then
+                targetFarmId = farm.farmId
+            end
+        end
+        -- In single-player, assume farm 1 if still nil
+        if targetFarmId == nil and g_currentMission:getIsServer() then
+            targetFarmId = 1
+        end
+    end
+
+    if targetFarmId == nil then
+        UsedPlus.logTrace("showNextPendingOffer: Could not determine farm ID")
+        return false
+    end
+
+    -- Find listings with pending offers that haven't been shown
+    local farm = g_farmManager:getFarmById(targetFarmId)
+    if farm == nil or farm.vehicleSaleListings == nil then
+        return false
+    end
+
+    for _, listing in ipairs(farm.vehicleSaleListings) do
+        if listing:hasPendingOffer() and not listing.offerShownToUser then
+            -- Found an unshown offer - show it now
+            UsedPlus.logDebug(string.format("showNextPendingOffer: Showing offer for %s ($%d)",
+                listing.vehicleName, listing.currentOffer))
+
+            -- Mark as shown BEFORE opening dialog to prevent re-entry
+            listing.offerShownToUser = true
+
+            -- Create callback
+            local listingId = listing.id
+            local self_ref = self  -- Capture self for callback closure
+            local callback = function(accepted)
+                UsedPlus.logDebug(string.format("SaleOfferDialog callback: accepted=%s, listingId=%s",
+                    tostring(accepted), tostring(listingId)))
+                if accepted then
+                    SaleListingActionEvent.sendToServer(listingId, SaleListingActionEvent.ACTION_ACCEPT)
+                else
+                    SaleListingActionEvent.sendToServer(listingId, SaleListingActionEvent.ACTION_DECLINE)
+                end
+
+                -- After handling this offer, check for more pending offers
+                -- Use a small delay to let the UI settle
+                if self_ref then
+                    self_ref:showNextPendingOffer(targetFarmId)
+                end
+            end
+
+            -- Show the dialog
+            if DialogLoader and DialogLoader.show then
+                DialogLoader.show("SaleOfferDialog", "setListing", listing, callback)
+                return true
+            end
+        end
+    end
+
+    UsedPlus.logTrace("showNextPendingOffer: No unshown pending offers found")
+    return false
 end
 
 --[[
@@ -431,10 +517,15 @@ function VehicleSaleManager:acceptOffer(listingId)
     end
 
     -- Get sale price before accepting
-    local salePrice = listing.currentOffer
+    local grossSalePrice = listing.currentOffer
     local farmId = listing.farmId
     local vehicleName = listing.vehicleName
     local vehicleId = listing.vehicleId
+
+    -- Calculate agent commission from settings (default 8%)
+    local commissionPercent = UsedPlusSettings and UsedPlusSettings:get("agentCommissionPercent") or 8
+    local agentCommission = math.floor(grossSalePrice * (commissionPercent / 100))
+    local netSalePrice = grossSalePrice - agentCommission
 
     -- Accept the offer (updates listing status)
     listing:acceptOffer()
@@ -446,25 +537,30 @@ function VehicleSaleManager:acceptOffer(listingId)
         -- Continue anyway - money should still be credited
     end
 
-    -- Credit sale price to farm
-    g_currentMission:addMoney(salePrice, farmId, MoneyType.VEHICLE_SELL, true, true)
+    -- Credit NET sale price to farm (after agent commission)
+    g_currentMission:addMoney(netSalePrice, farmId, MoneyType.VEHICLE_SELL, true, true)
 
-    -- Track statistics
+    -- Track statistics (record gross sale for reporting)
     if g_financeManager then
         g_financeManager:incrementStatistic(farmId, "salesCompleted", 1)
-        g_financeManager:incrementStatistic(farmId, "totalSaleProceeds", salePrice)
+        g_financeManager:incrementStatistic(farmId, "totalSaleProceeds", grossSalePrice)
+        g_financeManager:incrementStatistic(farmId, "totalAgentCommissions", agentCommission)
     end
 
     -- Remove from active listings
     self.activeListings[listingId] = nil
 
-    -- Send notification
-    g_currentMission:addIngameNotification(
-        FSBaseMission.INGAME_NOTIFICATION_OK,
-        string.format("SOLD: %s for %s!", vehicleName, g_i18n:formatMoney(salePrice, 0, true, true))
-    )
+    -- Send notification showing gross, commission, and net
+    local notificationMsg = string.format("SOLD: %s\nGross: %s | Commission: %s (%d%%)\nNet: %s",
+        vehicleName,
+        g_i18n:formatMoney(grossSalePrice, 0, true, true),
+        g_i18n:formatMoney(agentCommission, 0, true, true),
+        commissionPercent,
+        g_i18n:formatMoney(netSalePrice, 0, true, true))
+    g_currentMission:addIngameNotification(FSBaseMission.INGAME_NOTIFICATION_OK, notificationMsg)
 
-    UsedPlus.logDebug(string.format("Sale completed: %s sold for $%d", vehicleName, salePrice))
+    UsedPlus.logDebug(string.format("Sale completed: %s sold for $%d (net $%d after %d%% commission)",
+        vehicleName, grossSalePrice, netSalePrice, commissionPercent))
 
     return true
 end
@@ -715,7 +811,7 @@ end
 function VehicleSaleManager:canCreateListing(farmId)
     local activeListings = self:getListingsForFarm(farmId, true)  -- true = active only
     local currentCount = #activeListings
-    local maxAllowed = VehicleSaleManager.MAX_LISTINGS_PER_FARM
+    local maxAllowed = VehicleSaleManager.getMaxListingsPerFarm()
     return currentCount < maxAllowed, currentCount, maxAllowed
 end
 

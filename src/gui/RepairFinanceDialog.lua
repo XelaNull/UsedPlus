@@ -54,6 +54,35 @@ RepairFinanceDialog.TERM_OPTIONS = {3, 6, 12, 18, 24}
 RepairFinanceDialog.DOWN_PAYMENT_OPTIONS = {0, 5, 10, 15, 20, 25, 30, 40, 50}
 
 --[[
+    Get available down payment options based on settings minimum
+    @return filtered table of down payment percentages
+]]
+function RepairFinanceDialog.getDownPaymentOptions()
+    local minPercent = UsedPlusSettings and UsedPlusSettings:get("minDownPaymentPercent") or 0
+    local options = {}
+    for _, pct in ipairs(RepairFinanceDialog.DOWN_PAYMENT_OPTIONS) do
+        if pct >= minPercent then
+            table.insert(options, pct)
+        end
+    end
+    -- Ensure at least one option exists
+    if #options == 0 then
+        options = {minPercent}
+    end
+    return options
+end
+
+--[[
+    Get the actual down payment percentage for a given dropdown index
+    @param index - Dropdown index (1-based)
+    @return percentage value
+]]
+function RepairFinanceDialog.getDownPaymentPercent(index)
+    local options = RepairFinanceDialog.getDownPaymentOptions()
+    return options[index] or options[1] or 0
+end
+
+--[[
      Called when dialog opens
 ]]
 function RepairFinanceDialog:onOpen()
@@ -62,8 +91,8 @@ function RepairFinanceDialog:onOpen()
     -- Initialize term options using helper
     UIHelper.Element.populateTermSelector(self.termSlider, RepairFinanceDialog.TERM_OPTIONS, "month", 2)
 
-    -- Initialize down payment options using helper
-    UIHelper.Element.populatePercentSelector(self.downPaymentSlider, RepairFinanceDialog.DOWN_PAYMENT_OPTIONS, 1)
+    -- Initialize down payment options using helper (filtered by settings)
+    UIHelper.Element.populatePercentSelector(self.downPaymentSlider, RepairFinanceDialog.getDownPaymentOptions(), 1)
 
     -- Update preview if data is set
     if self.isDataSet then
@@ -204,8 +233,8 @@ function RepairFinanceDialog:updatePreview()
         downPaymentIndex = self.downPaymentSlider:getState()
     end
 
-    -- Get down payment percent from class constants (convert from 0-100 to 0-1)
-    local downPaymentPct = RepairFinanceDialog.DOWN_PAYMENT_OPTIONS[downPaymentIndex] or 0
+    -- Get down payment percent from filtered options (convert from 0-100 to 0-1)
+    local downPaymentPct = RepairFinanceDialog.getDownPaymentPercent(downPaymentIndex)
     self.downPaymentPercent = downPaymentPct / 100
 
     -- Calculate down payment amount

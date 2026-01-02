@@ -262,6 +262,11 @@ function DialogLoader.registerAll()
         DialogLoader.register("SearchExpiredDialog", SearchExpiredDialog, "gui/SearchExpiredDialog.xml")
     end
 
+    -- v1.9.8: Repossession notification dialog
+    if RepossessionDialog then
+        DialogLoader.register("RepossessionDialog", RepossessionDialog, "gui/RepossessionDialog.xml")
+    end
+
     UsedPlus.logInfo("DialogLoader: Registered all dialogs")
 end
 

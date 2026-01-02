@@ -115,25 +115,31 @@ end
 
 --[[
     Hook setMapInputContext to show Repair, Finance Land, and Lease Land options
+    v1.4.0: Check settings system for feature toggles
 ]]
 function InGameMenuMapFrameExtension.setMapInputContext(self, superFunc, enterVehicleActive, resetVehicleActive, sellVehicleActive, visitPlaceActive, setMarkerActive, removeMarkerActive, buyFarmlandActive, sellFarmlandActive, manageActive)
 
-    -- Show "Repair Vehicle" when "Sell Vehicle" is available (owned vehicle selected)
-    if sellVehicleActive and self.contextActions[InGameMenuMapFrame.ACTIONS.REPAIR_VEHICLE] then
+    -- v1.4.0: Check settings for each feature
+    local repairEnabled = not UsedPlusSettings or UsedPlusSettings:isSystemEnabled("Repair")
+    local financeEnabled = not UsedPlusSettings or UsedPlusSettings:isSystemEnabled("Finance")
+    local leaseEnabled = not UsedPlusSettings or UsedPlusSettings:isSystemEnabled("Lease")
+
+    -- Show "Repair Vehicle" when "Sell Vehicle" is available (owned vehicle selected) AND repair is enabled
+    if sellVehicleActive and repairEnabled and self.contextActions[InGameMenuMapFrame.ACTIONS.REPAIR_VEHICLE] then
         self.contextActions[InGameMenuMapFrame.ACTIONS.REPAIR_VEHICLE].isActive = true
     elseif self.contextActions[InGameMenuMapFrame.ACTIONS.REPAIR_VEHICLE] then
         self.contextActions[InGameMenuMapFrame.ACTIONS.REPAIR_VEHICLE].isActive = false
     end
 
-    -- Show "Finance Land" when "Buy Farmland" is available (unowned farmland selected)
-    if buyFarmlandActive and self.contextActions[InGameMenuMapFrame.ACTIONS.FINANCE_LAND] then
+    -- Show "Finance Land" when "Buy Farmland" is available (unowned farmland selected) AND finance is enabled
+    if buyFarmlandActive and financeEnabled and self.contextActions[InGameMenuMapFrame.ACTIONS.FINANCE_LAND] then
         self.contextActions[InGameMenuMapFrame.ACTIONS.FINANCE_LAND].isActive = true
     elseif self.contextActions[InGameMenuMapFrame.ACTIONS.FINANCE_LAND] then
         self.contextActions[InGameMenuMapFrame.ACTIONS.FINANCE_LAND].isActive = false
     end
 
-    -- Show "Lease Land" when "Buy Farmland" is available (unowned farmland selected)
-    if buyFarmlandActive and self.contextActions[InGameMenuMapFrame.ACTIONS.LEASE_LAND] then
+    -- Show "Lease Land" when "Buy Farmland" is available (unowned farmland selected) AND lease is enabled
+    if buyFarmlandActive and leaseEnabled and self.contextActions[InGameMenuMapFrame.ACTIONS.LEASE_LAND] then
         self.contextActions[InGameMenuMapFrame.ACTIONS.LEASE_LAND].isActive = true
     elseif self.contextActions[InGameMenuMapFrame.ACTIONS.LEASE_LAND] then
         self.contextActions[InGameMenuMapFrame.ACTIONS.LEASE_LAND].isActive = false

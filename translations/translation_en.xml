@@ -912,6 +912,17 @@
         <e k="usedplus_la_newScore" v="New Score:" />
         <e k="usedplus_la_info" v="Payments auto-deducted monthly. On-time payments improve credit!" />
 
+        <!-- Repossession Dialog -->
+        <e k="usedplus_rp_title" v="REPOSSESSION NOTICE" />
+        <e k="usedplus_rp_sectionTaken" v="ASSET REPOSSESSED" />
+        <e k="usedplus_rp_value" v="Value:" />
+        <e k="usedplus_rp_sectionReason" v="DEFAULT DETAILS" />
+        <e k="usedplus_rp_missedPayments" v="Missed Payments:" />
+        <e k="usedplus_rp_balanceOwed" v="Balance Owed:" />
+        <e k="usedplus_rp_sectionCredit" v="CREDIT IMPACT" />
+        <e k="usedplus_rp_creditImpact" v="This repossession severely impacts your credit score. Future financing will be more expensive or denied." />
+        <e k="usedplus_rp_footer" v="Make timely payments to avoid future repossessions." />
+
         <!-- Unified Purchase Dialog -->
         <e k="usedplus_up_title" v="Purchase Vehicle" />
         <e k="usedplus_up_sectionVehicle" v="VEHICLE" />
@@ -1055,20 +1066,23 @@
         <!-- Sale Offer Notifications -->
         <e k="usedplus_notify_saleOffer" v="Buyer found for %s! Offering %s" />
 
-        <!-- Sale Offer Dialog -->
-        <e k="usedplus_so_title" v="SALE OFFER RECEIVED!" />
-        <e k="usedplus_so_sectionVehicle" v="VEHICLE" />
-        <e k="usedplus_so_sectionOffer" v="OFFER DETAILS" />
-        <e k="usedplus_so_offerAmount" v="Offer Amount:" />
-        <e k="usedplus_so_percentVanilla" v="% of Vanilla Sell:" />
+        <!-- Sale Offer Dialog (REDESIGNED v1.9.6) -->
+        <e k="usedplus_so_title_v2" v="BUYER FOUND!" />
+        <e k="usedplus_so_expectedRange" v="EXPECTED RANGE" />
+        <e k="usedplus_so_rangeMin" v="Min" />
+        <e k="usedplus_so_rangeOffer" v="This Offer" />
+        <e k="usedplus_so_rangeMax" v="Max" />
+        <e k="usedplus_so_yourOptions" v="YOUR OPTIONS" />
+        <e k="usedplus_so_thisOffer" v="Accept Offer:" />
+        <e k="usedplus_so_keepWaiting" v="Keep Waiting:" />
+        <e k="usedplus_so_keepWaitingNote" v="May get better offer, or listing expires" />
         <e k="usedplus_so_expiresIn" v="Offer expires in:" />
-        <e k="usedplus_so_sectionCompare" v="COMPARISON" />
-        <e k="usedplus_so_vanillaPrice" v="Vanilla Sell Price:" />
-        <e k="usedplus_so_thisOffer" v="This Offer:" />
-        <e k="usedplus_so_acceptInfo" v="Accepting will sell the vehicle and credit the amount to your account." />
-        <e k="usedplus_so_declineInfo" v="Declining may result in more offers if time remains, or listing expiration." />
+        <e k="usedplus_so_acceptOffer" v="Accept Offer" />
+        <e k="usedplus_so_keepWaitingBtn" v="Keep Waiting" />
+        <!-- Deal quality ratings (set dynamically in Lua) -->
+        <!-- Legacy keys kept for compatibility -->
+        <e k="usedplus_so_title" v="SALE OFFER RECEIVED!" />
         <e k="usedplus_button_acceptOffer" v="Accept Offer" />
-        <!-- REMOVED: usedplus_button_decline - duplicate, use Common Button Labels -->
 
         <!-- Payment Config Dialog -->
         <e k="usedplus_pc_title" v="Configure Loan Payments" />
@@ -1722,6 +1736,94 @@
         <e k="usedplus_fsk_tire_plug" v="PLUG" />
         <e k="usedplus_fsk_tire_plug_desc" v="Better emergency repair" />
         <e k="usedplus_fsk_tire_plug_result" v="Restores to 50% condition" />
+
+        <!-- v1.9.9: Settings System -->
+        <e k="usedplus_settings_header" v="UsedPlus Settings" />
+        <e k="usedplus_settings_requiresAdmin" v="Only the server admin can change settings." />
+
+        <!-- Preset Selector (Game Settings menu) -->
+        <e k="usedplus_setting_preset" v="Quick Preset" />
+        <e k="usedplus_setting_preset_desc" v="Apply a preset configuration (changes all settings below)" />
+
+        <!-- System Toggles with Descriptions -->
+        <e k="usedplus_setting_finance" v="Vehicle/Land Financing" />
+        <e k="usedplus_setting_finance_desc" v="Enable financing for vehicle and land purchases" />
+        <e k="usedplus_setting_lease" v="Leasing" />
+        <e k="usedplus_setting_lease_desc" v="Enable vehicle and land leasing with buyout options" />
+        <e k="usedplus_setting_search" v="Used Vehicle Search" />
+        <e k="usedplus_setting_search_desc" v="Enable agent-based searching for used equipment" />
+        <e k="usedplus_setting_sale" v="Vehicle Sales" />
+        <e k="usedplus_setting_sale_desc" v="Enable agent-based vehicle sales (replaces instant sell)" />
+        <e k="usedplus_setting_repair" v="Repair System" />
+        <e k="usedplus_setting_repair_desc" v="Enable partial repair and repaint options" />
+        <e k="usedplus_setting_tradein" v="Trade-In System" />
+        <e k="usedplus_setting_tradein_desc" v="Enable trading in vehicles during purchases" />
+        <e k="usedplus_setting_credit" v="Credit Scoring" />
+        <e k="usedplus_setting_credit_desc" v="Enable dynamic credit-based interest rates" />
+        <e k="usedplus_setting_tirewear" v="Tire Wear" />
+        <e k="usedplus_setting_tirewear_desc" v="Enable realistic tire degradation over time" />
+        <e k="usedplus_setting_malfunctions" v="Malfunctions" />
+        <e k="usedplus_setting_malfunctions_desc" v="Enable random breakdowns and component failures" />
+
+        <!-- Section Headers -->
+        <e k="usedplus_settings_toggles" v="Feature Toggles" />
+        <e k="usedplus_settings_money" v="Money &amp; Rates" />
+        <e k="usedplus_settings_risk" v="Forgiveness &amp; Risk" />
+        <e k="usedplus_settings_marketplace" v="Marketplace" />
+        <e k="usedplus_settings_condition" v="Condition &amp; Quality" />
+
+        <!-- Economic Settings: Money & Rates -->
+        <e k="usedplus_setting_interestRate" v="Base Interest Rate" />
+        <e k="usedplus_setting_interestRate_desc" v="Base annual interest rate for loans (credit adjusts this)" />
+        <e k="usedplus_setting_tradeInValue" v="Trade-In Value %" />
+        <e k="usedplus_setting_tradeInValue_desc" v="Base percentage of sell price for trade-ins" />
+        <e k="usedplus_setting_repairCost" v="Repair Cost Multiplier" />
+        <e k="usedplus_setting_repairCost_desc" v="Multiplier applied to all repair costs" />
+        <e k="usedplus_setting_leaseMarkup" v="Lease Markup %" />
+        <e k="usedplus_setting_leaseMarkup_desc" v="Percentage markup on monthly lease payments" />
+
+        <!-- Economic Settings: Forgiveness & Risk -->
+        <e k="usedplus_setting_missedPayments" v="Missed Payments to Default" />
+        <e k="usedplus_setting_missedPayments_desc" v="Number of missed payments before vehicle repossession" />
+        <e k="usedplus_setting_downPayment" v="Min Down Payment %" />
+        <e k="usedplus_setting_downPayment_desc" v="Minimum required down payment for financing" />
+        <e k="usedplus_setting_startingCredit" v="Starting Credit Score" />
+        <e k="usedplus_setting_startingCredit_desc" v="Initial credit score for new games" />
+        <e k="usedplus_setting_latePenalty" v="Late Payment Penalty" />
+        <e k="usedplus_setting_latePenalty_desc" v="Credit score points lost per late payment" />
+
+        <!-- Economic Settings: Marketplace -->
+        <e k="usedplus_setting_searchSuccess" v="Search Success Rate %" />
+        <e k="usedplus_setting_searchSuccess_desc" v="Base chance of finding used equipment" />
+        <e k="usedplus_setting_maxListings" v="Max Listings Per Farm" />
+        <e k="usedplus_setting_maxListings_desc" v="Maximum active sale listings per farm" />
+        <e k="usedplus_setting_offerExpiry" v="Offer Expiration" />
+        <e k="usedplus_setting_offerExpiry_desc" v="Hours until sale offers expire" />
+        <e k="usedplus_setting_commission" v="Agent Commission %" />
+        <e k="usedplus_setting_commission_desc" v="Percentage taken by sale agents" />
+
+        <!-- Economic Settings: Condition & Quality -->
+        <e k="usedplus_setting_conditionMin" v="Used Condition Min" />
+        <e k="usedplus_setting_conditionMin_desc" v="Minimum condition for used vehicles" />
+        <e k="usedplus_setting_conditionMax" v="Used Condition Max" />
+        <e k="usedplus_setting_conditionMax_desc" v="Maximum condition for used vehicles" />
+        <e k="usedplus_setting_conditionMult" v="Condition Price Impact" />
+        <e k="usedplus_setting_conditionMult_desc" v="How much condition affects vehicle price" />
+        <e k="usedplus_setting_brandBonus" v="Brand Loyalty Bonus" />
+        <e k="usedplus_setting_brandBonus_desc" v="Extra trade-in value when buying same brand" />
+
+        <!-- Presets -->
+        <e k="usedplus_preset_title" v="Apply Preset" />
+        <e k="usedplus_preset_realistic" v="Realistic" />
+        <e k="usedplus_preset_casual" v="Casual" />
+        <e k="usedplus_preset_hardcore" v="Hardcore" />
+        <e k="usedplus_preset_lite" v="Lite Mode" />
+        <e k="usedplus_preset_realistic_desc" v="Balanced simulation - the intended experience" />
+        <e k="usedplus_preset_casual_desc" v="Relaxed economics - focus on farming, not finance" />
+        <e k="usedplus_preset_hardcore_desc" v="Punishing economics - every dollar matters" />
+        <e k="usedplus_preset_lite_desc" v="Minimal systems - just finance and lease" />
+        <e k="usedplus_preset_apply" v="Apply" />
+        <e k="usedplus_preset_reset" v="Reset to Defaults" />
 
     </elements>
 </l10n>

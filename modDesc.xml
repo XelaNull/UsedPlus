@@ -289,6 +289,10 @@ v1.0.0.0 (2025-11-22) - Erstveröffentlichung
         <sourceFile filename="src/data/VehicleSaleListing.lua"/>  <!--  Agent-based vehicle sales -->
         <sourceFile filename="src/data/DiagnosisData.lua"/>       <!--  v1.8.0: Field Service Kit diagnosis data -->
 
+        <!-- Settings system (load before managers) -->
+        <sourceFile filename="src/settings/SettingsPresets.lua"/>    <!--  v1.4.0: Preset configurations -->
+        <sourceFile filename="src/settings/UsedPlusSettings.lua"/>   <!--  v1.4.0: Settings manager singleton -->
+
         <!-- Utility classes (no dependencies except data classes) -->
         <sourceFile filename="src/utils/FinanceCalculations.lua"/>
         <sourceFile filename="src/utils/DepreciationCalculations.lua"/>
@@ -313,6 +317,7 @@ v1.0.0.0 (2025-11-22) - Erstveröffentlichung
         <sourceFile filename="src/events/UsedMarketEvents.lua"/> <!-- RequestUsedItemEvent, UsedItemFoundEvent -->
         <sourceFile filename="src/events/RepairVehicleEvent.lua"/>
         <sourceFile filename="src/events/SetPaymentConfigEvent.lua"/>  <!-- Payment configuration sync -->
+        <sourceFile filename="src/events/UsedPlusSettingsEvent.lua"/>  <!--  v1.4.0: Settings sync event -->
 
         <!-- Manager classes (depend on data classes, utils, events) -->
         <sourceFile filename="src/managers/FinanceManager.lua"/>
@@ -351,6 +356,8 @@ v1.0.0.0 (2025-11-22) - Erstveröffentlichung
         <sourceFile filename="src/gui/SaleExpiredDialog.lua"/>          <!--  v1.5.1: No buyer found dialog -->
         <sourceFile filename="src/gui/FieldServiceKitDialog.lua"/>    <!--  v1.8.0: Field Service Kit dialog -->
         <sourceFile filename="src/gui/FluidPurchaseDialog.lua"/>    <!--  v1.9.3: Fluid purchase dialog -->
+        <sourceFile filename="src/gui/RepossessionDialog.lua"/>    <!--  v1.9.8: Repossession notification dialog -->
+        <sourceFile filename="src/gui/UsedPlusSettingsMenuExtension.lua"/>  <!--  v1.4.0: Game Settings integration -->
 
         <!-- Extensions (depend on managers, GUI) -->
         <sourceFile filename="src/extensions/ShopConfigScreenExtension.lua"/>
@@ -373,11 +380,12 @@ v1.0.0.0 (2025-11-22) - Erstveröffentlichung
         <specialization name="FieldServiceKit" className="FieldServiceKit" filename="vehicles/FieldServiceKit.lua"/>
     </specializations>
 
-    <!-- Vehicle Types - Hand Tools -->
-    <!-- CRITICAL: Mod specializations MUST be referenced with mod name prefix -->
+    <!-- Vehicle Types - Portable Tools -->
+    <!-- Field Service Kit: Uses parent="base" like MobileServiceKit pattern -->
+    <!-- Specializations within same mod do NOT need mod prefix -->
     <vehicleTypes>
-        <type name="usedPlusFieldServiceKit" parent="handTool" filename="$dataS/scripts/vehicles/Vehicle.lua">
-            <specialization name="FS25_UsedPlus.FieldServiceKit"/>
+        <type name="usedPlusFieldServiceKit" parent="base" filename="$dataS/scripts/vehicles/Vehicle.lua">
+            <specialization name="FieldServiceKit"/>
         </type>
     </vehicleTypes>
 

@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="utf-8" standalone="no" ?>
+<!--
+    FS25_UsedPlus - Repossession Notification Dialog
+    Shows player what was repossessed due to loan default
+    Critical warning dialog - must be acknowledged
+-->
+<GUI onOpen="onOpen" onClose="onClose" onCreate="onCreate">
+    <GuiElement profile="newLayer" />
+    <Bitmap profile="dialogFullscreenBg" id="dialogBg" />
+
+    <GuiElement profile="dialogBg" id="dialogElement" size="580px 420px">
+        <ThreePartBitmap profile="fs25_dialogBgMiddle" />
+        <ThreePartBitmap profile="fs25_dialogBgTop" />
+        <ThreePartBitmap profile="fs25_dialogBgBottom" />
+
+        <GuiElement profile="fs25_dialogContentContainer">
+
+            <!-- Warning Title -->
+            <Text profile="rpWarningTitle" position="0px -25px" text="$l10n_usedplus_rp_title"/>
+
+            <!-- ========== SECTION 1: What Was Repossessed ========== -->
+            <GuiElement profile="rpSectionContainer" position="0px -75px">
+                <Bitmap profile="rpSectionBgRed" position="0px 0px"/>
+
+                <Text profile="rpSectionHeader" position="0px -8px" text="$l10n_usedplus_rp_sectionTaken"/>
+
+                <!-- Item name -->
+                <Text profile="rpItemName" id="itemNameText" position="0px -35px" text=""/>
+
+                <!-- Item value -->
+                <Text profile="rpItemValueLabel" position="-100px -62px" text="$l10n_usedplus_rp_value"/>
+                <Text profile="rpItemValue" id="itemValueText" position="60px -62px" text=""/>
+            </GuiElement>
+
+            <!-- ========== SECTION 2: Reason ========== -->
+            <GuiElement profile="rpReasonSection" position="0px -170px">
+                <Bitmap profile="rpSectionBg" position="0px 0px"/>
+                <Text profile="rpSectionHeader" position="0px -8px" text="$l10n_usedplus_rp_sectionReason"/>
+
+                <Text profile="rpReasonLabel" position="-120px -35px" text="$l10n_usedplus_rp_missedPayments"/>
+                <Text profile="rpReasonValue" id="missedPaymentsText" position="100px -35px" text=""/>
+
+                <Text profile="rpReasonLabel" position="-120px -58px" text="$l10n_usedplus_rp_balanceOwed"/>
+                <Text profile="rpReasonValueRed" id="balanceOwedText" position="100px -58px" text=""/>
+            </GuiElement>
+
+            <!-- ========== SECTION 3: Credit Impact ========== -->
+            <GuiElement profile="rpCreditSection" position="0px -260px">
+                <Bitmap profile="rpSectionBgCredit" position="0px 0px"/>
+                <Text profile="rpSectionHeader" position="0px -8px" text="$l10n_usedplus_rp_sectionCredit"/>
+
+                <Text profile="rpCreditWarning" id="creditWarningText" position="0px -40px" text="$l10n_usedplus_rp_creditImpact"/>
+            </GuiElement>
+
+            <!-- Additional items warning (for multiple collateral) -->
+            <Text profile="rpAdditionalText" id="additionalItemsText" position="0px -330px" text=""/>
+
+            <!-- Footer message -->
+            <Text profile="rpFooterText" position="0px -355px" text="$l10n_usedplus_rp_footer"/>
+
+        </GuiElement>
+
+        <BoxLayout profile="fs25_dialogButtonBox">
+            <Button profile="buttonOK" id="okButton" text="$l10n_button_ok" onClick="onClickOk"/>
+        </BoxLayout>
+
+    </GuiElement>
+
+    <GUIProfiles>
+        <!-- ========== TITLE ========== -->
+        <Profile name="rpWarningTitle" extends="fs25_textDefault" with="anchorTopCenter">
+            <size value="500px 30px"/>
+            <textSize value="22px"/>
+            <textBold value="true"/>
+            <textColor value="1 0.3 0.3 1"/>
+            <textAlignment value="center"/>
+        </Profile>
+
+        <!-- ========== SECTION CONTAINERS ========== -->
+        <Profile name="rpSectionContainer" extends="emptyPanel" with="anchorTopCenter">
+            <size value="520px 85px"/>
+        </Profile>
+
+        <Profile name="rpReasonSection" extends="emptyPanel" with="anchorTopCenter">
+            <size value="520px 80px"/>
+        </Profile>
+
+        <Profile name="rpCreditSection" extends="emptyPanel" with="anchorTopCenter">
+            <size value="520px 60px"/>
+        </Profile>
+
+        <!-- ========== SECTION BACKGROUNDS ========== -->
+        <Profile name="rpSectionBg" extends="baseReference" with="anchorTopCenter">
+            <size value="520px 80px"/>
+            <imageColor value="0.08 0.08 0.12 0.9"/>
+        </Profile>
+
+        <Profile name="rpSectionBgRed" extends="baseReference" with="anchorTopCenter">
+            <size value="520px 85px"/>
+            <imageColor value="0.18 0.06 0.06 0.9"/>
+        </Profile>
+
+        <Profile name="rpSectionBgCredit" extends="baseReference" with="anchorTopCenter">
+            <size value="520px 60px"/>
+            <imageColor value="0.12 0.08 0.08 0.9"/>
+        </Profile>
+
+        <!-- ========== SECTION HEADER ========== -->
+        <Profile name="rpSectionHeader" extends="fs25_textDefault" with="anchorTopCenter">
+            <size value="500px 20px"/>
+            <textSize value="12px"/>
+            <textBold value="true"/>
+            <textColor value="1 0.5 0.3 1"/>
+            <textAlignment value="center"/>
+        </Profile>
+
+        <!-- ========== ITEM DISPLAY ========== -->
+        <Profile name="rpItemName" extends="fs25_textDefault" with="anchorTopCenter">
+            <size value="480px 24px"/>
+            <textSize value="18px"/>
+            <textBold value="true"/>
+            <textColor value="1 1 1 1"/>
+            <textAlignment value="center"/>
+        </Profile>
+
+        <Profile name="rpItemValueLabel" extends="fs25_textDefault" with="anchorTopCenter">
+            <size value="150px 18px"/>
+            <textSize value="12px"/>
+            <textColor value="0.6 0.6 0.6 1"/>
+            <textAlignment value="right"/>
+        </Profile>
+
+        <Profile name="rpItemValue" extends="fs25_textDefault" with="anchorTopCenter">
+            <size value="150px 18px"/>
+            <textSize value="14px"/>
+            <textBold value="true"/>
+            <textColor value="1 0.4 0.4 1"/>
+            <textAlignment value="left"/>
+        </Profile>
+
+        <!-- ========== REASON DISPLAY ========== -->
+        <Profile name="rpReasonLabel" extends="fs25_textDefault" with="anchorTopCenter">
+            <size value="200px 18px"/>
+            <textSize value="13px"/>
+            <textColor value="0.7 0.7 0.7 1"/>
+            <textAlignment value="right"/>
+        </Profile>
+
+        <Profile name="rpReasonValue" extends="fs25_textDefault" with="anchorTopCenter">
+            <size value="150px 18px"/>
+            <textSize value="14px"/>
+            <textBold value="true"/>
+            <textColor value="1 1 1 1"/>
+            <textAlignment value="left"/>
+        </Profile>
+
+        <Profile name="rpReasonValueRed" extends="fs25_textDefault" with="anchorTopCenter">
+            <size value="150px 18px"/>
+            <textSize value="14px"/>
+            <textBold value="true"/>
+            <textColor value="1 0.4 0.4 1"/>
+            <textAlignment value="left"/>
+        </Profile>
+
+        <!-- ========== CREDIT WARNING ========== -->
+        <Profile name="rpCreditWarning" extends="fs25_textDefault" with="anchorTopCenter">
+            <size value="480px 36px"/>
+            <textSize value="13px"/>
+            <textColor value="1 0.6 0.4 1"/>
+            <textAlignment value="center"/>
+        </Profile>
+
+        <!-- ========== ADDITIONAL TEXT ========== -->
+        <Profile name="rpAdditionalText" extends="fs25_textDefault" with="anchorTopCenter">
+            <size value="480px 20px"/>
+            <textSize value="12px"/>
+            <textBold value="true"/>
+            <textColor value="1 0.5 0.3 1"/>
+            <textAlignment value="center"/>
+        </Profile>
+
+        <!-- ========== FOOTER TEXT ========== -->
+        <Profile name="rpFooterText" extends="fs25_textDefault" with="anchorTopCenter">
+            <size value="480px 18px"/>
+            <textSize value="11px"/>
+            <textColor value="0.5 0.5 0.5 1"/>
+            <textAlignment value="center"/>
+        </Profile>
+    </GUIProfiles>
+</GUI>

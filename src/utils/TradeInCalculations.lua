@@ -34,14 +34,36 @@ TradeInCalculations = {}
     Ranges overlap slightly with Local Agent for realism
 ]]
 
--- Trade-in base percentage RANGE (50-65% of vanilla sell value)
+-- Trade-in base percentage RANGE (uses settings value as center)
 -- This is intentionally the lowest return option
-TradeInCalculations.BASE_TRADE_IN_MIN = 0.50  -- Minimum 50%
-TradeInCalculations.BASE_TRADE_IN_MAX = 0.65  -- Maximum 65%
+-- Settings baseTradeInPercent provides center, we add ±7.5% randomness
+TradeInCalculations.TRADE_IN_RANGE = 0.075  -- ±7.5% around settings value
 
--- Brand loyalty bonus (5% extra for same brand - reduced from 10%)
--- Reduced because trade-in is meant to be worst option
-TradeInCalculations.BRAND_LOYALTY_BONUS = 0.05
+--[[
+    Get trade-in percentage range from settings
+    @return min, max percentages (as decimals)
+]]
+function TradeInCalculations.getTradeInRange()
+    local settingsPercent = UsedPlusSettings and UsedPlusSettings:get("baseTradeInPercent") or 55
+    local center = settingsPercent / 100  -- Convert to decimal (55 -> 0.55)
+    local min = math.max(0.30, center - TradeInCalculations.TRADE_IN_RANGE)  -- Floor at 30%
+    local max = math.min(0.80, center + TradeInCalculations.TRADE_IN_RANGE)  -- Cap at 80%
+    return min, max
+end
+
+--[[
+    Get brand loyalty bonus from settings
+    @return bonus as decimal (e.g., 0.05 = 5%)
+]]
+function TradeInCalculations.getBrandLoyaltyBonus()
+    local settingsBonus = UsedPlusSettings and UsedPlusSettings:get("brandLoyaltyBonus") or 5
+    return settingsBonus / 100  -- Convert to decimal (5 -> 0.05)
+end
+
+-- Legacy constants (deprecated - use functions above)
+TradeInCalculations.BASE_TRADE_IN_MIN = 0.50  -- Use getTradeInRange() instead
+TradeInCalculations.BASE_TRADE_IN_MAX = 0.65  -- Use getTradeInRange() instead
+TradeInCalculations.BRAND_LOYALTY_BONUS = 0.05  -- Use getBrandLoyaltyBonus() instead
 
 -- Condition impact multipliers
 -- Damage has bigger impact than cosmetic wear
@@ -261,15 +283,15 @@ function TradeInCalculations.calculateTradeInValue(vehicle, targetStoreItem)
     -- Get maintenance history modifier (Phase 5 integration)
     local maintenanceModifier, maintenanceBreakdown = TradeInCalculations.getMaintenanceModifier(vehicle)
 
-    -- Generate random base trade-in percentage within range
+    -- Generate random base trade-in percentage within range (from settings)
     -- This creates variation - sometimes you get a better deal, sometimes worse
-    local basePercent = TradeInCalculations.BASE_TRADE_IN_MIN +
-        (math.random() * (TradeInCalculations.BASE_TRADE_IN_MAX - TradeInCalculations.BASE_TRADE_IN_MIN))
+    local tradeInMin, tradeInMax = TradeInCalculations.getTradeInRange()
+    local basePercent = tradeInMin + (math.random() * (tradeInMax - tradeInMin))
 
     -- Calculate base value with condition and maintenance applied
     local baseValue = vanillaSellPrice * basePercent * conditionMultiplier * maintenanceModifier
 
-    -- Check for brand loyalty bonus
+    -- Check for brand loyalty bonus (from settings)
     local brandBonus = 0
     local brandBonusAmount = 0
     local isSameBrand = false
@@ -277,7 +299,7 @@ function TradeInCalculations.calculateTradeInValue(vehicle, targetStoreItem)
     if targetStoreItem then
         isSameBrand = TradeInCalculations.isSameBrand(vehicle, targetStoreItem)
         if isSameBrand then
-            brandBonus = TradeInCalculations.BRAND_LOYALTY_BONUS
+            brandBonus = TradeInCalculations.getBrandLoyaltyBonus()
             brandBonusAmount = baseValue * brandBonus
         end
     end

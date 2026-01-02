@@ -1474,12 +1474,20 @@ function UsedPlusMaintenance:onUpdate(dt, isActiveForInput, isActiveForInputIgno
     end
 
     -- v1.6.0: Implement malfunctions (surge, drop, PTO, hitch)
-    UsedPlusMaintenance.checkImplementMalfunctions(self)
+    -- v1.4.0: Check UsedPlusSettings for malfunctions toggle
+    local malfunctionsEnabled = not UsedPlusSettings or UsedPlusSettings:isSystemEnabled("Malfunctions")
+    if malfunctionsEnabled then
+        UsedPlusMaintenance.checkImplementMalfunctions(self)
+    end
 
     -- v1.7.0: Tire wear and malfunctions
-    if UsedPlusMaintenance.CONFIG.enableTireWear then
+    -- v1.4.0: Check UsedPlusSettings for tire wear toggle
+    local tireWearEnabled = not UsedPlusSettings or UsedPlusSettings:isSystemEnabled("TireWear")
+    if UsedPlusMaintenance.CONFIG.enableTireWear and tireWearEnabled then
         UsedPlusMaintenance.applyTireWear(self)
-        UsedPlusMaintenance.checkTireMalfunctions(self)
+        if malfunctionsEnabled then
+            UsedPlusMaintenance.checkTireMalfunctions(self)
+        end
     end
 
     -- v1.7.0: Oil system (depletion, leak processing, damage)
@@ -1493,7 +1501,10 @@ function UsedPlusMaintenance:onUpdate(dt, isActiveForInput, isActiveForInputIgno
     end
 
     -- v1.7.0: Check for new leaks (oil, hydraulic, fuel)
-    UsedPlusMaintenance.checkForNewLeaks(self)
+    -- v1.4.0: Check UsedPlusSettings for malfunctions toggle (leaks are malfunctions)
+    if malfunctionsEnabled then
+        UsedPlusMaintenance.checkForNewLeaks(self)
+    end
 
     -- v1.7.0: Process fuel leak (drains fuel from tank)
     UsedPlusMaintenance.processFuelLeak(self, dt)

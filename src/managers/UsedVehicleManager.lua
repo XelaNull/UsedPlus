@@ -223,23 +223,40 @@ function UsedVehicleManager:notifySearchComplete(search, farmId)
     local foundCount = #(search.foundListings or {})
 
     -- Calculate renewal cost (same as original search)
-    local renewCost = self:calculateSearchCost(search.tier, search.storeItemPrice or 0, farmId)
+    -- NOTE: search uses searchLevel (1-3), not tier, and basePrice not storeItemPrice
+    local renewCost = self:calculateSearchCost(search.searchLevel, search.basePrice or 0, farmId)
 
-    UsedPlus.logDebug(string.format("Search %s complete with %d vehicles, showing expiration dialog", search.id, foundCount))
+    UsedPlus.logDebug(string.format("Search %s complete with %d vehicles, renewCost=$%d, showing expiration dialog",
+        search.id, foundCount, renewCost))
 
     -- Show the SearchExpiredDialog with renewal option
+    local dialogShown = false
+
     if SearchExpiredDialog and SearchExpiredDialog.showWithData then
-        SearchExpiredDialog.showWithData(search, foundCount, renewCost, function(renewChoice)
-            if renewChoice then
-                -- Player chose to renew - create a new search with same parameters
-                self:renewSearch(search, farmId)
-            else
-                -- Player declined - just log it
-                UsedPlus.logDebug(string.format("Player declined to renew search %s", search.id))
-            end
+        local self_ref = self
+        local success, err = pcall(function()
+            dialogShown = SearchExpiredDialog.showWithData(search, foundCount, renewCost, function(renewChoice)
+                if renewChoice then
+                    -- Player chose to renew - create a new search with same parameters
+                    self_ref:renewSearch(search, farmId)
+                else
+                    -- Player declined - just log it
+                    UsedPlus.logDebug(string.format("Player declined to renew search %s", search.id))
+                end
+            end)
         end)
+
+        if not success then
+            UsedPlus.logError(string.format("SearchExpiredDialog.showWithData failed: %s", tostring(err)))
+            dialogShown = false
+        end
     else
-        -- Fallback to notification if dialog not available
+        UsedPlus.logWarn("SearchExpiredDialog or showWithData not available")
+    end
+
+    -- Fallback to notification if dialog failed to show
+    if not dialogShown then
+        UsedPlus.logDebug("Falling back to notification for search completion")
         local message = string.format(
             g_i18n:getText("usedplus_notify_searchComplete") or "Search complete: %d vehicle(s) found for %s",
             foundCount, search.storeItemName or "vehicle"

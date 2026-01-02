@@ -30,6 +30,36 @@ UnifiedPurchaseDialog.DOWN_PAYMENT_OPTIONS = {0, 5, 10, 15, 20, 25, 30, 40, 50} 
 UnifiedPurchaseDialog.CASH_BACK_OPTIONS = {0, 500, 1000, 2500, 5000, 10000}
 
 --[[
+    Get available down payment options based on settings minimum
+    @return filtered table of down payment percentages
+]]
+function UnifiedPurchaseDialog.getDownPaymentOptions()
+    local minPercent = UsedPlusSettings and UsedPlusSettings:get("minDownPaymentPercent") or 0
+    local options = {}
+    for _, pct in ipairs(UnifiedPurchaseDialog.DOWN_PAYMENT_OPTIONS) do
+        if pct >= minPercent then
+            table.insert(options, pct)
+        end
+    end
+    -- Ensure at least one option exists
+    if #options == 0 then
+        options = {minPercent}
+    end
+    return options
+end
+
+--[[
+    Get the actual down payment percentage for a given dropdown index
+    Uses filtered options from settings
+    @param index - Dropdown index (1-based)
+    @return percentage value
+]]
+function UnifiedPurchaseDialog.getDownPaymentPercent(index)
+    local options = UnifiedPurchaseDialog.getDownPaymentOptions()
+    return options[index] or options[1] or 0
+end
+
+--[[
     Constructor
 ]]
 function UnifiedPurchaseDialog.new(target, custom_mt)
@@ -92,13 +122,16 @@ function UnifiedPurchaseDialog:onGuiSetupFinished()
         self.financeTermSlider:setState(self.financeTermIndex)
     end
 
-    -- Setup finance down payment slider
+    -- Setup finance down payment slider (uses filtered options from settings)
     if self.financeDownSlider then
+        local options = UnifiedPurchaseDialog.getDownPaymentOptions()
         local texts = {}
-        for _, pct in ipairs(UnifiedPurchaseDialog.DOWN_PAYMENT_OPTIONS) do
+        for _, pct in ipairs(options) do
             table.insert(texts, pct .. "%")
         end
         self.financeDownSlider:setTexts(texts)
+        -- Adjust default index to stay within available options
+        self.financeDownIndex = math.min(self.financeDownIndex, #options)
         self.financeDownSlider:setState(self.financeDownIndex)
     end
 
@@ -129,13 +162,16 @@ function UnifiedPurchaseDialog:onGuiSetupFinished()
         self.leaseTermSlider:setState(self.leaseTermIndex)
     end
 
-    -- Setup lease down payment slider
+    -- Setup lease down payment slider (uses filtered options from settings)
     if self.leaseDownSlider then
+        local options = UnifiedPurchaseDialog.getDownPaymentOptions()
         local texts = {}
-        for _, pct in ipairs(UnifiedPurchaseDialog.DOWN_PAYMENT_OPTIONS) do
+        for _, pct in ipairs(options) do
             table.insert(texts, pct .. "%")
         end
         self.leaseDownSlider:setTexts(texts)
+        -- Adjust default index to stay within available options
+        self.leaseDownIndex = math.min(self.leaseDownIndex, #options)
         self.leaseDownSlider:setState(self.leaseDownIndex)
     end
 
@@ -304,6 +340,14 @@ end
 ]]
 function UnifiedPurchaseDialog:loadEligibleTradeIns()
     self.eligibleTradeIns = {}
+
+    -- v1.4.0: Check settings system for trade-in feature toggle
+    local tradeInEnabled = not UsedPlusSettings or UsedPlusSettings:isSystemEnabled("TradeIn")
+    if not tradeInEnabled then
+        UsedPlus.logDebug("Trade-in system disabled by settings")
+        return
+    end
+
     local farmId = g_currentMission:getFarmId()
 
     -- Get credit-based trade-in multiplier (returns 0.50 to 0.65)
@@ -578,8 +622,8 @@ function UnifiedPurchaseDialog:updateCashBackOptions()
         return
     end
 
-    -- Calculate down payment amount (percentage of vehicle price)
-    local downPct = UnifiedPurchaseDialog.DOWN_PAYMENT_OPTIONS[self.financeDownIndex] or 0
+    -- Calculate down payment amount (percentage of vehicle price, using filtered options)
+    local downPct = UnifiedPurchaseDialog.getDownPaymentPercent(self.financeDownIndex)
     local downPaymentAmount = self.vehiclePrice * (downPct / 100)
 
     -- Calculate max allowed cash back: 50% of (down payment + trade-in)
@@ -637,8 +681,10 @@ function UnifiedPurchaseDialog:updateDownPaymentOptions(slider, currentIndex)
         return
     end
 
+    -- Use filtered options from settings
+    local options = UnifiedPurchaseDialog.getDownPaymentOptions()
     local texts = {}
-    for _, pct in ipairs(UnifiedPurchaseDialog.DOWN_PAYMENT_OPTIONS) do
+    for _, pct in ipairs(options) do
         local dollarAmount = self.vehiclePrice * (pct / 100)
         -- Format: "10% (4,250 $)" - using game's locale formatting
         local formatted = string.format("%d%% (%s)", pct, g_i18n:formatMoney(dollarAmount, 0, true, true))
@@ -646,7 +692,9 @@ function UnifiedPurchaseDialog:updateDownPaymentOptions(slider, currentIndex)
     end
 
     slider:setTexts(texts)
-    slider:setState(currentIndex or 1)
+    -- Ensure index is within bounds
+    local safeIndex = math.min(currentIndex or 1, #options)
+    slider:setState(safeIndex)
 end
 
 --[[
@@ -807,7 +855,7 @@ end
 ]]
 function UnifiedPurchaseDialog:updateFinanceDisplay()
     local termYears = UnifiedPurchaseDialog.FINANCE_TERMS[self.financeTermIndex] or 5
-    local downPct = UnifiedPurchaseDialog.DOWN_PAYMENT_OPTIONS[self.financeDownIndex] or 10
+    local downPct = UnifiedPurchaseDialog.getDownPaymentPercent(self.financeDownIndex)
     -- Use filtered cash back options (limited by down payment + trade-in)
     local cashBack = (self.validCashBackOptions and self.validCashBackOptions[self.financeCashBackIndex]) or 0
 
@@ -869,7 +917,7 @@ function UnifiedPurchaseDialog:updateLeaseDisplay()
     -- LEASE_TERMS now stores months directly
     local termMonths = UnifiedPurchaseDialog.LEASE_TERMS[self.leaseTermIndex] or 12
     local termYears = termMonths / 12  -- For residual value calculation
-    local capReductionPct = UnifiedPurchaseDialog.DOWN_PAYMENT_OPTIONS[self.leaseDownIndex] or 0
+    local capReductionPct = UnifiedPurchaseDialog.getDownPaymentPercent(self.leaseDownIndex)
 
     -- Calculate residual value first (what vehicle is worth at end of lease)
     local residualValue = FinanceCalculations.calculateResidualValue(self.vehiclePrice, termYears)
@@ -998,7 +1046,7 @@ function UnifiedPurchaseDialog:buildConfirmationMessage()
     elseif self.currentMode == UnifiedPurchaseDialog.MODE_FINANCE then
         -- Finance purchase
         local termYears = UnifiedPurchaseDialog.FINANCE_TERMS[self.financeTermIndex] or 5
-        local downPct = UnifiedPurchaseDialog.DOWN_PAYMENT_OPTIONS[self.financeDownIndex] or 10
+        local downPct = UnifiedPurchaseDialog.getDownPaymentPercent(self.financeDownIndex)
         local cashBack = (self.validCashBackOptions and self.validCashBackOptions[self.financeCashBackIndex]) or 0
         local downPayment = self.vehiclePrice * (downPct / 100)
         local amountFinanced = self.vehiclePrice - self.tradeInValue - downPayment + cashBack
@@ -1022,7 +1070,7 @@ function UnifiedPurchaseDialog:buildConfirmationMessage()
         -- Lease
         local termMonths = UnifiedPurchaseDialog.LEASE_TERMS[self.leaseTermIndex] or 36
         local termYears = termMonths / 12
-        local capReductionPct = UnifiedPurchaseDialog.DOWN_PAYMENT_OPTIONS[self.leaseDownIndex] or 0
+        local capReductionPct = UnifiedPurchaseDialog.getDownPaymentPercent(self.leaseDownIndex)
         local residualValue = FinanceCalculations.calculateResidualValue(self.vehiclePrice, termYears)
         local capReduction = self.vehiclePrice * (capReductionPct / 100)
         local capitalizedCost = math.max(residualValue, self.vehiclePrice - self.tradeInValue - capReduction)
@@ -1207,7 +1255,7 @@ function UnifiedPurchaseDialog:executeFinancePurchase()
 
     -- Calculate finance parameters
     local termYears = UnifiedPurchaseDialog.FINANCE_TERMS[self.financeTermIndex] or 5
-    local downPct = UnifiedPurchaseDialog.DOWN_PAYMENT_OPTIONS[self.financeDownIndex] or 10
+    local downPct = UnifiedPurchaseDialog.getDownPaymentPercent(self.financeDownIndex)
     -- Use filtered cash back options (limited by down payment + trade-in)
     local cashBack = (self.validCashBackOptions and self.validCashBackOptions[self.financeCashBackIndex]) or 0
 
@@ -1296,7 +1344,7 @@ function UnifiedPurchaseDialog:executeLeasePurchase()
     -- Calculate lease parameters (LEASE_TERMS stores months directly)
     local termMonths = UnifiedPurchaseDialog.LEASE_TERMS[self.leaseTermIndex] or 36
     local termYears = termMonths / 12
-    local capReductionPct = UnifiedPurchaseDialog.DOWN_PAYMENT_OPTIONS[self.leaseDownIndex] or 0
+    local capReductionPct = UnifiedPurchaseDialog.getDownPaymentPercent(self.leaseDownIndex)
 
     -- Cap reduction as percentage of vehicle price
     local capReduction = self.vehiclePrice * (capReductionPct / 100)

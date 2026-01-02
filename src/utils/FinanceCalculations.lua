@@ -49,14 +49,16 @@ end
 --[[
     Calculate final interest rate for vehicle/equipment finance
     Formula breakdown:
-        Base Rate: 4.5%
+        Base Rate: From settings (default 8%)
         + Credit Score Adjustment: -1.5% to +3.0%
         + Term Adjustment: 0% to +1.5%
         + Down Payment Adjustment: -1.0% to +1.0%
         = Final Rate (capped 2.0% to 15.0%)
 ]]
 function FinanceCalculations.calculateVehicleInterestRate(creditScore, termMonths, downPaymentPercent)
-    local baseRate = 4.5
+    -- Get base rate from settings (stored as decimal, e.g., 0.08 = 8%)
+    local settingsRate = UsedPlusSettings and UsedPlusSettings:get("baseInterestRate") or 0.08
+    local baseRate = settingsRate * 100  -- Convert to percentage (8% = 8.0)
 
     -- Credit score adjustment (from CreditScore tiers)
     local creditAdj = CreditScore.getInterestAdjustment(creditScore)
@@ -98,7 +100,9 @@ end
     Base: 3.5%, Final: 2.5% to 8.0%
 ]]
 function FinanceCalculations.calculateLandInterestRate(creditScore, termYears, downPaymentPercent)
-    local baseRate = 3.5  -- Lower base for land
+    -- Land rates are typically lower than vehicle rates (land doesn't depreciate)
+    local settingsRate = UsedPlusSettings and UsedPlusSettings:get("baseInterestRate") or 0.08
+    local baseRate = (settingsRate * 100) - 1.0  -- 1% lower than vehicle base
 
     -- Credit adjustment (smaller range for land)
     local rating, level = CreditScore.getRating(creditScore)
@@ -140,11 +144,14 @@ end
 
 --[[
     Calculate interest rate for leases
-    Typically 1-2% higher than finance
-    Base: 5.5%, Final: 3.0% to 12.0%
+    Typically higher than finance (uses leaseMarkupPercent from settings)
+    Base: vehicle rate + markup, Final: 3.0% to 12.0%
 ]]
 function FinanceCalculations.calculateLeaseInterestRate(creditScore, downPaymentPercent)
-    local baseRate = 5.5  -- Higher base for leases
+    -- Lease rates are higher than vehicle rates by the markup percentage
+    local settingsRate = UsedPlusSettings and UsedPlusSettings:get("baseInterestRate") or 0.08
+    local leaseMarkup = UsedPlusSettings and UsedPlusSettings:get("leaseMarkupPercent") or 15
+    local baseRate = (settingsRate * 100) + (leaseMarkup / 10)  -- e.g., 8% + 1.5% = 9.5%
 
     -- Credit adjustment (same as finance)
     local creditAdj = CreditScore.getInterestAdjustment(creditScore)

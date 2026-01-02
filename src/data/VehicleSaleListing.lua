@@ -5,6 +5,9 @@
     Pattern mirrors UsedVehicleSearch but for SELLING instead of BUYING
     Player selects BOTH agent tier AND price tier for 2D control
 
+    v1.9.7: Added offerShownToUser flag to prevent race conditions when
+    multiple offers arrive in same tick (queue-based presentation)
+
     DUAL-TIER SYSTEM:
     AGENT_TIERS (reach and base timing):
     - Local: 1-2 months, 2% fee, lower reach
@@ -169,6 +172,7 @@ function VehicleSaleListing.new(farmId, vehicle, vehicleData, saleTier, priceTie
     self.offerExpiresIn = 0        -- Hours until offer expires (player must decide)
     self.offersReceived = 0        -- Number of offers received so far
     self.offersDeclined = 0        -- Number of offers declined
+    self.offerShownToUser = false  -- Has the popup been shown for this offer? (prevents race condition)
 
     -- Status
     self.status = VehicleSaleListing.STATUS.ACTIVE
@@ -318,9 +322,10 @@ function VehicleSaleListing:generateOffer()
     -- Ensure minimum offer
     self.currentOffer = math.max(self.currentOffer, 100)
 
-    -- Set offer expiration (24 hours to decide)
-    self.offerExpiresIn = 24
+    -- Set offer expiration (from settings, default 48 hours to decide)
+    self.offerExpiresIn = UsedPlusSettings and UsedPlusSettings:get("offerExpirationHours") or 48
     self.offersReceived = self.offersReceived + 1
+    self.offerShownToUser = false  -- Mark as not yet shown to user
 
     -- Update status
     self.status = VehicleSaleListing.STATUS.OFFER_PENDING
@@ -364,6 +369,7 @@ function VehicleSaleListing:declineOffer()
     self.offersDeclined = self.offersDeclined + 1
     self.currentOffer = nil
     self.offerExpiresIn = 0
+    self.offerShownToUser = false  -- Reset for potential future offer
 
     -- Return to active if time remains, else expire
     if self.ttl > 0 then
@@ -609,6 +615,7 @@ function VehicleSaleListing:saveToXMLFile(xmlFile, key)
     xmlFile:setInt(key .. "#offerExpiresIn", self.offerExpiresIn)
     xmlFile:setInt(key .. "#offersReceived", self.offersReceived)
     xmlFile:setInt(key .. "#offersDeclined", self.offersDeclined)
+    xmlFile:setBool(key .. "#offerShownToUser", self.offerShownToUser or false)
 
     -- Status
     xmlFile:setString(key .. "#status", self.status)
@@ -662,6 +669,7 @@ function VehicleSaleListing:loadFromXMLFile(xmlFile, key)
     self.offerExpiresIn = xmlFile:getInt(key .. "#offerExpiresIn", 0)
     self.offersReceived = xmlFile:getInt(key .. "#offersReceived", 0)
     self.offersDeclined = xmlFile:getInt(key .. "#offersDeclined", 0)
+    self.offerShownToUser = xmlFile:getBool(key .. "#offerShownToUser", false)
 
     -- Status
     self.status = xmlFile:getString(key .. "#status", VehicleSaleListing.STATUS.ACTIVE)

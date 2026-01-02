@@ -503,22 +503,25 @@ function FinanceDeal:handleMissedLandPayment()
         CreditHistory.recordEvent(self.farmId, "PAYMENT_MISSED", self.itemName)
     end
 
+    -- Get missed payments threshold from settings
+    local threshold = UsedPlusSettings and UsedPlusSettings:get("missedPaymentsToDefault") or 3
+
     if self.missedPayments == 1 then
         g_currentMission:addIngameNotification(FSBaseMission.INGAME_NOTIFICATION_CRITICAL,
             string.format("Missed land payment for %s! Interest of %s added. (1st warning)",
                 self.itemName, g_i18n:formatMoney(monthlyInterest, 0, true, true)))
-    elseif self.missedPayments == 2 then
+    elseif self.missedPayments == threshold - 1 then
         g_currentMission:addIngameNotification(FSBaseMission.INGAME_NOTIFICATION_CRITICAL,
             string.format("FINAL WARNING: Missed land payment for %s! One more = SEIZURE!",
                 self.itemName))
-    elseif self.missedPayments >= 3 then
+    elseif self.missedPayments >= threshold then
         self:seizeLand()
     end
 end
 
 --[[
     Handle missed vehicle payment
-    3 strikes = vehicle repossession (same as land for consistency)
+    N strikes = vehicle repossession (from settings)
 ]]
 function FinanceDeal:handleMissedVehiclePayment()
     -- Accrue interest on missed payment (balance grows)
@@ -530,15 +533,18 @@ function FinanceDeal:handleMissedVehiclePayment()
         CreditHistory.recordEvent(self.farmId, "PAYMENT_MISSED", self.itemName)
     end
 
+    -- Get missed payments threshold from settings
+    local threshold = UsedPlusSettings and UsedPlusSettings:get("missedPaymentsToDefault") or 3
+
     if self.missedPayments == 1 then
         g_currentMission:addIngameNotification(FSBaseMission.INGAME_NOTIFICATION_INFO,
             string.format("Missed payment for %s. Interest of %s added to balance. (1st warning)",
                 self.itemName, g_i18n:formatMoney(monthlyInterest, 0, true, true)))
-    elseif self.missedPayments == 2 then
+    elseif self.missedPayments == threshold - 1 then
         g_currentMission:addIngameNotification(FSBaseMission.INGAME_NOTIFICATION_CRITICAL,
             string.format("FINAL WARNING: Missed payment for %s. One more missed payment will result in repossession!",
                 self.itemName))
-    elseif self.missedPayments >= 3 then
+    elseif self.missedPayments >= threshold then
         self:repossessVehicle()
     end
 end
@@ -546,33 +552,40 @@ end
 --[[
     Repossess vehicle after 3 missed payments
     Remove vehicle from world, mark deal as defaulted
+    Shows RepossessionDialog to player
 ]]
 function FinanceDeal:repossessVehicle()
     if not g_server then return end
 
-    -- Find and remove the vehicle
+    -- Get vehicle value before removal
+    local vehicleValue = 0
     local vehicle = self:findVehicle()
+
     if vehicle then
+        -- Calculate value using CollateralUtils or fallback
+        if CollateralUtils and CollateralUtils.getVehicleValue then
+            vehicleValue = CollateralUtils.getVehicleValue(vehicle)
+        else
+            local storeItem = g_storeManager:getItemByXMLFilename(vehicle.configFileName)
+            vehicleValue = storeItem and storeItem.price or 0
+        end
+
         -- Log before removal
         UsedPlus.logDebug(string.format("Repossessing vehicle: %s (deal %s)", self.itemName, self.id))
 
         -- Remove vehicle using SellVehicleEvent with $0 payout (repossession)
-        -- SellVehicleEvent.new(vehicle, price, isFullPrice)
-        -- Price of 0 or 1 means no/minimal money returned to player
         local sellEvent = SellVehicleEvent.new(vehicle, 0, false)
-
-        -- On server, run the event directly; the event handles the actual vehicle removal
         if g_server then
             sellEvent:run(nil)
-        else
-            -- Shouldn't reach here since we check g_server at start, but just in case
-            g_client:getServerConnection():sendEvent(sellEvent)
         end
 
         UsedPlus.logInfo(string.format("Vehicle repossessed via SellVehicleEvent: %s", self.itemName))
     else
         UsedPlus.logWarn(string.format("Could not find vehicle for repossession (deal %s)", self.id))
     end
+
+    -- Store balance before clearing
+    local balanceOwed = self.currentBalance
 
     -- Mark deal as defaulted
     self.status = "defaulted"
@@ -583,9 +596,19 @@ function FinanceDeal:repossessVehicle()
         CreditHistory.recordEvent(self.farmId, "VEHICLE_REPOSSESSED", self.itemName)
     end
 
-    -- Send critical notification
-    g_currentMission:addIngameNotification(FSBaseMission.INGAME_NOTIFICATION_CRITICAL,
-        string.format("VEHICLE REPOSSESSED: %s has been taken due to non-payment!", self.itemName))
+    -- Show RepossessionDialog instead of just a banner
+    if RepossessionDialog and RepossessionDialog.showVehicleRepossession then
+        RepossessionDialog.showVehicleRepossession(
+            self.itemName,
+            vehicleValue,
+            self.missedPayments,
+            balanceOwed
+        )
+    else
+        -- Fallback to notification if dialog not available
+        g_currentMission:addIngameNotification(FSBaseMission.INGAME_NOTIFICATION_CRITICAL,
+            string.format("VEHICLE REPOSSESSED: %s has been taken due to non-payment!", self.itemName))
+    end
 end
 
 --[[
@@ -617,22 +640,53 @@ end
     Seize land after 3 missed payments
     Transfer ownership back to unowned
     Mark deal as defaulted
+    Shows RepossessionDialog to player
 ]]
 function FinanceDeal:seizeLand()
-    -- Find the field and transfer ownership
-    if g_server and self.itemType == "land" then
-        local fieldId = tonumber(self.itemId)
-        if fieldId ~= nil then
-            g_farmlandManager:setLandOwnership(fieldId, 0)  -- 0 = unowned
+    if not g_server then return end
+
+    local landValue = 0
+    local fieldId = tonumber(self.itemId)
+
+    -- Find the field and get its value
+    if self.itemType == "land" and fieldId ~= nil then
+        -- Get land value before seizure
+        local farmland = g_farmlandManager:getFarmlandById(fieldId)
+        if farmland then
+            landValue = farmland.price or 0
         end
+
+        -- Transfer ownership to unowned (0)
+        g_farmlandManager:setLandOwnership(fieldId, 0)
+
+        UsedPlus.logInfo(string.format("Land seized: %s (Field %d)", self.itemName, fieldId))
     end
+
+    -- Store balance before clearing
+    local balanceOwed = self.currentBalance
 
     -- Mark deal as defaulted
     self.status = "defaulted"
+    self.currentBalance = 0
 
-    -- Send critical notification
-    g_currentMission:addIngameNotification(FSBaseMission.INGAME_NOTIFICATION_CRITICAL,
-        string.format(g_i18n:getText("usedplus_notification_landSeized"), self.itemName))
+    -- Record credit impact (severe)
+    if CreditHistory then
+        CreditHistory.recordEvent(self.farmId, "LAND_SEIZED", self.itemName)
+    end
+
+    -- Show RepossessionDialog instead of just a banner
+    if RepossessionDialog and RepossessionDialog.showLandSeizure then
+        RepossessionDialog.showLandSeizure(
+            self.itemName,
+            landValue,
+            self.missedPayments,
+            balanceOwed
+        )
+    else
+        -- Fallback to notification if dialog not available
+        g_currentMission:addIngameNotification(FSBaseMission.INGAME_NOTIFICATION_CRITICAL,
+            string.format(g_i18n:getText("usedplus_notification_landSeized") or "LAND SEIZED: %s has been taken due to non-payment!", self.itemName))
+    end
 end
 
 --[[
@@ -677,7 +731,8 @@ end
 
 --[[
     Repossess collateral after 3 missed loan payments
-    Removes all pledged vehicles and marks deal as defaulted
+    Removes all pledged vehicles AND seizes pledged land
+    Marks deal as defaulted
 ]]
 function FinanceDeal:repossessCollateral()
     if not g_server then return end
@@ -687,66 +742,102 @@ function FinanceDeal:repossessCollateral()
 
     local repossessedCount = 0
     local repossessedValue = 0
+    local seizedLandCount = 0
 
     -- Process each pledged collateral item
     if self.collateralItems and #self.collateralItems > 0 then
         for _, collateralItem in ipairs(self.collateralItems) do
-            -- Find the vehicle
-            local vehicle = nil
+            local itemType = collateralItem.type or "vehicle"
 
-            if CollateralUtils and CollateralUtils.findPledgedVehicle then
-                vehicle = CollateralUtils.findPledgedVehicle(collateralItem, self.farmId)
-            else
-                -- Fallback: try by objectId
-                if collateralItem.objectId then
-                    vehicle = NetworkUtil.getObject(collateralItem.objectId)
+            if itemType == "land" then
+                -- LAND COLLATERAL: Seize land ownership
+                local landId = collateralItem.id
+                if landId and g_farmlandManager then
+                    -- Transfer ownership to unowned (0)
+                    g_farmlandManager:setLandOwnership(landId, 0)
+
+                    -- Store record for history
+                    table.insert(self.repossessedItems, {
+                        name = collateralItem.name or string.format("Land Parcel #%d", landId),
+                        value = collateralItem.value or 0,
+                        type = "land",
+                        landId = landId,
+                        repossessedDate = g_currentMission.environment.currentDay,
+                        repossessedMonth = g_currentMission.environment.currentMonth,
+                        repossessedYear = g_currentMission.environment.currentYear
+                    })
+
+                    seizedLandCount = seizedLandCount + 1
+                    repossessedCount = repossessedCount + 1
+                    repossessedValue = repossessedValue + (collateralItem.value or 0)
+
+                    UsedPlus.logInfo(string.format("Land collateral seized: %s (value: %s)",
+                        collateralItem.name or "Unknown Land",
+                        g_i18n:formatMoney(collateralItem.value or 0, 0, true, true)))
+                else
+                    UsedPlus.logWarn(string.format("Could not find land for seizure: %s", collateralItem.name or "Unknown"))
                 end
-            end
+            else
+                -- VEHICLE COLLATERAL: Repossess vehicle
+                local vehicle = nil
 
-            if vehicle then
-                -- Store repossession record for history
-                table.insert(self.repossessedItems, {
-                    name = collateralItem.name or vehicle:getName() or "Unknown Vehicle",
-                    value = collateralItem.value or 0,
-                    configFile = collateralItem.configFile or vehicle.configFileName,
-                    repossessedDate = g_currentMission.environment.currentDay,
-                    repossessedMonth = g_currentMission.environment.currentMonth,
-                    repossessedYear = g_currentMission.environment.currentYear
-                })
-
-                -- Remove vehicle using SellVehicleEvent with $0 payout (repossession)
-                local sellEvent = SellVehicleEvent.new(vehicle, 0, false)
-                if g_server then
-                    sellEvent:run(nil)
+                if CollateralUtils and CollateralUtils.findPledgedVehicle then
+                    vehicle = CollateralUtils.findPledgedVehicle(collateralItem, self.farmId)
+                else
+                    -- Fallback: try by objectId
+                    if collateralItem.objectId then
+                        vehicle = NetworkUtil.getObject(collateralItem.objectId)
+                    end
                 end
 
-                repossessedCount = repossessedCount + 1
-                repossessedValue = repossessedValue + (collateralItem.value or 0)
+                if vehicle then
+                    -- Store repossession record for history
+                    table.insert(self.repossessedItems, {
+                        name = collateralItem.name or vehicle:getName() or "Unknown Vehicle",
+                        value = collateralItem.value or 0,
+                        type = "vehicle",
+                        configFile = collateralItem.configFile or vehicle.configFileName,
+                        repossessedDate = g_currentMission.environment.currentDay,
+                        repossessedMonth = g_currentMission.environment.currentMonth,
+                        repossessedYear = g_currentMission.environment.currentYear
+                    })
 
-                UsedPlus.logInfo(string.format("Collateral repossessed: %s (value: %s)",
-                    collateralItem.name or "Unknown",
-                    g_i18n:formatMoney(collateralItem.value or 0, 0, true, true)))
-            else
-                -- Vehicle not found (might have been sold/destroyed)
-                UsedPlus.logWarn(string.format("Could not find pledged vehicle for repossession: %s",
-                    collateralItem.name or "Unknown"))
+                    -- Remove vehicle using SellVehicleEvent with $0 payout (repossession)
+                    local sellEvent = SellVehicleEvent.new(vehicle, 0, false)
+                    if g_server then
+                        sellEvent:run(nil)
+                    end
 
-                -- Still record it as repossessed for history
-                table.insert(self.repossessedItems, {
-                    name = collateralItem.name or "Unknown Vehicle",
-                    value = collateralItem.value or 0,
-                    configFile = collateralItem.configFile,
-                    repossessedDate = g_currentMission.environment.currentDay,
-                    repossessedMonth = g_currentMission.environment.currentMonth,
-                    repossessedYear = g_currentMission.environment.currentYear,
-                    notFound = true  -- Flag that vehicle wasn't found
-                })
+                    repossessedCount = repossessedCount + 1
+                    repossessedValue = repossessedValue + (collateralItem.value or 0)
+
+                    UsedPlus.logInfo(string.format("Vehicle collateral repossessed: %s (value: %s)",
+                        collateralItem.name or "Unknown",
+                        g_i18n:formatMoney(collateralItem.value or 0, 0, true, true)))
+                else
+                    -- Vehicle not found (might have been sold/destroyed)
+                    UsedPlus.logWarn(string.format("Could not find pledged vehicle for repossession: %s",
+                        collateralItem.name or "Unknown"))
+
+                    -- Still record it as repossessed for history
+                    table.insert(self.repossessedItems, {
+                        name = collateralItem.name or "Unknown Vehicle",
+                        value = collateralItem.value or 0,
+                        type = "vehicle",
+                        configFile = collateralItem.configFile,
+                        repossessedDate = g_currentMission.environment.currentDay,
+                        repossessedMonth = g_currentMission.environment.currentMonth,
+                        repossessedYear = g_currentMission.environment.currentYear,
+                        notFound = true  -- Flag that vehicle wasn't found
+                    })
+                end
             end
         end
     end
 
     -- Mark deal as defaulted
     self.status = "defaulted"
+    local balanceOwed = self.currentBalance
     self.currentBalance = 0  -- Debt cleared (collateral seized)
 
     -- Record severe credit impact
@@ -754,18 +845,29 @@ function FinanceDeal:repossessCollateral()
         CreditHistory.recordEvent(self.farmId, "LOAN_DEFAULTED", self.itemName)
     end
 
-    -- Send notification
-    local notificationMsg
-    if repossessedCount > 0 then
-        notificationMsg = string.format(
-            "LOAN DEFAULTED! %d vehicle(s) worth %s have been repossessed!",
-            repossessedCount,
-            g_i18n:formatMoney(repossessedValue, 0, true, true))
+    -- Show RepossessionDialog instead of just a banner
+    if RepossessionDialog and RepossessionDialog.showCollateralRepossession and repossessedCount > 0 then
+        RepossessionDialog.showCollateralRepossession(
+            self.repossessedItems,
+            self.missedPayments,
+            balanceOwed
+        )
     else
-        notificationMsg = "LOAN DEFAULTED! No collateral could be recovered."
-    end
+        -- Fallback to notification if dialog not available
+        local notificationMsg
+        if repossessedCount > 0 then
+            local assetType = seizedLandCount > 0 and (repossessedCount > seizedLandCount and "assets" or "land parcels") or "vehicles"
+            notificationMsg = string.format(
+                "LOAN DEFAULTED! %d %s worth %s have been repossessed!",
+                repossessedCount,
+                assetType,
+                g_i18n:formatMoney(repossessedValue, 0, true, true))
+        else
+            notificationMsg = "LOAN DEFAULTED! No collateral could be recovered."
+        end
 
-    g_currentMission:addIngameNotification(FSBaseMission.INGAME_NOTIFICATION_CRITICAL, notificationMsg)
+        g_currentMission:addIngameNotification(FSBaseMission.INGAME_NOTIFICATION_CRITICAL, notificationMsg)
+    end
 end
 
 --[[

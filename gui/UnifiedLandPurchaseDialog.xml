@@ -28,24 +28,26 @@
                 <Text profile="lpSectionHeader" position="0px -5px" text="$l10n_usedplus_lp_sectionDetails"/>
 
                 <!-- Left Column: Field Info (label:value on same line) -->
-                <Text profile="lpDetailLabel" position="-240px -30px" text="$l10n_usedplus_lp_field"/>
-                <Text profile="lpLandName" id="landNameText" position="-100px -30px" text=""/>
+                <!-- Shifted right for better centering (was -240/-100, now -200/-50) -->
+                <Text profile="lpDetailLabel" position="-200px -30px" text="$l10n_usedplus_lp_field"/>
+                <Text profile="lpLandName" id="landNameText" position="-50px -30px" text=""/>
 
-                <Text profile="lpDetailLabel" position="-240px -55px" text="$l10n_usedplus_lp_size"/>
-                <Text profile="lpLandSize" id="landSizeText" position="-100px -55px" text=""/>
+                <Text profile="lpDetailLabel" position="-200px -55px" text="$l10n_usedplus_lp_size"/>
+                <Text profile="lpLandSize" id="landSizeText" position="-50px -55px" text=""/>
 
-                <Text profile="lpDetailLabel" position="-240px -80px" text="$l10n_usedplus_lp_perHa"/>
-                <Text profile="lpPricePerHa" id="landPricePerHaText" position="-100px -80px" text=""/>
+                <Text profile="lpDetailLabel" position="-200px -80px" text="$l10n_usedplus_lp_perHa"/>
+                <Text profile="lpPricePerHa" id="landPricePerHaText" position="-50px -80px" text=""/>
 
                 <!-- Right Column: Price Breakdown (label:value on same line) -->
-                <Text profile="lpDetailLabel" position="60px -30px" text="$l10n_usedplus_lp_basePrice"/>
-                <Text profile="lpBasePrice" id="basePriceText" position="200px -30px" text=""/>
+                <!-- Shifted left for better centering (was 60/200, now 100/250) -->
+                <Text profile="lpDetailLabel" position="100px -30px" text="$l10n_usedplus_lp_basePrice"/>
+                <Text profile="lpBasePrice" id="basePriceText" position="250px -30px" text=""/>
 
-                <Text profile="lpDetailLabel" position="60px -55px" text="$l10n_usedplus_lp_creditAdjust"/>
-                <Text profile="lpCreditAdjust" id="creditAdjustmentText" position="200px -55px" text=""/>
+                <Text profile="lpDetailLabel" position="100px -55px" text="$l10n_usedplus_lp_creditAdjust"/>
+                <Text profile="lpCreditAdjust" id="creditAdjustmentText" position="250px -55px" text=""/>
 
-                <Text profile="lpDetailLabel" position="60px -80px" text="$l10n_usedplus_lp_yourPrice"/>
-                <Text profile="lpYourPrice" id="landPriceText" position="200px -80px" text=""/>
+                <Text profile="lpDetailLabel" position="100px -80px" text="$l10n_usedplus_lp_yourPrice"/>
+                <Text profile="lpYourPrice" id="landPriceText" position="250px -80px" text=""/>
             </GuiElement>
 
             <!-- ========== SECTION 2: Purchase Mode Selector ========== -->
@@ -275,7 +277,7 @@
 
         <!-- ========== PAYMENT DETAILS ========== -->
         <Profile name="lpPaymentLabel" extends="fs25_textDefault" with="anchorTopCenter">
-            <size value="150px 16px"/>
+            <size value="180px 16px"/>
             <textSize value="12px"/>
             <textColor value="0.6 0.6 0.6 1"/>
         </Profile>

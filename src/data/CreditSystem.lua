@@ -50,6 +50,14 @@ CreditScore.BASE_SCORE = 500  -- LOWER starting point - must BUILD credit
       Very Poor (300-599): No history with debt OR missed payments
 ]]
 function CreditScore.calculate(farmId)
+    -- v1.4.0: Check settings system for credit feature toggle
+    -- When credit system is disabled, return fixed starting score
+    local creditEnabled = not UsedPlusSettings or UsedPlusSettings:isSystemEnabled("Credit")
+    if not creditEnabled then
+        local startingScore = UsedPlusSettings and UsedPlusSettings:get("startingCreditScore") or 650
+        return startingScore
+    end
+
     local farm = g_farmManager:getFarmById(farmId)
     if farm == nil then
         UsedPlus.logWarn("CreditScore.calculate - Farm not found: " .. tostring(farmId))
@@ -316,6 +324,13 @@ end
     Returns percentage points to add/subtract from base rate
 ]]
 function CreditScore.getInterestAdjustment(score)
+    -- v1.4.0: Check settings system for credit feature toggle
+    -- When credit system is disabled, use flat interest rate (no adjustment)
+    local creditEnabled = not UsedPlusSettings or UsedPlusSettings:isSystemEnabled("Credit")
+    if not creditEnabled then
+        return 0  -- No credit-based adjustment
+    end
+
     local rating, level = CreditScore.getRating(score)
 
     -- Credit adjustment table from design spec
@@ -489,9 +504,10 @@ PaymentTracker.IMPACT = {
     ON_TIME_BASE = 2,          -- Base points per on-time payment (very slow gain)
     STREAK_BONUS = 0.5,        -- Per-payment streak bonus (0.5 per, max 12 at 24 streak)
 
-    -- Penalties (intentionally harsh)
-    LATE = -20,                -- Moderate penalty for late
-    MISSED = -50,              -- Severe penalty for missed
+    -- Penalties are now dynamic from settings (see getLatePenalty/getMissedPenalty)
+    -- Legacy defaults kept for backwards compatibility
+    LATE = -20,                -- Moderate penalty for late (overridden by settings)
+    MISSED = -50,              -- Severe penalty for missed (overridden by settings)
     RECENT_MISS_PENALTY = -40, -- Extra penalty if missed in last 6 payments
 
     -- Milestone bonuses (reward long-term consistency)
@@ -506,6 +522,24 @@ PaymentTracker.IMPACT = {
     -- History requirements
     MIN_PAYMENTS_FOR_SCORE = 3, -- No credit score benefit until 3 payments made
 }
+
+--[[
+    Get late payment penalty from settings
+    @return negative number (e.g., -15)
+]]
+function PaymentTracker.getLatePenalty()
+    local penalty = UsedPlusSettings and UsedPlusSettings:get("latePaymentPenalty") or 15
+    return -penalty  -- Return as negative
+end
+
+--[[
+    Get missed payment penalty from settings (3x the late penalty)
+    @return negative number (e.g., -45)
+]]
+function PaymentTracker.getMissedPenalty()
+    local latePenalty = UsedPlusSettings and UsedPlusSettings:get("latePaymentPenalty") or 15
+    return -(latePenalty * 3)  -- Missed is 3x worse than late
+end
 
 -- Storage per farm
 PaymentTracker.farmData = {}

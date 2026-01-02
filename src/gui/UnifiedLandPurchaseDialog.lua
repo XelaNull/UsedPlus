@@ -26,6 +26,35 @@ UnifiedLandPurchaseDialog.FINANCE_TERMS = {5, 10, 15, 20}  -- Years (max 20)
 UnifiedLandPurchaseDialog.LEASE_TERMS = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 24, 36, 48, 60}
 UnifiedLandPurchaseDialog.DOWN_PAYMENT_OPTIONS = {0, 5, 10, 15, 20, 25, 30, 40, 50}  -- Percent (for finance)
 
+--[[
+    Get available down payment options based on settings minimum
+    @return filtered table of down payment percentages
+]]
+function UnifiedLandPurchaseDialog.getDownPaymentOptions()
+    local minPercent = UsedPlusSettings and UsedPlusSettings:get("minDownPaymentPercent") or 0
+    local options = {}
+    for _, pct in ipairs(UnifiedLandPurchaseDialog.DOWN_PAYMENT_OPTIONS) do
+        if pct >= minPercent then
+            table.insert(options, pct)
+        end
+    end
+    -- Ensure at least one option exists
+    if #options == 0 then
+        options = {minPercent}
+    end
+    return options
+end
+
+--[[
+    Get the actual down payment percentage for a given dropdown index
+    @param index - Dropdown index (1-based)
+    @return percentage value
+]]
+function UnifiedLandPurchaseDialog.getDownPaymentPercent(index)
+    local options = UnifiedLandPurchaseDialog.getDownPaymentOptions()
+    return options[index] or options[1] or 0
+end
+
 -- Lease pricing constants
 -- Base rate should make leasing ~25-35% of expected crop revenue for balance
 -- 7 acres wheat @ $12k/year revenue → lease should be ~$3-4k/year
@@ -121,13 +150,16 @@ function UnifiedLandPurchaseDialog:onGuiSetupFinished()
         self.financeTermSlider:setState(self.financeTermIndex)
     end
 
-    -- Setup finance down payment slider
+    -- Setup finance down payment slider (uses filtered options from settings)
     if self.financeDownSlider then
+        local options = UnifiedLandPurchaseDialog.getDownPaymentOptions()
         local texts = {}
-        for _, pct in ipairs(UnifiedLandPurchaseDialog.DOWN_PAYMENT_OPTIONS) do
+        for _, pct in ipairs(options) do
             table.insert(texts, pct .. "%")
         end
         self.financeDownSlider:setTexts(texts)
+        -- Adjust default index to stay within available options
+        self.financeDownIndex = math.min(self.financeDownIndex, #options)
         self.financeDownSlider:setState(self.financeDownIndex)
     end
 
@@ -409,7 +441,7 @@ end
 ]]
 function UnifiedLandPurchaseDialog:updateFinanceDisplay()
     local termYears = UnifiedLandPurchaseDialog.FINANCE_TERMS[self.financeTermIndex] or 15
-    local downPct = UnifiedLandPurchaseDialog.DOWN_PAYMENT_OPTIONS[self.financeDownIndex] or 20
+    local downPct = UnifiedLandPurchaseDialog.getDownPaymentPercent(self.financeDownIndex)
 
     local downPayment = self.landPrice * (downPct / 100)
     local amountFinanced = self.landPrice - downPayment
@@ -663,9 +695,9 @@ function UnifiedLandPurchaseDialog:executeFinancePurchase()
         return
     end
 
-    -- Calculate finance parameters
+    -- Calculate finance parameters (using filtered options from settings)
     local termYears = UnifiedLandPurchaseDialog.FINANCE_TERMS[self.financeTermIndex] or 15
-    local downPct = UnifiedLandPurchaseDialog.DOWN_PAYMENT_OPTIONS[self.financeDownIndex] or 20
+    local downPct = UnifiedLandPurchaseDialog.getDownPaymentPercent(self.financeDownIndex)
     local downPayment = self.landPrice * (downPct / 100)
 
     -- Check if player can afford down payment

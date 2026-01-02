@@ -1,170 +1,267 @@
 <?xml version="1.0" encoding="utf-8" standalone="no" ?>
 <!--
     FS25_UsedPlus - Sale Offer Dialog XML
-     Dialog for accepting or declining sale offers
-     Shown when agent finds a buyer for your vehicle
-     Pattern from MessageDialog (working reference)
+
+    REDESIGNED v1.9.6: Player-focused framing
+    - Removed "vanilla" terminology - players don't think that way
+    - Added deal quality rating (★★★★☆)
+    - Shows expected range with visual positioning
+    - "Keep Waiting" instead of "Decline" - implies hope
+
+    v1.9.7: Simplified "Your Options" section
+    - Removed "Sell Instantly" (no instant sell in UsedPlus)
+    - Removed confusing "+X%" bonus display
+    - Fixed positioning (anchorTopCenter for proper centering)
+
+    Pattern from MessageDialog (working reference)
 -->
 <GUI onOpen="onOpen" onClose="onClose" onCreate="onCreate">
     <GuiElement profile="newLayer" />
     <Bitmap profile="dialogFullscreenBg" id="dialogBg" />
 
-    <GuiElement profile="dialogBg" id="dialogElement" size="700px 570px">
+    <GuiElement profile="dialogBg" id="dialogElement" size="720px 615px">
         <ThreePartBitmap profile="fs25_dialogBgMiddle" />
         <ThreePartBitmap profile="fs25_dialogBgTop" />
         <ThreePartBitmap profile="fs25_dialogBgBottom" />
 
         <GuiElement profile="fs25_dialogContentContainer">
 
-            <!-- Title -->
-            <Text profile="fs25_dialogTitle" id="dialogTitleElement" position="0px -30px" text="$l10n_usedplus_so_title"/>
+            <!-- Title: "BUYER FOUND!" is more exciting than "Sale Offer Received" -->
+            <Text profile="fs25_dialogTitle" id="dialogTitleElement" position="0px -30px" text="$l10n_usedplus_so_title_v2"/>
 
-            <!-- Vehicle Info -->
-            <Text profile="offerSectionTitle" position="0px -70px" text="$l10n_usedplus_so_sectionVehicle"/>
-            <!-- Vehicle Info container - image Y=42px for proper display -->
-            <GuiElement position="0px -95px">
-                <Bitmap profile="offerItemImage" id="vehicleImage" position="-200px 42px"/>
-                <GuiElement position="50px 0px">
-                    <Text profile="offerVehicleName" id="vehicleNameText" position="0px 0px" text=""/>
-                    <Text profile="offerAgentTier" id="agentTierText" position="0px -28px" text=""/>
+            <!-- ================================================================ -->
+            <!-- SECTION 1: Vehicle Info (compact header) -->
+            <!-- ================================================================ -->
+            <GuiElement profile="soSectionBg" position="0px -60px" size="680px 95px">
+                <!-- Vehicle image on left, info on right -->
+                <Bitmap profile="soVehicleImage" id="vehicleImage" position="-230px 40px"/>
+                <GuiElement position="60px -10px">
+                    <Text profile="soVehicleName" id="vehicleNameText" position="0px 0px"/>
+                    <Text profile="soAgentInfo" id="agentTierText" position="0px -28px"/>
                 </GuiElement>
             </GuiElement>
 
-            <!-- Offer Details -->
-            <Text profile="offerSectionTitle" position="0px -190px" text="$l10n_usedplus_so_sectionOffer"/>
-
-            <GuiElement position="0px -220px">
-                <GuiElement position="-150px 0px">
-                    <Text profile="offerLabel" position="0px 0px" text="$l10n_usedplus_so_offerAmount"/>
-                    <Text profile="offerAmountValue" id="offerAmountText" position="0px -25px" text=""/>
-                </GuiElement>
-
-                <GuiElement position="150px 0px">
-                    <Text profile="offerLabel" position="0px 0px" text="$l10n_usedplus_so_percentVanilla"/>
-                    <Text profile="offerPercentValue" id="offerPercentText" position="0px -25px" text=""/>
-                </GuiElement>
+            <!-- ================================================================ -->
+            <!-- SECTION 2: THE OFFER (prominent center display) -->
+            <!-- ================================================================ -->
+            <GuiElement profile="soSectionBg" position="0px -165px" size="680px 100px">
+                <!-- Large offer amount -->
+                <Text profile="soOfferAmount" id="offerAmountText" position="0px -15px"/>
+                <!-- Star rating + deal quality text -->
+                <Text profile="soDealRating" id="dealRatingText" position="0px -55px"/>
             </GuiElement>
 
-            <!-- Expiration Warning -->
-            <GuiElement position="0px -280px">
-                <Text profile="offerExpirationLabel" position="0px 0px" text="$l10n_usedplus_so_expiresIn"/>
-                <Text profile="offerExpirationValue" id="expirationText" position="0px -25px" text=""/>
+            <!-- ================================================================ -->
+            <!-- SECTION 3: Expected Range (visual indicator) -->
+            <!-- ================================================================ -->
+            <GuiElement profile="soSectionBg" position="0px -275px" size="680px 95px">
+                <Text profile="soSectionLabel" position="0px -8px" text="$l10n_usedplus_so_expectedRange"/>
+
+                <!-- Range bar background -->
+                <Bitmap profile="soRangeBarBg" position="0px -38px"/>
+                <!-- Range bar fill (will be sized dynamically in Lua) -->
+                <Bitmap profile="soRangeBarFill" id="rangeBarFill" position="0px -38px"/>
+                <!-- Offer position marker -->
+                <Bitmap profile="soRangeMarker" id="rangeMarker" position="0px -38px"/>
+
+                <!-- Min / Offer / Max labels -->
+                <Text profile="soRangeValue" id="rangeMinText" position="-200px -60px"/>
+                <Text profile="soRangeValueHighlight" id="rangeOfferText" position="0px -60px"/>
+                <Text profile="soRangeValue" id="rangeMaxText" position="200px -60px"/>
+
+                <!-- Labels below values -->
+                <Text profile="soRangeLabel" position="-200px -78px" text="$l10n_usedplus_so_rangeMin"/>
+                <Text profile="soRangeLabelHighlight" position="0px -78px" text="$l10n_usedplus_so_rangeOffer"/>
+                <Text profile="soRangeLabel" position="200px -78px" text="$l10n_usedplus_so_rangeMax"/>
             </GuiElement>
 
-            <!-- Comparison -->
-            <Text profile="offerSectionTitle" position="0px -330px" text="$l10n_usedplus_so_sectionCompare"/>
+            <!-- ================================================================ -->
+            <!-- SECTION 4: Your Options (simplified layout like LoanApprovedDialog) -->
+            <!-- ================================================================ -->
+            <GuiElement profile="soOptionsSection" position="0px -380px">
+                <Bitmap profile="soOptionsBg" position="0px 0px"/>
+                <Text profile="soSectionLabel" position="0px -8px" text="$l10n_usedplus_so_yourOptions"/>
 
-            <GuiElement position="0px -360px">
-                <GuiElement position="-150px 0px">
-                    <Text profile="offerCompareLabel" position="0px 0px" text="$l10n_usedplus_so_vanillaPrice"/>
-                    <Text profile="offerCompareValue" id="vanillaSellText" position="0px -20px" text=""/>
-                </GuiElement>
+                <!-- Row 1: Accept Offer - label left, value right -->
+                <Text profile="soOptionLabel" position="-100px -35px" text="$l10n_usedplus_so_thisOffer"/>
+                <Text profile="soOptionValue" id="thisOfferText" position="100px -35px"/>
 
-                <GuiElement position="150px 0px">
-                    <Text profile="offerCompareLabel" position="0px 0px" text="$l10n_usedplus_so_thisOffer"/>
-                    <Text profile="offerCompareHighlight" id="thisOfferText" position="0px -20px" text=""/>
-                </GuiElement>
+                <!-- Row 2: Keep Waiting - label left, note right -->
+                <Text profile="soOptionLabel" position="-100px -58px" text="$l10n_usedplus_so_keepWaiting"/>
+                <Text profile="soOptionNote" position="100px -58px" text="$l10n_usedplus_so_keepWaitingNote"/>
             </GuiElement>
 
-            <!-- Info Text -->
-            <Text profile="offerInfoText" position="0px -450px" text="$l10n_usedplus_so_acceptInfo"/>
-            <Text profile="offerInfoText" position="0px -475px" text="$l10n_usedplus_so_declineInfo"/>
+            <!-- ================================================================ -->
+            <!-- SECTION 5: Expiration Warning -->
+            <!-- ================================================================ -->
+            <GuiElement position="0px -480px">
+                <Text profile="soExpirationIcon" position="-100px 0px" text="⏱"/>
+                <Text profile="soExpirationLabel" position="-70px 0px" text="$l10n_usedplus_so_expiresIn"/>
+                <Text profile="soExpirationValue" id="expirationText" position="50px 0px"/>
+            </GuiElement>
 
         </GuiElement>
 
         <!-- Buttons -->
         <BoxLayout profile="fs25_dialogButtonBox">
-            <Button profile="buttonOK" id="acceptButton" text="$l10n_usedplus_button_acceptOffer" onClick="onClickAccept"/>
+            <Button profile="buttonOK" id="acceptButton" text="$l10n_usedplus_so_acceptOffer" onClick="onClickAccept"/>
             <Bitmap profile="fs25_dialogButtonBoxSeparator"/>
-            <Button profile="buttonBack" id="declineButton" text="$l10n_usedplus_button_decline" onClick="onClickDecline"/>
+            <Button profile="buttonBack" id="declineButton" text="$l10n_usedplus_so_keepWaitingBtn" onClick="onClickDecline"/>
         </BoxLayout>
 
     </GuiElement>
 
+    <!-- ================================================================ -->
+    <!-- CUSTOM PROFILES -->
+    <!-- ================================================================ -->
     <GUIProfiles>
-        <Profile name="offerSectionTitle" extends="fs25_dialogText" with="anchorTopCenter">
-            <textSize value="16px"/>
-            <textBold value="true"/>
-            <textColor value="1 0.8 0 1"/>
+        <!-- Section background (dark panel) -->
+        <Profile name="soSectionBg" extends="fs25_guiElement" with="anchorTopCenter">
+            <bgColor value="0.05 0.05 0.08 0.9"/>
         </Profile>
 
-        <!-- EMPIRICALLY TESTED: 210x140px displays store images without stretching -->
-        <Profile name="offerItemImage" extends="fs25_vehiclesDetailsImage" with="anchorTopCenter">
-            <size value="210px 140px"/>
+        <!-- Vehicle image (210x140 empirically tested) -->
+        <Profile name="soVehicleImage" extends="fs25_vehiclesDetailsImage" with="anchorTopCenter">
+            <size value="180px 120px"/>
         </Profile>
 
-        <Profile name="offerVehicleName" extends="fs25_textDefault" with="anchorTopCenter">
-            <height value="28px"/>
+        <!-- Vehicle name -->
+        <Profile name="soVehicleName" extends="fs25_textDefault" with="anchorTopCenter">
             <textSize value="20px"/>
             <textBold value="true"/>
         </Profile>
 
-        <Profile name="offerAgentTier" extends="fs25_textDefault" with="anchorTopCenter">
-            <height value="24px"/>
+        <!-- Agent/tier info (subtle) -->
+        <Profile name="soAgentInfo" extends="fs25_textDefault" with="anchorTopCenter">
             <textSize value="14px"/>
-            <textColor value="0.7 0.7 0.7 1"/>
+            <textColor value="0.6 0.6 0.6 1"/>
         </Profile>
 
-        <Profile name="offerLabel" extends="fs25_textDefault" with="anchorTopCenter">
-            <height value="24px"/>
-            <textSize value="14px"/>
+        <!-- Section labels -->
+        <Profile name="soSectionLabel" extends="fs25_textDefault" with="anchorTopCenter">
+            <textSize value="12px"/>
+            <textBold value="true"/>
             <textColor value="0.7 0.7 0.7 1"/>
             <textAlignment value="center"/>
         </Profile>
 
-        <Profile name="offerAmountValue" extends="fs25_textDefault" with="anchorTopCenter">
-            <height value="36px"/>
-            <textSize value="28px"/>
+        <!-- THE OFFER amount (big, green, prominent) -->
+        <Profile name="soOfferAmount" extends="fs25_textDefault" with="anchorTopCenter">
+            <textSize value="36px"/>
             <textBold value="true"/>
             <textColor value="0.3 1 0.3 1"/>
             <textAlignment value="center"/>
         </Profile>
 
-        <Profile name="offerPercentValue" extends="fs25_textDefault" with="anchorTopCenter">
-            <height value="28px"/>
-            <textSize value="20px"/>
-            <textBold value="true"/>
-            <textColor value="0.5 0.9 0.5 1"/>
-            <textAlignment value="center"/>
-        </Profile>
-
-        <Profile name="offerExpirationLabel" extends="fs25_textDefault" with="anchorTopCenter">
-            <textSize value="14px"/>
-            <textColor value="1 0.7 0.3 1"/>
-            <textAlignment value="center"/>
-        </Profile>
-
-        <Profile name="offerExpirationValue" extends="fs25_textDefault" with="anchorTopCenter">
+        <!-- Deal rating (stars + text) -->
+        <Profile name="soDealRating" extends="fs25_textDefault" with="anchorTopCenter">
             <textSize value="18px"/>
             <textBold value="true"/>
-            <textColor value="1 0.5 0.3 1"/>
+            <textColor value="1 0.85 0.2 1"/>
             <textAlignment value="center"/>
         </Profile>
 
-        <Profile name="offerCompareLabel" extends="fs25_textDefault" with="anchorTopCenter">
-            <textSize value="12px"/>
-            <textColor value="0.6 0.6 0.6 1"/>
-            <textAlignment value="center"/>
+        <!-- Range bar background -->
+        <Profile name="soRangeBarBg" extends="fs25_guiElement" with="anchorTopCenter">
+            <size value="450px 12px"/>
+            <bgColor value="0.15 0.15 0.2 1"/>
         </Profile>
 
-        <Profile name="offerCompareValue" extends="fs25_textDefault" with="anchorTopCenter">
+        <!-- Range bar fill (green gradient) -->
+        <Profile name="soRangeBarFill" extends="fs25_guiElement" with="anchorTopCenter">
+            <size value="450px 12px"/>
+            <bgColor value="0.2 0.6 0.3 1"/>
+        </Profile>
+
+        <!-- Range marker (offer position indicator) -->
+        <Profile name="soRangeMarker" extends="fs25_guiElement" with="anchorTopCenter">
+            <size value="4px 18px"/>
+            <bgColor value="1 1 0 1"/>
+        </Profile>
+
+        <!-- Range values (min/max) -->
+        <Profile name="soRangeValue" extends="fs25_textDefault" with="anchorTopCenter">
             <textSize value="14px"/>
-            <textColor value="0.8 0.8 0.8 1"/>
+            <textColor value="0.7 0.7 0.7 1"/>
             <textAlignment value="center"/>
         </Profile>
 
-        <Profile name="offerCompareHighlight" extends="fs25_textDefault" with="anchorTopCenter">
+        <!-- Range value highlighted (offer) -->
+        <Profile name="soRangeValueHighlight" extends="fs25_textDefault" with="anchorTopCenter">
             <textSize value="14px"/>
             <textBold value="true"/>
             <textColor value="0.3 1 0.3 1"/>
             <textAlignment value="center"/>
         </Profile>
 
-        <Profile name="offerInfoText" extends="fs25_textDefault" with="anchorTopCenter">
-            <height value="18px"/>
-            <textSize value="11px"/>
-            <textColor value="0.6 0.6 0.6 1"/>
+        <!-- Range labels -->
+        <Profile name="soRangeLabel" extends="fs25_textDefault" with="anchorTopCenter">
+            <textSize value="10px"/>
+            <textColor value="0.5 0.5 0.5 1"/>
             <textAlignment value="center"/>
+        </Profile>
+
+        <!-- Range label highlighted -->
+        <Profile name="soRangeLabelHighlight" extends="fs25_textDefault" with="anchorTopCenter">
+            <textSize value="10px"/>
+            <textBold value="true"/>
+            <textColor value="0.3 0.9 0.3 1"/>
+            <textAlignment value="center"/>
+        </Profile>
+
+        <!-- Options section container -->
+        <Profile name="soOptionsSection" extends="emptyPanel" with="anchorTopCenter">
+            <size value="680px 85px"/>
+        </Profile>
+
+        <!-- Options section background -->
+        <Profile name="soOptionsBg" extends="baseReference" with="anchorTopCenter">
+            <size value="680px 85px"/>
+            <imageColor value="0.05 0.05 0.08 0.9"/>
+        </Profile>
+
+        <!-- Option label (left side, right-aligned text) -->
+        <Profile name="soOptionLabel" extends="fs25_textDefault" with="anchorTopCenter">
+            <size value="180px 20px"/>
+            <textSize value="14px"/>
+            <textColor value="0.8 0.8 0.8 1"/>
+            <textAlignment value="right"/>
+        </Profile>
+
+        <!-- Option value (right side, left-aligned, green) -->
+        <Profile name="soOptionValue" extends="fs25_textDefault" with="anchorTopCenter">
+            <size value="180px 20px"/>
+            <textSize value="14px"/>
+            <textBold value="true"/>
+            <textColor value="0.3 1 0.3 1"/>
+            <textAlignment value="left"/>
+        </Profile>
+
+        <!-- Option note (right side, left-aligned, subtle) -->
+        <Profile name="soOptionNote" extends="fs25_textDefault" with="anchorTopCenter">
+            <size value="180px 20px"/>
+            <textSize value="12px"/>
+            <textColor value="0.6 0.6 0.6 1"/>
+            <textAlignment value="left"/>
+        </Profile>
+
+        <!-- Expiration icon -->
+        <Profile name="soExpirationIcon" extends="fs25_textDefault" with="anchorTopCenter">
+            <textSize value="18px"/>
+            <textColor value="1 0.6 0.2 1"/>
+        </Profile>
+
+        <!-- Expiration label -->
+        <Profile name="soExpirationLabel" extends="fs25_textDefault" with="anchorTopLeft">
+            <textSize value="14px"/>
+            <textColor value="1 0.7 0.3 1"/>
+        </Profile>
+
+        <!-- Expiration value -->
+        <Profile name="soExpirationValue" extends="fs25_textDefault" with="anchorTopLeft">
+            <textSize value="14px"/>
+            <textBold value="true"/>
+            <textColor value="1 0.5 0.2 1"/>
         </Profile>
     </GUIProfiles>
 </GUI>

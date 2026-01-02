@@ -1,22 +1,36 @@
 --[[
     FS25_UsedPlus - Sale Offer Dialog
 
-     Dialog for accepting or declining sale offers
-     Shown when agent finds a buyer for your vehicle
-     Pattern from MessageDialog (working reference)
+    REDESIGNED v1.9.6: Player-focused framing
+    - Removed "vanilla" terminology - players don't think that way
+    - Added deal quality rating with stars (★★★★☆)
+    - Shows expected range with visual bar positioning
+    - "Keep Waiting" instead of "Decline" - implies hope
+
+    v1.9.7: Simplified "Your Options" section
+    - Removed "Sell Instantly" (no instant sell in UsedPlus)
+    - Removed confusing "+X%" bonus display
 
     Features:
-    - Shows offer amount and percentage of vanilla sell
+    - Shows offer amount prominently with deal quality
+    - Visual range bar showing where offer falls
+    - Simple accept/wait options
     - Expiration countdown
-    - Accept (sell vehicle) or Decline (keep searching)
-    - Comparison with vanilla sell price
 ]]
 
 SaleOfferDialog = {}
 local SaleOfferDialog_mt = Class(SaleOfferDialog, MessageDialog)
 
+-- Deal quality thresholds (position in range 0-1)
+SaleOfferDialog.DEAL_RATINGS = {
+    { threshold = 0.00, stars = "★★☆☆☆", text = "Fair Offer",     color = {0.8, 0.8, 0.3, 1} },
+    { threshold = 0.25, stars = "★★★☆☆", text = "Good Deal",      color = {0.7, 0.9, 0.3, 1} },
+    { threshold = 0.50, stars = "★★★★☆", text = "Great Deal",     color = {0.4, 1.0, 0.4, 1} },
+    { threshold = 0.75, stars = "★★★★★", text = "Excellent Deal", color = {0.3, 1.0, 0.3, 1} },
+}
+
 --[[
-     Constructor
+    Constructor
 ]]
 function SaleOfferDialog.new(target, custom_mt, i18n)
     local self = MessageDialog.new(target, custom_mt or SaleOfferDialog_mt)
@@ -31,7 +45,7 @@ function SaleOfferDialog.new(target, custom_mt, i18n)
 end
 
 --[[
-     Set the listing with pending offer
+    Set the listing with pending offer
     @param listing - VehicleSaleListing with pending offer
     @param callback - Function called with (accepted: boolean) on decision
 ]]
@@ -44,7 +58,7 @@ function SaleOfferDialog:setListing(listing, callback)
 end
 
 --[[
-     Called when dialog opens
+    Called when dialog opens
 ]]
 function SaleOfferDialog:onOpen()
     SaleOfferDialog:superClass().onOpen(self)
@@ -53,47 +67,107 @@ function SaleOfferDialog:onOpen()
 end
 
 --[[
-     Update all display elements
-     Refactored to use UIHelper utilities for consistent formatting
+    Calculate deal quality rating based on where offer falls in expected range
+    @return rating table with stars, text, color, and position (0-1)
+]]
+function SaleOfferDialog:calculateDealRating()
+    if self.listing == nil then
+        return SaleOfferDialog.DEAL_RATINGS[1], 0
+    end
+
+    local offer = self.listing.currentOffer or 0
+    local minPrice = self.listing.expectedMinPrice or offer
+    local maxPrice = self.listing.expectedMaxPrice or offer
+
+    -- Calculate position in range (0 = min, 1 = max)
+    local range = maxPrice - minPrice
+    local position = 0
+    if range > 0 then
+        position = math.max(0, math.min(1, (offer - minPrice) / range))
+    elseif offer >= maxPrice then
+        position = 1  -- At or above max
+    end
+
+    -- Find appropriate rating
+    local rating = SaleOfferDialog.DEAL_RATINGS[1]
+    for i = #SaleOfferDialog.DEAL_RATINGS, 1, -1 do
+        if position >= SaleOfferDialog.DEAL_RATINGS[i].threshold then
+            rating = SaleOfferDialog.DEAL_RATINGS[i]
+            break
+        end
+    end
+
+    return rating, position
+end
+
+--[[
+    Update all display elements
+    REDESIGNED v1.9.6: Complete overhaul for player-focused presentation
 ]]
 function SaleOfferDialog:updateDisplay()
     if self.listing == nil then return end
 
-    -- Vehicle name
+    -- ================================================================
+    -- SECTION 1: Vehicle Info
+    -- ================================================================
     UIHelper.Element.setText(self.vehicleNameText, self.listing.vehicleName or "Unknown Vehicle")
-
-    -- Vehicle image (using UIHelper for consistent image handling)
     UIHelper.Image.setImagePath(self.vehicleImage, self.listing.vehicleImageFile)
 
-    -- Agent tier
-    UIHelper.Element.setText(self.agentTierText, string.format("via %s", self.listing:getTierName()))
+    -- Agent info: "Standard Agent · Fair Market"
+    local agentTier = self.listing:getAgentTierConfig()
+    local priceTier = self.listing:getPriceTierConfig()
+    local agentInfo = string.format("%s · %s", agentTier.name or "Agent", priceTier.name or "Standard")
+    UIHelper.Element.setText(self.agentTierText, agentInfo)
 
-    -- Offer amount (green for money coming in)
-    UIHelper.Finance.displayTotalCost(self.offerAmountText, self.listing.currentOffer or 0)
+    -- ================================================================
+    -- SECTION 2: The Offer + Deal Rating
+    -- ================================================================
+    local offer = self.listing.currentOffer or 0
+    UIHelper.Element.setText(self.offerAmountText, UIHelper.Text.formatMoney(offer))
 
-    -- Percentage of vanilla sell
-    local percent = 0
-    if self.listing.vanillaSellPrice > 0 and self.listing.currentOffer then
-        percent = math.floor((self.listing.currentOffer / self.listing.vanillaSellPrice) * 100)
+    -- Calculate and display deal rating
+    local rating, position = self:calculateDealRating()
+    local ratingText = string.format("%s %s", rating.stars, rating.text)
+    if self.dealRatingText then
+        self.dealRatingText:setText(ratingText)
+        self.dealRatingText:setTextColor(unpack(rating.color))
     end
-    UIHelper.Element.setText(self.offerPercentText, UIHelper.Text.formatPercent(percent, false))
 
-    -- Expiration time (using UIHelper for consistent time formatting)
-    UIHelper.Element.setText(self.expirationText, UIHelper.Text.formatHours(self.listing.offerExpiresIn or 0))
+    -- ================================================================
+    -- SECTION 3: Expected Range
+    -- ================================================================
+    local minPrice = self.listing.expectedMinPrice or offer
+    local maxPrice = self.listing.expectedMaxPrice or offer
 
-    -- Comparison section: vanilla vs this offer
-    UIHelper.Element.setText(self.vanillaSellText, UIHelper.Text.formatMoney(self.listing.vanillaSellPrice or 0))
+    UIHelper.Element.setText(self.rangeMinText, UIHelper.Text.formatMoney(minPrice))
+    UIHelper.Element.setText(self.rangeOfferText, UIHelper.Text.formatMoney(offer))
+    UIHelper.Element.setText(self.rangeMaxText, UIHelper.Text.formatMoney(maxPrice))
 
-    -- This offer with green highlight (better than vanilla)
-    UIHelper.Element.setTextWithColor(
-        self.thisOfferText,
-        UIHelper.Text.formatMoney(self.listing.currentOffer or 0),
-        UIHelper.Colors.MONEY_GREEN
-    )
+    -- Position the range marker (if element exists)
+    -- Bar is 450px wide, position is 0-1
+    -- Marker should move from -225px (left) to +225px (right)
+    if self.rangeMarker then
+        local markerX = -225 + (position * 450)
+        -- Note: We can't easily reposition elements in FS25, so we'll leave this for now
+        -- The text labels provide the information
+    end
+
+    -- ================================================================
+    -- SECTION 4: Your Options (simplified - just show offer amount)
+    -- ================================================================
+    UIHelper.Element.setText(self.thisOfferText, UIHelper.Text.formatMoney(offer))
+
+    -- ================================================================
+    -- SECTION 5: Expiration
+    -- ================================================================
+    local expiresIn = self.listing.offerExpiresIn or 0
+    UIHelper.Element.setText(self.expirationText, UIHelper.Text.formatHours(expiresIn))
 end
 
 --[[
-     Handle accept button click
+    Handle accept button click
+    CRITICAL: Close dialog BEFORE callback - callback may delete the vehicle
+    which causes errors if dialog is still referencing it
 ]]
 function SaleOfferDialog:onClickAccept()
     if self.listing == nil then
@@ -101,50 +175,57 @@ function SaleOfferDialog:onClickAccept()
         return
     end
 
-    -- Call callback with accepted = true
-    if self.callback then
-        self.callback(true)
-    end
+    -- Cache values before closing (dialog will lose reference to listing)
+    local vehicleName = self.listing.vehicleName
+    local offerAmount = self.listing.currentOffer or 0
+    local callback = self.callback
 
-    UsedPlus.logDebug(string.format("Offer accepted for %s: $%d",
-        self.listing.vehicleName, self.listing.currentOffer or 0))
-
+    -- Close dialog FIRST (before vehicle gets deleted)
     self:close()
+
+    -- Log the acceptance
+    UsedPlus.logDebug(string.format("Offer accepted for %s: $%d", vehicleName, offerAmount))
+
+    -- Call callback AFTER close (this may delete the vehicle)
+    if callback then
+        callback(true)
+    end
 end
 
 --[[
-     Handle decline button click
+    Handle decline button click (now called "Keep Waiting")
+    Close dialog before callback for consistency with accept pattern
 ]]
 function SaleOfferDialog:onClickDecline()
-    -- Call callback with accepted = false
-    if self.callback then
-        self.callback(false)
-    end
+    -- Cache values before closing
+    local vehicleName = self.listing and self.listing.vehicleName or "Unknown"
+    local callback = self.callback
 
-    UsedPlus.logDebug(string.format("Offer declined for %s",
-        self.listing and self.listing.vehicleName or "Unknown"))
-
+    -- Close dialog first
     self:close()
+
+    -- Log the decline
+    UsedPlus.logDebug(string.format("Offer declined (keep waiting) for %s", vehicleName))
+
+    -- Call callback after close
+    if callback then
+        callback(false)
+    end
 end
 
 --[[
-     Close this dialog properly
-     v1.9.5: Use closeDialogByName pattern like other dialogs
+    Close this dialog properly
+    v1.9.5: Use closeDialogByName pattern like other dialogs
 ]]
 function SaleOfferDialog:close()
     g_gui:closeDialogByName("SaleOfferDialog")
 end
 
 --[[
-     Show the offer dialog for a listing
-     Static helper function
+    Show the offer dialog for a listing
+    Static helper function
     @param listing - VehicleSaleListing with pending offer
     @param callback - Function called with (accepted: boolean)
-]]
---[[
-     Static show method - refactored to use DialogLoader
-     v1.9.5: Removed hasPendingOffer check - let the dialog show regardless
-     (status may not be updated yet when this is called from onOfferReceived)
 ]]
 function SaleOfferDialog.showForListing(listing, callback)
     if listing == nil then
@@ -164,4 +245,4 @@ function SaleOfferDialog.showForListing(listing, callback)
     return DialogLoader.show("SaleOfferDialog", "setListing", listing, callback)
 end
 
-UsedPlus.logInfo("SaleOfferDialog loaded")
+UsedPlus.logInfo("SaleOfferDialog loaded (v1.9.7 simplified options)")

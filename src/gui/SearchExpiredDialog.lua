@@ -39,20 +39,20 @@ function SearchExpiredDialog.new(target, custom_mt)
 end
 
 --[[
-    Get singleton instance (lazy load)
+    Set data for the dialog (called by DialogLoader)
+    @param searchData - The completed search
+    @param foundCount - Number of vehicles found
+    @param renewCost - Cost to renew the search
+    @param callback - Function(renewChoice) called on close, true if renewing
 ]]
-function SearchExpiredDialog.getInstance()
-    if g_searchExpiredDialog == nil then
-        g_searchExpiredDialog = SearchExpiredDialog.new()
+function SearchExpiredDialog:setData(searchData, foundCount, renewCost, callback)
+    self.searchData = searchData
+    self.foundCount = foundCount or 0
+    self.renewCost = renewCost or 0
+    self.callback = callback
 
-        -- Load XML
-        local xmlPath = Utils.getFilename("gui/SearchExpiredDialog.xml", UsedPlus.MOD_DIR)
-        g_gui:loadGui(xmlPath, "SearchExpiredDialog", g_searchExpiredDialog, true)
-
-        UsedPlus.logDebug("SearchExpiredDialog instance created")
-    end
-
-    return g_searchExpiredDialog
+    UsedPlus.logDebug(string.format("SearchExpiredDialog:setData - %s, %d found, $%d renewal",
+        searchData and searchData.id or "nil", self.foundCount, self.renewCost))
 end
 
 --[[
@@ -61,8 +61,9 @@ end
 function SearchExpiredDialog:onOpen()
     SearchExpiredDialog:superClass().onOpen(self)
 
-    -- Assign controls
+    -- Assign controls and update display
     self:assignControls()
+    self:updateDisplay()
 end
 
 --[[
@@ -77,37 +78,16 @@ function SearchExpiredDialog:assignControls()
 end
 
 --[[
-    Show dialog with search data
-    @param searchData - The completed search
-    @param foundCount - Number of vehicles found
-    @param renewCost - Cost to renew the search
-    @param callback - Function(renewChoice) called on close, true if renewing
-]]
-function SearchExpiredDialog:show(searchData, foundCount, renewCost, callback)
-    self.searchData = searchData
-    self.foundCount = foundCount or 0
-    self.renewCost = renewCost or 0
-    self.callback = callback
-
-    -- Update display
-    self:updateDisplay()
-
-    -- Show dialog
-    g_gui:showDialog("SearchExpiredDialog")
-end
-
---[[
-    Static show method
+    Static show method - uses DialogLoader for proper instance management
     @param searchData - The completed search
     @param foundCount - Number of vehicles found
     @param renewCost - Cost to renew the search
     @param callback - Function(renewChoice) called on close
 ]]
 function SearchExpiredDialog.showWithData(searchData, foundCount, renewCost, callback)
-    local dialog = SearchExpiredDialog.getInstance()
-    if dialog then
-        dialog:show(searchData, foundCount, renewCost, callback)
-    end
+    -- Use DialogLoader for consistent instance management
+    -- setData is called first, then onOpen triggers updateDisplay
+    return DialogLoader.show("SearchExpiredDialog", "setData", searchData, foundCount, renewCost, callback)
 end
 
 --[[
