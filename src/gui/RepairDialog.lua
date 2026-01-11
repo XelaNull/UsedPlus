@@ -85,11 +85,13 @@ end
     @param vehicle - The vehicle object to repair
     @param farmId - Farm ID that owns the vehicle
     @param mode - Optional mode: "repair", "repaint", or "both" (default: "both")
+    @param rvbRepairCost - Optional: RVB's calculated repair cost (used when called from RVB Workshop)
 ]]
-function RepairDialog:setVehicle(vehicle, farmId, mode)
+function RepairDialog:setVehicle(vehicle, farmId, mode, rvbRepairCost)
     self.vehicle = vehicle
     self.farmId = farmId
     self.mode = mode or RepairDialog.MODE_BOTH
+    self.rvbRepairCost = rvbRepairCost  -- Store RVB cost for later use
 
     if vehicle == nil then
         UsedPlus.logError("RepairDialog:setVehicle - No vehicle provided")
@@ -117,18 +119,25 @@ function RepairDialog:setVehicle(vehicle, farmId, mode)
         self.currentWear = 0
     end
 
-    -- Get repair cost multiplier from settings
+    -- Get cost multipliers from settings (v2.0.0: separate paint multiplier)
     local repairMultiplier = UsedPlusSettings and UsedPlusSettings:get("repairCostMultiplier") or 1.0
+    local paintMultiplier = UsedPlusSettings and UsedPlusSettings:get("paintCostMultiplier") or 1.0
 
-    -- Calculate full repair/repaint costs using game's Wearable functions
-    if Wearable and Wearable.calculateRepairPrice then
+    -- Calculate full repair cost
+    -- v2.1.2: Use RVB's calculated repair cost if provided (from RVB Workshop integration)
+    if self.rvbRepairCost and self.rvbRepairCost > 0 then
+        self.fullRepairCost = self.rvbRepairCost
+        UsedPlus.logDebug(string.format("RepairDialog: Using RVB repair cost: $%d", self.fullRepairCost))
+    elseif Wearable and Wearable.calculateRepairPrice then
         self.fullRepairCost = Wearable.calculateRepairPrice(self.basePrice, self.currentDamage) or 0
+        -- Apply settings multiplier (only when not using RVB cost)
+        self.fullRepairCost = math.floor(self.fullRepairCost * repairMultiplier)
     else
         -- Fallback calculation: damage% * 25% of base price
         self.fullRepairCost = math.floor(self.basePrice * self.currentDamage * 0.25)
+        -- Apply settings multiplier
+        self.fullRepairCost = math.floor(self.fullRepairCost * repairMultiplier)
     end
-    -- Apply settings multiplier
-    self.fullRepairCost = math.floor(self.fullRepairCost * repairMultiplier)
 
     if Wearable and Wearable.calculateRepaintPrice then
         self.fullRepaintCost = Wearable.calculateRepaintPrice(self.basePrice, self.currentWear) or 0
@@ -136,8 +145,8 @@ function RepairDialog:setVehicle(vehicle, farmId, mode)
         -- Fallback calculation: wear% * 15% of base price
         self.fullRepaintCost = math.floor(self.basePrice * self.currentWear * 0.15)
     end
-    -- Apply settings multiplier to repaint too
-    self.fullRepaintCost = math.floor(self.fullRepaintCost * repairMultiplier)
+    -- Apply settings multiplier to repaint (v2.0.0: uses separate paintCostMultiplier)
+    self.fullRepaintCost = math.floor(self.fullRepaintCost * paintMultiplier)
 
     -- Reset sliders to sensible defaults
     -- If vehicle needs minimal repair, default to 100%

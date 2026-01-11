@@ -239,59 +239,87 @@ end
 
 -- ============================================================================
 -- IMAGE HANDLING
--- Unified vehicle image loading to replace 4 different approaches
+-- Simplified vehicle image loading following RVB's working pattern
+--
+-- IMPORTANT: Proper image display requires BOTH:
+-- 1. Correct XML profile (see docs/VEHICLE_IMAGE_DISPLAY.md):
+--    - extends="baseReference"
+--    - size="200px 200px" (SQUARE)
+--    - imageSliceId="noSlice" (CRITICAL)
+-- 2. Simple setImageFilename() call (this file handles that)
+--
+-- The XML profile does all the heavy lifting. These helpers just load the image.
 -- ============================================================================
 
 UIHelper.Image = {}
 
 --[[
-    Set store item image on a GUI element with proper error handling
-    @param imageElement - GuiElement with setImageFilename method
-    @param storeItem - Store item with imageFilename/imageFilenameFallback
-    @param clearFirst - Clear existing image before setting (default true)
+    Universal image setter - ONE function to handle all image sources
+
+    IMPORTANT: The XML profile MUST have imageSliceId="noSlice" for correct display.
+    See docs/VEHICLE_IMAGE_DISPLAY.md for the required profile pattern.
+
+    @param imageElement - Bitmap element with setImageFilename method
+    @param source - Can be:
+                    - storeItem (table with .imageFilename)
+                    - vehicle (table with .configFileName - will look up storeItem)
+                    - string (direct image path)
+                    - nil (hides the element)
     @return boolean - True if image was set successfully
+
+    Examples:
+        UIHelper.Image.set(self.vehicleImage, storeItem)           -- from store item
+        UIHelper.Image.set(self.vehicleImage, vehicle)             -- from vehicle object
+        UIHelper.Image.set(self.vehicleImage, "path/to/image.png") -- from path string
+        UIHelper.Image.set(self.vehicleImage, listing.vehicleImageFile) -- from saved path
 ]]
-function UIHelper.Image.setStoreItemImage(imageElement, storeItem, clearFirst)
+function UIHelper.Image.set(imageElement, source)
     if not imageElement then
         return false
     end
 
-    if not storeItem then
+    -- No source = hide element
+    if not source then
         if imageElement.setVisible then
             imageElement:setVisible(false)
         end
         return false
     end
 
-    clearFirst = clearFirst ~= false  -- default true
+    local imagePath = nil
 
-    -- Clear existing image if requested
-    if clearFirst then
-        if imageElement.setImage then
-            imageElement:setImage(nil)
-        elseif imageElement.setImageFilename then
-            imageElement:setImageFilename(nil)
+    -- Determine source type and extract image path
+    if type(source) == "string" then
+        -- Direct path string
+        imagePath = source
+
+    elseif type(source) == "table" then
+        if source.imageFilename then
+            -- It's a storeItem (has imageFilename property)
+            imagePath = source.imageFilename
+            if (not imagePath or imagePath == "") and source.imageFilenameFallback then
+                imagePath = source.imageFilenameFallback
+            end
+
+        elseif source.configFileName then
+            -- It's a vehicle (has configFileName) - look up storeItem
+            local storeItem = g_storeManager:getItemByXMLFilename(source.configFileName)
+            if storeItem then
+                imagePath = storeItem.imageFilename
+                if (not imagePath or imagePath == "") and storeItem.imageFilenameFallback then
+                    imagePath = storeItem.imageFilenameFallback
+                end
+            end
+
+        elseif source.vehicleImageFile then
+            -- It's a listing object (has vehicleImageFile property)
+            imagePath = source.vehicleImageFile
         end
     end
 
-    -- Try imageFilename first, then fallback
-    local imagePath = storeItem.imageFilename
-    if (not imagePath or imagePath == "") and storeItem.imageFilenameFallback then
-        imagePath = storeItem.imageFilenameFallback
-    end
-
+    -- Set the image or hide if no valid path
     if imagePath and imagePath ~= "" then
-        -- FS25 Bitmaps use setImage(), not setImageFilename()
-        -- Try setImage first (correct for Bitmap), fall back to setImageFilename
-        if imageElement.setImage then
-            imageElement:setImage(imagePath)
-        elseif imageElement.setImageFilename then
-            imageElement:setImageFilename(imagePath)
-        else
-            UsedPlus.logWarn("Image element has neither setImage nor setImageFilename method")
-            return false
-        end
-
+        imageElement:setImageFilename(imagePath)
         if imageElement.setVisible then
             imageElement:setVisible(true)
         end
@@ -304,122 +332,26 @@ function UIHelper.Image.setStoreItemImage(imageElement, storeItem, clearFirst)
     end
 end
 
---[[
-    Set vehicle image from vehicle object
-    @param imageElement - GuiElement with setImageFilename method
-    @param vehicle - Vehicle object with configFileName
-    @return boolean - True if image was set successfully
-]]
+-- ============================================================================
+-- BACKWARD COMPATIBILITY ALIASES
+-- These delegate to the unified set() function
+-- ============================================================================
+
+function UIHelper.Image.setStoreItemImage(imageElement, storeItem)
+    return UIHelper.Image.set(imageElement, storeItem)
+end
+
 function UIHelper.Image.setVehicleImage(imageElement, vehicle)
-    if not imageElement or not vehicle then
-        return false
-    end
-
-    local storeItem = g_storeManager:getItemByXMLFilename(vehicle.configFileName)
-    return UIHelper.Image.setStoreItemImage(imageElement, storeItem)
+    return UIHelper.Image.set(imageElement, vehicle)
 end
 
---[[
-    Set image from direct path
-    @param imageElement - GuiElement with setImageFilename method
-    @param imagePath - Path to image file
-    @return boolean - True if image was set successfully
-]]
 function UIHelper.Image.setImagePath(imageElement, imagePath)
-    if not imageElement then
-        return false
-    end
-
-    if imagePath and imagePath ~= "" and imageElement.setImageFilename then
-        imageElement:setImageFilename(imagePath)
-        if imageElement.setVisible then
-            imageElement:setVisible(true)
-        end
-        return true
-    else
-        if imageElement.setVisible then
-            imageElement:setVisible(false)
-        end
-        return false
-    end
+    return UIHelper.Image.set(imageElement, imagePath)
 end
 
---[[
-    Set store item image with ADAPTIVE sizing to prevent stretching
-
-    SUPERIOR METHODOLOGY:
-    1. Load the image into the element
-    2. Introspect the element to detect actual loaded image dimensions
-    3. Calculate proper scaled size maintaining aspect ratio
-    4. Apply size using the same coordinate system as absSize
-
-    This approach works for ANY image aspect ratio, not just assumed 2:1.
-
-    @param imageElement - GuiElement (Bitmap) with setImage method
-    @param storeItem - Store item with imageFilename
-    @param maxWidth - Maximum width in reference pixels (default 210)
-    @param maxHeight - Maximum height in reference pixels (default 105)
-    @return boolean - True if image was set successfully
-]]
+-- DEPRECATED: "Scaled" approach is obsolete with proper XML profiles
 function UIHelper.Image.setStoreItemImageScaled(imageElement, storeItem, maxWidth, maxHeight)
-    if not imageElement then
-        UsedPlus.logDebug("setStoreItemImageScaled: No image element provided")
-        return false
-    end
-
-    if not storeItem then
-        UsedPlus.logDebug("setStoreItemImageScaled: No store item provided")
-        if imageElement.setVisible then
-            imageElement:setVisible(false)
-        end
-        return false
-    end
-
-    maxWidth = maxWidth or 210
-    maxHeight = maxHeight or 105
-
-    -- Get image path from store item
-    local imagePath = storeItem.imageFilename
-    if (not imagePath or imagePath == "") and storeItem.imageFilenameFallback then
-        imagePath = storeItem.imageFilenameFallback
-    end
-
-    if not imagePath or imagePath == "" then
-        UsedPlus.logDebug("setStoreItemImageScaled: No image path available")
-        if imageElement.setVisible then
-            imageElement:setVisible(false)
-        end
-        return false
-    end
-
-    -- Set the image - use setImage() for Bitmap elements (correct FS25 method)
-    if imageElement.setImage then
-        imageElement:setImage(imagePath)
-    elseif imageElement.setImageFilename then
-        imageElement:setImageFilename(imagePath)
-    else
-        UsedPlus.logWarn("setStoreItemImageScaled: No image setter method available")
-        return false
-    end
-
-    -- Make visible after setting image
-    if imageElement.setVisible then
-        imageElement:setVisible(true)
-    end
-
-    -- PROFILE-BASED SIZING (no setSize call needed)
-    -- EMPIRICALLY TESTED: 210x140px displays store images without stretching.
-    -- Theoretical calculations (screen aspect ratio compensation) failed:
-    --   - 210x105 (2:1) = stretched horizontally
-    --   - 210x59 (calculated) = pancake flat
-    --   - 210x140 = correct display
-    --
-    -- DO NOT call setSize() - it uses different coordinate system and breaks display.
-    -- The XML profile (210x140) handles sizing correctly.
-
-    UsedPlus.logDebug("setStoreItemImageScaled: Image set, profile handles sizing (210x140)")
-
-    return true
+    return UIHelper.Image.set(imageElement, storeItem)
 end
 
 -- ============================================================================

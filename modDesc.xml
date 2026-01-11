@@ -240,20 +240,29 @@ v1.0.0.0 (2025-11-22) - Erstveröffentlichung
          Input actions for opening finance manager from ESC or in-game
          Pattern from: EnhancedLoanSystem, BuyUsedEquipment
     -->
+    <!-- v2.0.3: Separated actions and inputBinding for proper on-foot player actions -->
+    <!-- Pattern from: FS25_CutOpenBale which works for on-foot keybinds -->
     <actions>
-        <action name="USEDPLUS_OPEN_FINANCE_MANAGER" category="ONFOOT VEHICLE"
-                axisType="HALF" ignoreComboMask="false">
-            <binding device="KB_MOUSE_DEFAULT" input="KEY_lshift KEY_f"/>
-        </action>
-        <action name="USEDPLUS_SEARCH_USED" category="MENU"
-                axisType="HALF" ignoreComboMask="false">
-            <binding device="KB_MOUSE_DEFAULT" input="KEY_u"/>
-        </action>
-        <action name="USEDPLUS_INSPECT_VEHICLE" category="MENU"
-                axisType="HALF" ignoreComboMask="false">
-            <binding device="KB_MOUSE_DEFAULT" input="KEY_i"/>
-        </action>
+        <action name="USEDPLUS_OPEN_FINANCE_MANAGER" category="ONFOOT VEHICLE" axisType="HALF"/>
+        <action name="USEDPLUS_SEARCH_USED" category="MENU" axisType="HALF"/>
+        <action name="USEDPLUS_INSPECT_VEHICLE" category="MENU" axisType="HALF"/>
+        <action name="USEDPLUS_ACTIVATE_OBD" category="ONFOOT" axisType="HALF"/>
     </actions>
+
+    <inputBinding>
+        <actionBinding action="USEDPLUS_OPEN_FINANCE_MANAGER">
+            <binding device="KB_MOUSE_DEFAULT" input="KEY_lshift KEY_f"/>
+        </actionBinding>
+        <actionBinding action="USEDPLUS_SEARCH_USED">
+            <binding device="KB_MOUSE_DEFAULT" input="KEY_u"/>
+        </actionBinding>
+        <actionBinding action="USEDPLUS_INSPECT_VEHICLE">
+            <binding device="KB_MOUSE_DEFAULT" input="KEY_i"/>
+        </actionBinding>
+        <actionBinding action="USEDPLUS_ACTIVATE_OBD">
+            <binding device="KB_MOUSE_DEFAULT" input="KEY_o"/>
+        </actionBinding>
+    </inputBinding>
 
     <!--
          GUI XML definitions for ESC menu screens only
@@ -323,6 +332,8 @@ v1.0.0.0 (2025-11-22) - Erstveröffentlichung
         <sourceFile filename="src/managers/FinanceManager.lua"/>
         <sourceFile filename="src/managers/UsedVehicleManager.lua"/>
         <sourceFile filename="src/managers/VehicleSaleManager.lua"/>  <!--  Agent-based vehicle sales -->
+        <sourceFile filename="src/managers/DifficultyScalingManager.lua"/>  <!--  v2.0.0: Farmland difficulty scaling (GMNGjoy pattern) -->
+        <sourceFile filename="src/managers/BankInterestManager.lua"/>  <!--  v2.0.0: Bank interest on cash (Evan Kirsch pattern) -->
 
         <!-- GUI screens (depend on managers) -->
         <sourceFile filename="src/gui/LeaseEndDialog.lua"/>  <!--  Lease end options -->
@@ -369,6 +380,7 @@ v1.0.0.0 (2025-11-22) - Erstveröffentlichung
         <sourceFile filename="src/extensions/VehicleSellingPointExtension.lua"/>
         <sourceFile filename="src/extensions/InGameMenuVehiclesFrameExtension.lua"/>  <!--  Hook ESC Vehicles Sell button -->
         <sourceFile filename="src/extensions/WorkshopScreenExtension.lua"/>  <!--  Hook Workshop Inspect button -->
+        <sourceFile filename="src/extensions/RVBWorkshopIntegration.lua"/>  <!--  v2.1.0: RVB Workshop cross-mod integration -->
         <sourceFile filename="src/extensions/FinanceMenuExtension.lua"/>  <!--  Disable vanilla borrow, require credit-based loans -->
 
         <!-- Main entry point (MUST be last - depends on everything) -->

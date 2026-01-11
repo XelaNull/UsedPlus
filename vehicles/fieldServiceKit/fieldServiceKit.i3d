@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
 
-<i3D name="toolboxWorkshop.i3d" version="1.6" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://i3d.giants.ch/schema/i3d-1.6.xsd">
+<i3D name="fieldServiceKit.i3d" version="1.6" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://i3d.giants.ch/schema/i3d-1.6.xsd">
   <Asset>
     <Export program="GIANTS Editor 64bit" version="10.0.3"/>
   </Asset>
@@ -54,7 +54,7 @@
   </Materials>
 
 
-  <Shapes externalShapesFile="toolboxWorkshop.i3d.shapes">
+  <Shapes externalShapesFile="fieldServiceKit.i3d.shapes">
   </Shapes>
 
   <Scene>

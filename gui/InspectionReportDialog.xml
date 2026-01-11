@@ -8,7 +8,7 @@
     <GuiElement profile="newLayer" />
     <Bitmap profile="dialogFullscreenBg" id="dialogBg" />
 
-    <GuiElement profile="dialogBg" id="dialogElement" size="720px 660px">
+    <GuiElement profile="dialogBg" id="dialogElement" size="720px 770px">
         <ThreePartBitmap profile="fs25_dialogBgMiddle" />
         <ThreePartBitmap profile="fs25_dialogBgTop" />
         <ThreePartBitmap profile="fs25_dialogBgBottom" />
@@ -25,7 +25,7 @@
                 <!-- Two-column layout: Image left, Info right -->
                 <GuiElement position="0px -28px">
                     <!-- Vehicle Image (left) - Y=42px matches UsedSearchDialog -->
-                    <Bitmap profile="irpVehicleImage" id="vehicleImage" position="-185px 42px"/>
+                    <Bitmap profile="irpVehicleImage" id="vehicleImage" position="-185px 75px"/>
 
                     <!-- Vehicle Info (right) -->
                     <Text profile="irpVehicleName" id="vehicleNameText" position="120px -5px" text=""/>
@@ -37,25 +37,49 @@
                 </GuiElement>
             </GuiElement>
 
-            <!-- ========== SECTION 2: Mechanical Assessment ========== -->
-            <GuiElement profile="irpSectionContainerTall" position="0px -220px">
-                <Bitmap profile="irpSectionBgTall" position="0px 0px"/>
+            <!-- ========== SECTION 2: Mechanical Assessment (Integrated RVB v2.1.2) ========== -->
+            <!-- Main system ratings + sub-components shown when RVB data available -->
+            <GuiElement profile="irpMechanicalSection" position="0px -220px">
+                <Bitmap profile="irpMechanicalBg" position="0px 0px"/>
                 <Text profile="irpSectionHeader" position="0px -5px" text="$l10n_usedplus_irp_sectionMechanical"/>
 
-                <!-- Left column: Component ratings -->
-                <Text profile="irpComponentLabel" position="-250px -32px" text="$l10n_usedplus_irp_engine"/>
-                <Text profile="irpComponentValue" id="engineRatingText" position="-150px -32px" text=""/>
-                <Text profile="irpComponentStatus" id="engineStatusText" position="-70px -32px" text=""/>
+                <!-- ENGINE SYSTEM (shifted right 20px) -->
+                <Text profile="irpSystemLabel" position="-260px -30px" text="$l10n_usedplus_irp_engine"/>
+                <Text profile="irpSystemValue" id="engineRatingText" position="-160px -30px" text=""/>
+                <Text profile="irpSystemStatus" id="engineStatusText" position="-80px -30px" text=""/>
 
-                <Text profile="irpComponentLabel" position="-250px -55px" text="$l10n_usedplus_irp_hydraulics"/>
-                <Text profile="irpComponentValue" id="hydraulicRatingText" position="-150px -55px" text=""/>
-                <Text profile="irpComponentStatus" id="hydraulicStatusText" position="-70px -55px" text=""/>
+                <!-- Engine sub-components (shown when RVB data exists) -->
+                <GuiElement id="engineSubComponentsContainer" position="0px 0px">
+                    <Text profile="irpSubLabel" position="-240px -48px" text="Engine Core"/>
+                    <Text profile="irpSubValue" id="engineCoreText" position="-145px -48px" text="--"/>
+                    <Text profile="irpSubLabel" position="-240px -63px" text="Thermostat"/>
+                    <Text profile="irpSubValue" id="thermostatText" position="-145px -63px" text="--"/>
+                </GuiElement>
 
-                <Text profile="irpComponentLabel" position="-250px -78px" text="$l10n_usedplus_irp_electrical"/>
-                <Text profile="irpComponentValue" id="electricalRatingText" position="-150px -78px" text=""/>
-                <Text profile="irpComponentStatus" id="electricalStatusText" position="-70px -78px" text=""/>
+                <!-- HYDRAULIC SYSTEM (UsedPlus only - RVB doesn't track) -->
+                <Text profile="irpSystemLabel" position="-260px -82px" text="$l10n_usedplus_irp_hydraulics"/>
+                <Text profile="irpSystemValue" id="hydraulicRatingText" position="-160px -82px" text=""/>
+                <Text profile="irpSystemStatus" id="hydraulicStatusText" position="-80px -82px" text=""/>
 
-                <!-- Right column: Overall & Repair Cost -->
+                <!-- ELECTRICAL SYSTEM -->
+                <Text profile="irpSystemLabel" position="-260px -102px" text="$l10n_usedplus_irp_electrical"/>
+                <Text profile="irpSystemValue" id="electricalRatingText" position="-160px -102px" text=""/>
+                <Text profile="irpSystemStatus" id="electricalStatusText" position="-80px -102px" text=""/>
+
+                <!-- Electrical sub-components (shown when RVB data exists) -->
+                <!-- Column 1: Generator/Starter, Column 2: Battery/Glow Plug (spaced apart) -->
+                <GuiElement id="electricalSubComponentsContainer" position="0px 0px">
+                    <Text profile="irpSubLabel" position="-240px -120px" text="Generator"/>
+                    <Text profile="irpSubValue" id="generatorText" position="-150px -120px" text="--"/>
+                    <Text profile="irpSubLabel" position="-50px -120px" text="Battery"/>
+                    <Text profile="irpSubValue" id="batteryText" position="40px -120px" text="--"/>
+                    <Text profile="irpSubLabel" position="-240px -135px" text="Starter"/>
+                    <Text profile="irpSubValue" id="starterText" position="-150px -135px" text="--"/>
+                    <Text profile="irpSubLabel" position="-50px -135px" text="Glow Plug"/>
+                    <Text profile="irpSubValue" id="glowPlugText" position="40px -135px" text="--"/>
+                </GuiElement>
+
+                <!-- Right column: Overall & Costs -->
                 <Text profile="irpLabel" position="100px -32px" text="$l10n_usedplus_irp_overallCondition"/>
                 <Text profile="irpOverallValue" id="overallRatingText" position="250px -32px" text=""/>
 
@@ -66,9 +90,40 @@
                 <Text profile="irpPostRepairValue" id="postRepairValueText" position="250px -78px" text="$0"/>
             </GuiElement>
 
-            <!-- ========== SECTION 3: Mechanic's Assessment (v1.4.0, enhanced v1.9.4) ========== -->
+            <!-- HIDDEN: Legacy RVB section (replaced by integrated view above) -->
+            <GuiElement profile="irpRvbSection" id="rvbSectionContainer" position="0px -9999px">
+                <!-- Moved off-screen, hidden by Lua -->
+            </GuiElement>
+
+            <!-- ========== SECTION 3: Tire Conditions (v2.1.0) ========== -->
+            <!-- Shows per-wheel conditions when tire data exists -->
+            <!-- Position adjusted: was -430px, now -380px (RVB section removed) -->
+            <GuiElement profile="irpTireSection" id="tireSectionContainer" position="0px -380px">
+                <Bitmap profile="irpTireBg" position="0px 0px"/>
+                <Text profile="irpSectionHeader" position="0px -5px" text="$l10n_usedplus_irp_sectionTires"/>
+
+                <!-- 4 tires in a row -->
+                <Text profile="irpTireLabel" position="-230px -30px" text="FL"/>
+                <Text profile="irpTireValue" id="tireFLText" position="-230px -48px" text="--"/>
+
+                <Text profile="irpTireLabel" position="-80px -30px" text="FR"/>
+                <Text profile="irpTireValue" id="tireFRText" position="-80px -48px" text="--"/>
+
+                <Text profile="irpTireLabel" position="70px -30px" text="RL"/>
+                <Text profile="irpTireValue" id="tireRLText" position="70px -48px" text="--"/>
+
+                <Text profile="irpTireLabel" position="220px -30px" text="RR"/>
+                <Text profile="irpTireValue" id="tireRRText" position="220px -48px" text="--"/>
+
+                <!-- Worst tire indicator -->
+                <Text profile="irpLabel" position="-60px -68px" text="$l10n_usedplus_irp_worstTire"/>
+                <Text profile="irpTireWorst" id="tireWorstText" position="60px -68px" text="--"/>
+            </GuiElement>
+
+            <!-- ========== SECTION 4: Mechanic's Assessment (v1.4.0, enhanced v1.9.4) ========== -->
             <!-- Quote from inspector based on hidden DNA quality + fluid assessment -->
-            <GuiElement profile="irpNotesSectionTall" position="0px -350px">
+            <!-- Position adjusted for tire section padding (+10px) -->
+            <GuiElement profile="irpNotesSectionTall" position="0px -480px">
                 <Bitmap profile="irpNotesBgTall" position="0px 0px"/>
                 <Text profile="irpSectionHeader" position="0px -5px" text="$l10n_usedplus_irp_sectionMechanic"/>
 
@@ -81,9 +136,9 @@
                       text=""/>
             </GuiElement>
 
-            <!-- ========== SECTION 4: Recommendation ========== -->
-            <!-- After Notes (110px) + gap = -350-110-15 = -475 -->
-            <GuiElement profile="irpRecommendSection" position="0px -475px">
+            <!-- ========== SECTION 5: Recommendation ========== -->
+            <!-- Position adjusted for layout changes -->
+            <GuiElement profile="irpRecommendSection" position="0px -580px">
                 <Bitmap profile="irpRecommendBg" position="0px 0px"/>
                 <Text profile="irpSectionHeader" position="0px -5px" text="$l10n_usedplus_irp_sectionRecommend"/>
 
@@ -92,8 +147,8 @@
             </GuiElement>
 
             <!-- Price Clarification Note -->
-            <!-- After Recommend (60px) + gap = -475-60-15 = -550 -->
-            <Text profile="irpInfoText" position="0px -550px"
+            <!-- Position adjusted for layout changes -->
+            <Text profile="irpInfoText" position="0px -650px"
                   text="$l10n_usedplus_irp_priceNote"/>
 
         </GuiElement>
@@ -132,11 +187,16 @@
         </Profile>
 
         <Profile name="irpNotesSectionTall" extends="emptyPanel" with="anchorTopCenter">
-            <size value="660px 110px"/>
+            <size value="660px 90px"/>
         </Profile>
 
         <Profile name="irpRecommendSection" extends="emptyPanel" with="anchorTopCenter">
             <size value="660px 60px"/>
+        </Profile>
+
+        <!-- v2.1.2: Integrated Mechanical Section (larger to fit sub-components) -->
+        <Profile name="irpMechanicalSection" extends="emptyPanel" with="anchorTopCenter">
+            <size value="660px 150px"/>
         </Profile>
 
         <!-- ========== SECTION BACKGROUNDS ========== -->
@@ -156,13 +216,19 @@
         </Profile>
 
         <Profile name="irpNotesBgTall" extends="baseReference" with="anchorTopCenter">
-            <size value="660px 110px"/>
+            <size value="660px 90px"/>
             <imageColor value="0.06 0.08 0.10 0.9"/>
         </Profile>
 
         <Profile name="irpRecommendBg" extends="baseReference" with="anchorTopCenter">
             <size value="660px 60px"/>
             <imageColor value="0.10 0.12 0.08 0.9"/>
+        </Profile>
+
+        <!-- v2.1.2: Integrated Mechanical Section Background -->
+        <Profile name="irpMechanicalBg" extends="baseReference" with="anchorTopCenter">
+            <size value="660px 150px"/>
+            <imageColor value="0.08 0.08 0.12 0.9"/>
         </Profile>
 
         <!-- ========== SECTION HEADER ========== -->
@@ -175,9 +241,10 @@
         </Profile>
 
         <!-- ========== VEHICLE INFO ========== -->
-        <!-- EMPIRICALLY TESTED: 210x140px displays store images without stretching -->
-        <Profile name="irpVehicleImage" extends="fs25_vehiclesDetailsImage" with="anchorTopCenter">
-            <size value="210px 140px"/>
+        <!-- Following RVB pattern: baseReference + square size + noSlice -->
+        <Profile name="irpVehicleImage" extends="baseReference" with="anchorTopCenter">
+            <size value="180px 180px"/>
+            <imageSliceId value="noSlice"/>
         </Profile>
 
         <Profile name="irpVehicleName" extends="fs25_textDefault" with="anchorTopCenter">
@@ -233,6 +300,47 @@
             <textBold value="true"/>
             <textColor value="0.4 1 0.5 1"/>
             <textAlignment value="left"/>
+        </Profile>
+
+        <!-- v2.1.2: Integrated Mechanical System Labels/Values -->
+        <Profile name="irpSystemLabel" extends="fs25_textDefault" with="anchorTopCenter">
+            <size value="100px 18px"/>
+            <textSize value="13px"/>
+            <textBold value="true"/>
+            <textColor value="0.8 0.8 0.8 1"/>
+            <textAlignment value="left"/>
+        </Profile>
+
+        <Profile name="irpSystemValue" extends="fs25_textDefault" with="anchorTopCenter">
+            <size value="50px 18px"/>
+            <textSize value="14px"/>
+            <textBold value="true"/>
+            <textColor value="1 1 1 1"/>
+            <textAlignment value="center"/>
+        </Profile>
+
+        <Profile name="irpSystemStatus" extends="fs25_textDefault" with="anchorTopCenter">
+            <size value="110px 18px"/>
+            <textSize value="12px"/>
+            <textBold value="true"/>
+            <textColor value="0.4 1 0.5 1"/>
+            <textAlignment value="left"/>
+        </Profile>
+
+        <!-- Sub-component labels/values (smaller, indented look) -->
+        <Profile name="irpSubLabel" extends="fs25_textDefault" with="anchorTopCenter">
+            <size value="90px 14px"/>
+            <textSize value="10px"/>
+            <textColor value="0.5 0.5 0.5 1"/>
+            <textAlignment value="left"/>
+        </Profile>
+
+        <Profile name="irpSubValue" extends="fs25_textDefault" with="anchorTopCenter">
+            <size value="40px 14px"/>
+            <textSize value="11px"/>
+            <textBold value="true"/>
+            <textColor value="1 1 1 1"/>
+            <textAlignment value="center"/>
         </Profile>
 
         <Profile name="irpOverallValue" extends="fs25_textDefault" with="anchorTopCenter">
@@ -299,6 +407,65 @@
             <textSize value="11px"/>
             <textColor value="0.5 0.5 0.5 1"/>
             <textAlignment value="center"/>
+        </Profile>
+
+        <!-- ========== RVB PARTS SECTION (v2.1.0) ========== -->
+        <Profile name="irpRvbSection" extends="emptyPanel" with="anchorTopCenter">
+            <size value="660px 70px"/>
+        </Profile>
+
+        <Profile name="irpRvbBg" extends="baseReference" with="anchorTopCenter">
+            <size value="660px 70px"/>
+            <imageColor value="0.06 0.10 0.08 0.9"/>
+        </Profile>
+
+        <Profile name="irpPartLabel" extends="fs25_textDefault" with="anchorTopCenter">
+            <size value="100px 18px"/>
+            <textSize value="11px"/>
+            <textColor value="0.6 0.6 0.6 1"/>
+            <textAlignment value="left"/>
+        </Profile>
+
+        <Profile name="irpPartValue" extends="fs25_textDefault" with="anchorTopCenter">
+            <size value="50px 18px"/>
+            <textSize value="12px"/>
+            <textBold value="true"/>
+            <textColor value="1 1 1 1"/>
+            <textAlignment value="center"/>
+        </Profile>
+
+        <!-- ========== TIRE SECTION (v2.1.0) - added bottom padding ========== -->
+        <Profile name="irpTireSection" extends="emptyPanel" with="anchorTopCenter">
+            <size value="660px 95px"/>
+        </Profile>
+
+        <Profile name="irpTireBg" extends="baseReference" with="anchorTopCenter">
+            <size value="660px 95px"/>
+            <imageColor value="0.08 0.06 0.10 0.9"/>
+        </Profile>
+
+        <Profile name="irpTireLabel" extends="fs25_textDefault" with="anchorTopCenter">
+            <size value="50px 18px"/>
+            <textSize value="11px"/>
+            <textBold value="true"/>
+            <textColor value="0.8 0.8 0.8 1"/>
+            <textAlignment value="center"/>
+        </Profile>
+
+        <Profile name="irpTireValue" extends="fs25_textDefault" with="anchorTopCenter">
+            <size value="50px 18px"/>
+            <textSize value="14px"/>
+            <textBold value="true"/>
+            <textColor value="1 1 1 1"/>
+            <textAlignment value="center"/>
+        </Profile>
+
+        <Profile name="irpTireWorst" extends="fs25_textDefault" with="anchorTopCenter">
+            <size value="80px 18px"/>
+            <textSize value="12px"/>
+            <textBold value="true"/>
+            <textColor value="1 0.5 0.4 1"/>
+            <textAlignment value="left"/>
         </Profile>
     </GUIProfiles>
 </GUI>

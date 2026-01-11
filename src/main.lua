@@ -81,6 +81,12 @@ function UsedPlus:initialize()
         WorkshopScreenExtension:init()
     end
 
+    -- v2.1.0: Initialize RVB Workshop integration (injects UsedPlus data into RVB dialog)
+    -- This may need delayed init since RVB may not be fully loaded yet
+    if RVBWorkshopIntegration and RVBWorkshopIntegration.init then
+        RVBWorkshopIntegration:init()
+    end
+
     -- Register GUI screens (will be populated when GUI classes exist)
     -- g_gui:loadProfiles is handled by modDesc.xml <gui> entries
 
@@ -119,6 +125,11 @@ Mission00.loadMission00Finished = Utils.appendedFunction(
 
         -- v1.8.0: Initialize cross-mod compatibility (RVB, UYT detection)
         ModCompatibility.init()
+
+        -- v2.1.0: Delayed RVB integration init (RVB may have loaded after our init())
+        if RVBWorkshopIntegration and RVBWorkshopIntegration.delayedInit then
+            RVBWorkshopIntegration:delayedInit()
+        end
     end
 )
 
@@ -144,6 +155,18 @@ Mission00.onStartMission = Utils.appendedFunction(
         if g_vehicleSaleManager and g_vehicleSaleManager.loadMapFinished then
             g_vehicleSaleManager:loadMapFinished()
             UsedPlus.logDebug("VehicleSaleManager initialized")
+        end
+
+        -- v2.0.0: Initialize Difficulty Scaling Manager (GMNGjoy pattern)
+        if g_difficultyScalingManager and g_difficultyScalingManager.init then
+            g_difficultyScalingManager:init()
+            UsedPlus.logDebug("DifficultyScalingManager initialized")
+        end
+
+        -- v2.0.0: Initialize Bank Interest Manager (Evan Kirsch pattern)
+        if g_bankInterestManager and g_bankInterestManager.init then
+            g_bankInterestManager:init()
+            UsedPlus.logDebug("BankInterestManager initialized")
         end
 
         -- ESC InGameMenu integration using EnhancedLoanSystem pattern

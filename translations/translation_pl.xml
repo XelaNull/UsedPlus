@@ -101,7 +101,7 @@
         <e k="usedplus_confirmation_title" v="Potwierdzenie" eh="f4d1ea47" />
 
         <!--  Finance Manager Frame (InGameMenu page) -->
-        <e k="usedplus_inGameMenuTitle" v="Używane Plus - Finanse &amp; Wyszukiwania" eh="483f0e06" />
+        <e k="usedplus_inGameMenuTitle" v="Używane Plus - Finanse &amp; Wyszukiwania" eh="093c7b9e" />
         <e k="usedplus_activeFinanceDeals" v="Oferty dotyczące aktywnych finansów:" eh="5cf7fac5" />
         <e k="usedplus_activeSearches" v="Aktywne wyszukiwania:" eh="274e131d" />
         <e k="usedplus_creditScore" v="Wynik kredytowy:" eh="0199e1a3" />
@@ -249,6 +249,7 @@
         <e k="input_USEDPLUS_OPEN_FINANCE_MANAGER" v="Otwórz menedżer finansów" eh="806bb897" />
         <e k="input_USEDPLUS_SEARCH_USED" v="Szukaj używanego sprzętu" eh="77397317" />
         <e k="input_USEDPLUS_INSPECT_VEHICLE" v="Sprawdź pojazd" eh="c06f09f1" />
+        <e k="input_USEDPLUS_ACTIVATE_OBD" v="Użyj skanera OBD" eh="9666e26b" />
 
         <!--  Tooltips for Finance Dialog -->
         <e k="usedplus_finance_loanTerm_tooltip" v="Rozłóż płatności na 1-20 lat. Dłuższe terminy = mniejsze raty miesięczne, ale więcej odsetek całkowitych." eh="e1170142" />
@@ -280,7 +281,7 @@
         <!--  Tooltips for Finance Manager -->
         <e k="usedplus_manager_totalFinanced_tooltip" v="Całkowita kwota którą nadal jesteś winien ze wszystkich pożyczek i leasingów. Utrzymuj poniżej wartości aktywów!" eh="7c15778c" />
         <e k="usedplus_manager_monthlyObligations_tooltip" v="Suma pobierana z konta co miesiąc. Upewnij się, że zawsze masz wystarczający przepływ gotówki!" eh="c5cee5ec" />
-        <e k="usedplus_manager_creditScore_tooltip" v="Ocena 300-850. 750+ = Doskonała, 650-749 = Dobra, 550-649 = Przeciętna, &lt;550 = Słaba. Wpływa na wszystkie przyszłe stopy procentowe!" eh="8a7678ad" />
+        <e k="usedplus_manager_creditScore_tooltip" v="Ocena 300-850. 750+ = Doskonała, 650-749 = Dobra, 550-649 = Przeciętna, &lt;550 = Słaba. Wpływa na wszystkie przyszłe stopy procentowe!" eh="4b1c2269" />
         <e k="usedplus_manager_assetValue_tooltip" v="Łączna wartość pojazdów, sprzętu, pól i budynków które posiadasz. Powinna być wyższa niż twój dług!" eh="64ef61f3" />
         <e k="usedplus_manager_debtRatio_tooltip" v="Całkowity Dług ÷ Wartość Aktywów. Utrzymuj poniżej 30% dla doskonałego kredytu. Powyżej 50% znacząco szkodzi twojemu wynikowi!" eh="041f390c" />
 
@@ -311,7 +312,7 @@
         <e k="usedplus_repair_title_mechanical" v="Naprawa mechaniczna" eh="60a0d54f" />
         <e k="usedplus_repair_title_repaint" v="Odmalować pojazd" eh="d5b4d6be" />
         <e k="usedplus_repair_mechanical" v="NAPRAWA MECHANICZNA" eh="6294bbee" />
-        <e k="usedplus_repair_cosmetic" v="FARBA &amp; KOSMETYK" eh="94bb6ac8" />
+        <e k="usedplus_repair_cosmetic" v="FARBA &amp; KOSMETYK" eh="d111819f" />
         <e k="usedplus_repair_slider" v="Kwota naprawy" eh="0dda5ee8" />
         <e k="usedplus_repair_cost" v="Koszt naprawy" eh="6f0504d5" />
         <e k="usedplus_repair_after" v="Stan po" eh="d6d75451" />
@@ -321,6 +322,7 @@
         <e k="usedplus_repaint_slider" v="Ilość ponownego malowania" eh="bf64833d" />
         <e k="usedplus_repaint_cost" v="Koszt ponownego malowania" eh="b994cb4e" />
         <e k="usedplus_button_repairVehicle" v="Napraw pojazd" eh="9592bc0d" />
+        <e k="usedplus_button_repaint" v="Przemaluj" />
         <e k="usedplus_button_tradeIn" v="Wymiana" eh="d9a572a1" />
         <e k="usedplus_repair_financeSuccess" v="Naprawa sfinansowana! %s przez %d miesięcy przy %s/miesiąc" eh="ac520447" />
         <e k="usedplus_repair_noRepairsNeeded" v="Pojazd ten nie wymaga napraw." eh="58c85fca" />
@@ -793,6 +795,19 @@
         <e k="usedplus_irp_postRepairValue" v="Wartość po naprawie:" eh="676a8d00" />
         <e k="usedplus_irp_priceNote" v="Ceny odzwierciedlają cenę wywoławczą sprzedającego. Negocjuj w oparciu o ustalenia z kontroli." eh="1d136196" />
 
+        <!-- v2.1.0: RVB Parts Breakdown (Inspection Report) -->
+        <e k="usedplus_irp_sectionRvbParts" v="STAN KOMPONENTÓW" eh="73555be1" />
+        <e k="usedplus_irp_part_engine" v="Silnik" eh="7bfa3072" />
+        <e k="usedplus_irp_part_thermostat" v="Termostat" eh="91e0b95d" />
+        <e k="usedplus_irp_part_generator" v="Alternator" eh="92a8f0b9" />
+        <e k="usedplus_irp_part_battery" v="Akumulator" eh="d67c9286" />
+        <e k="usedplus_irp_part_starter" v="Rozrusznik" eh="ee6085db" />
+        <e k="usedplus_irp_part_glowplug" v="Świeca żarowa" eh="6fdb6ce6" />
+
+        <!-- v2.1.0: Tire Conditions (Inspection Report) -->
+        <e k="usedplus_irp_sectionTires" v="STAN OPON" eh="d7d271cc" />
+        <e k="usedplus_irp_worstTire" v="Najgorsze:" eh="4ca3e96d" />
+
         <!-- Maintenance Report Dialog -->
         <e k="usedplus_mrp_title" v="RAPORT Z KONSERWACJI" eh="a2ca3391" />
         <e k="usedplus_mrp_sectionReliability" v="OCENY NIEZAWODNOŚCI" eh="87b5f6c4" />
@@ -1163,6 +1178,9 @@
         <e k="usedplus_cr_tip1" v="Płać terminowo, by budować kredyt" eh="a69f1a91" />
         <e k="usedplus_cr_tip2" v="Utrzymuj dług poniżej 50% aktywów" eh="70d62f24" />
         <e k="usedplus_cr_tip3" v="Buduj historię małymi pożyczkami" eh="dc1c9766" />
+        <!-- v2.0.0: Credit system disabled messages -->
+        <e k="usedplus_cr_creditDisabled" v="Ocena kredytowa wyłączona" eh="62d14b3c" />
+        <e k="usedplus_cr_creditDisabledHint" v="Włącz ocenę kredytową w ustawieniach UsedPlus." eh="4c217397" />
         <!-- REMOVED: usedplus_button_close - duplicate, use Common Button Labels -->
 
         <!-- Search Details Dialog -->
@@ -1237,7 +1255,8 @@
         <!-- Finance Manager Frame -->
         <e k="usedplus_fmf_sectionFinances" v="FINANSE" eh="15625374" />
         <e k="usedplus_fmf_sectionMarketplace" v="RYNEK UŻYWANYCH" eh="ad2d33e9" />
-        <e k="usedplus_fmf_sectionCredit" v="KREDYT &amp; STATYSTYKI" eh="b9e2972c" />
+        <e k="usedplus_fmf_sectionCredit" v="KREDYT &amp; STATYSTYKI" eh="8a71fbbe" />
+        <e k="usedplus_fmf_sectionStatistics" v="STATYSTYKI" eh="bd71bd5e" />
         <e k="usedplus_fmf_noActiveDeals" v="Brak aktywnych umów finansowych" eh="171c5c5d" />
         <e k="usedplus_fmf_headerType" v="TYP" eh="94849514" />
         <e k="usedplus_fmf_headerItem" v="PRZEDMIOT" eh="2b911c01" />
@@ -1259,7 +1278,7 @@
         <e k="usedplus_fmf_nationalSearch" v="Poszukiwanie Narodowe" eh="c967061f" />
         <e k="usedplus_fmf_nationalStats" v="12% opłata | 85% sukces | 2-6 miesięcy" eh="685c2f27" />
         <e k="usedplus_fmf_startFromShop" v="Rozpocznij wyszukiwania w sklepie przez 'Szukaj używane'" eh="f0c6f05a" />
-        <e k="usedplus_fmf_viaSearchUsed" v="" />
+        <e k="usedplus_fmf_viaSearchUsed" v="" eh="d41d8cd9" />
         <e k="usedplus_fmf_usedVehicleSearches" v="Wyszukiwania używanych pojazdów" eh="a3601db6" />
         <e k="usedplus_fmf_noActiveSearches" v="Brak aktywnych wyszukiwań. Rozpocznij w Sklepie." eh="6f447735" />
         <e k="usedplus_fmf_headerPrice" v="CENA" eh="6da7ab78" />
@@ -1362,7 +1381,7 @@
         <e k="usedplus_tl_good" v="Dobry 700-749: 7,5%" eh="98ac4cee" />
         <e k="usedplus_tl_fair" v="Przeciętny 650-699: 8,5%" eh="45ddaf78" />
         <e k="usedplus_tl_poor" v="Słaby 600-649: 9,5%" eh="58571247" />
-        <e k="usedplus_tl_veryPoor" v="Bardzo Słaby &lt;600: 11%" eh="1065df64" />
+        <e k="usedplus_tl_veryPoor" v="Bardzo Słaby &lt;600: 11%" eh="fbe67fc1" />
 
         <!-- ============================================================== -->
         <!-- INSPECTOR QUOTES - Workhorse/Lemon Scale System                 -->
@@ -1506,7 +1525,7 @@
         <e k="usedplus_tires_traction" v="Przyczepność:" eh="8d38bce1" />
         <e k="usedplus_tires_flatTire" v="PRZEBITA OPONA" eh="6e87cc30" />
         <e k="usedplus_tires_replace" v="Wymień opony" eh="3a0d1434" />
-        <e k="usedplus_tires_selectQuality" v="Wybierz jakość:" eh="98a3a185" />
+        <e k="usedplus_tires_selectQuality" v="Wybierz jakość:" eh="46aef69c" />
         <e k="usedplus_tires_retreadDesc" v="Opcja budżetowa - niższa trakcja, wyższe ryzyko awarii" eh="f277d077" />
         <e k="usedplus_tires_normalDesc" v="Standardowe opony - zrównoważona wydajność" eh="df677172" />
         <e k="usedplus_tires_qualityDesc" v="Opony premium - lepsza trakcja, niższe ryzyko awarii" eh="69e595ca" />
@@ -1525,7 +1544,7 @@
 
         <!-- v1.7.0: Tires Service Dialog -->
         <e k="usedplus_tires_title" v="Serwis opon" eh="b0234f4e" />
-        <e k="usedplus_tires_sectionStatus" v="STATUS POJAZDU &amp; OPON" eh="089cd22b" />
+        <e k="usedplus_tires_sectionStatus" v="STATUS POJAZDU &amp; OPON" eh="c0e3631e" />
         <e k="usedplus_tires_sectionSelect" v="WYBIERZ JAKOŚĆ OPONY" eh="42abee54" />
         <e k="usedplus_tires_sectionPayment" v="PODSUMOWANIE PŁATNOŚCI" eh="0dd98605" />
         <e k="usedplus_tires_currentQuality" v="Aktualna jakość:" eh="b46a9180" />
@@ -1547,7 +1566,7 @@
 
         <!-- v1.7.0: Fluids Service Dialog -->
         <e k="usedplus_fluids_title" v="Serwis płynów" eh="7eb767c6" />
-        <e k="usedplus_fluids_sectionStatus" v="STATUS POJAZDU &amp; PŁYNÓW" eh="027b5f21" />
+        <e k="usedplus_fluids_sectionStatus" v="STATUS POJAZDU &amp; PŁYNÓW" eh="2fb5c91e" />
         <e k="usedplus_fluids_sectionService" v="OPCJE SERWISU" eh="6a49411d" />
         <e k="usedplus_fluids_sectionPayment" v="PODSUMOWANIE PŁATNOŚCI" eh="0dd98605" />
         <e k="usedplus_fluids_oilLevel" v="Olej silnikowy:" eh="2168f846" />
@@ -1614,8 +1633,8 @@
         <e k="usedplus_fluid_fuelLeak" v="UWAGA: Wykryto wyciek paliwa - zagrożenie pożarowe, wymaga naprawy." eh="9016df52" />
         <e k="usedplus_fluid_allClear" v="Wszystkie systemy płynów wyglądają normalnie." eh="339f1e72" />
 
-        <!-- v1.8.0: Field Service Kit with OBD Scanner -->
-        <e k="usedplus_fsk_name" v="Zestaw serwisowy (Skaner OBD)" eh="92be7850" />
+        <!-- v1.8.0: OBD Scanner (portable diagnostic tool) -->
+        <e k="usedplus_fsk_name" v="Skaner OBD" eh="96023669" />
         <e k="usedplus_fsk_function" v="Przenośny skaner diagnostyczny OBD do napraw awaryjnych w terenie. Łączy się z portem diagnostycznym pojazdu, aby odczytać kody błędów i dane z czujników. Jednorazowy - pojedyncze użycie." eh="bfdb43fa" />
         <e k="usedplus_fsk_tier_basic" v="Podstawowy OBD" eh="36823daa" />
         <e k="usedplus_fsk_activate" v="Podłącz skaner OBD" eh="dc1214b1" />
@@ -1723,8 +1742,9 @@
         <e k="usedplus_fsk_feedback_wrong" v="Rzeczywisty problem był w innym systemie." eh="9b04c318" />
         <e k="usedplus_fsk_temp_repair" v="TYMCZASOWA NAPRAWA POLOWA" eh="b3bc3876" />
         <e k="usedplus_fsk_temp_repair_desc" v="To jest naprawa awaryjna. Odwiedź właściwy warsztat dla pełnej obsługi." eh="648457f5" />
-        <e k="usedplus_fsk_kit_consumed" v="Zestaw serwisowy został zużyty." eh="08530ba3" />
+        <e k="usedplus_fsk_kit_consumed" v="Skaner OBD został zużyty." eh="b2ea1455" />
         <e k="usedplus_fsk_cannot_cancel" v="Naprawa w toku - nie można anulować na tym etapie." eh="6172d2ec" />
+        <e k="usedplus_fsk_noVehicle" v="Nie wykryto pojazdu w zasięgu. Przesuń skaner bliżej pojazdu." eh="e89e127f" />
 
         <!-- Tire repair -->
         <e k="usedplus_fsk_tire_repair" v="WYKRYTO PRZEBITĄ OPONĘ - Kliknij, by naprawić" eh="0cd0073e" />
@@ -1736,6 +1756,136 @@
         <e k="usedplus_fsk_tire_plug" v="WTYCZKA" eh="c18d6117" />
         <e k="usedplus_fsk_tire_plug_desc" v="Lepsza naprawa awaryjna" eh="b3aa3113" />
         <e k="usedplus_fsk_tire_plug_result" v="Przywraca do 50% stanu" eh="98bf223c" />
+
+        <!-- v2.1.0: Scanner Readout Hints (Step 1 hints to deduce failed system) -->
+        <e k="usedplus_fsk_scanner_readout" v="ODCZYT SKANERA OBD" eh="e81cab15" />
+        <e k="usedplus_fsk_hint_no_faults" v="Brak zapisanych krytycznych kodów błędów" eh="56f7aa39" />
+        <e k="usedplus_fsk_hint_preventive" v="Zalecana konserwacja zapobiegawcza" eh="695fff39" />
+
+        <!-- ENGINE hints -->
+        <e k="usedplus_fsk_hint_engine_dtc" v="DTC P0xxx: Zapisane kody błędów układu napędowego" eh="3ef35761" />
+        <e k="usedplus_fsk_hint_engine_combustion" v="Zarejestrowane nieregularne wzorce cyklu spalania" eh="cfc95185" />
+        <e k="usedplus_fsk_hint_engine_airfuel" v="Odczyty mieszanki powietrze-paliwo poza specyfikacją" eh="e0a6626d" />
+        <e k="usedplus_fsk_hint_engine_exhaust" v="Nieprawidłowe odczyty czujnika gazów wydechowych" eh="f491ddaa" />
+        <e k="usedplus_fsk_hint_engine_throttle" v="Wykryto odchylenie reakcji przepustnicy" eh="b702d132" />
+        <e k="usedplus_fsk_hint_engine_timing" v="Zarejestrowano odchylenie rozrządu wału korbowego" eh="c6429837" />
+
+        <!-- ELECTRICAL hints -->
+        <e k="usedplus_fsk_hint_elec_dtc" v="DTC B/U kody: Błędy komunikacji sieciowej" eh="5dc3a478" />
+        <e k="usedplus_fsk_hint_elec_voltage" v="Regulacja napięcia poza normalnymi parametrami" eh="f6b58c16" />
+        <e k="usedplus_fsk_hint_elec_signal" v="Wykryto przerywane zaniki sygnału czujnika" eh="5f4e98be" />
+        <e k="usedplus_fsk_hint_elec_canbus" v="Zarejestrowane błędy komunikacji magistrali CAN" eh="06868b16" />
+        <e k="usedplus_fsk_hint_elec_timeout" v="Zarejestrowane przekroczenia czasu odpowiedzi modułu" eh="8d47cb04" />
+        <e k="usedplus_fsk_hint_elec_ground" v="Wyzwolone wskaźniki zwarcia do masy" eh="aeded58c" />
+
+        <!-- HYDRAULIC hints -->
+        <e k="usedplus_fsk_hint_hyd_response" v="Czas reakcji narzędzia przekracza próg" eh="c51368ce" />
+        <e k="usedplus_fsk_hint_hyd_pressure" v="Wykryto wahania ciśnienia hydraulicznego" eh="c884962a" />
+        <e k="usedplus_fsk_hint_hyd_hitch" v="Dryf czujnika pozycji zaczepu trójpunktowego" eh="f047bc25" />
+        <e k="usedplus_fsk_hint_hyd_actuator" v="Odnotowano degradację czasu cyklu siłownika" eh="78638bc2" />
+        <e k="usedplus_fsk_hint_hyd_flow" v="Nieregularności przepływu w obwodach pomocniczych" eh="36d131ee" />
+        <e k="usedplus_fsk_hint_hyd_temp" v="Zarejestrowane ostrzeżenia o temperaturze płynu hydraulicznego" eh="cfc27131" />
+
+        <!-- ===== SETTINGS v2.0.0 ===== -->
+        <!-- Preset selector -->
+        <e k="usedplus_setting_preset" v="Szybki Preset" eh="ef6e6470" />
+        <e k="usedplus_setting_preset_desc" v="Zastosuj preset (zmienia wszystkie ustawienia poniżej)" eh="63332963" />
+
+        <!-- System toggles -->
+        <e k="usedplus_setting_finance" v="Finansowanie Pojazdu/Ziemi" eh="8159256d" />
+        <e k="usedplus_setting_finance_desc" v="Włącz finansowanie zakupów pojazdów i ziemi" eh="4834038c" />
+        <e k="usedplus_setting_lease" v="Leasing" eh="9e668941" />
+        <e k="usedplus_setting_lease_desc" v="Włącz leasing pojazdów i ziemi z opcją wykupu" eh="689ee038" />
+        <e k="usedplus_setting_search" v="Wyszukiwanie Używanych Pojazdów" eh="07c38501" />
+        <e k="usedplus_setting_search_desc" v="Włącz wyszukiwanie używanego sprzętu przez agenta" eh="73690f8f" />
+        <e k="usedplus_setting_sale" v="Sprzedaż Pojazdów" eh="9111fc3c" />
+        <e k="usedplus_setting_sale_desc" v="Włącz sprzedaż pojazdów przez agenta (zastępuje natychmiastową sprzedaż)" eh="861c1a37" />
+        <e k="usedplus_setting_repair" v="System Napraw" eh="5a2967eb" />
+        <e k="usedplus_setting_repair_desc" v="Włącz opcje częściowej naprawy i lakierowania" eh="a6774f7d" />
+        <e k="usedplus_setting_tradein" v="System Wymiany" eh="3e428cd4" />
+        <e k="usedplus_setting_tradein_desc" v="Włącz wymianę pojazdów podczas zakupów" eh="464eed0d" />
+        <e k="usedplus_setting_credit" v="Ocena Kredytowa" eh="c709b51e" />
+        <e k="usedplus_setting_credit_desc" v="Włącz dynamiczne stopy procentowe oparte na kredycie" eh="ea6286a9" />
+        <e k="usedplus_setting_tirewear" v="Zużycie Opon" eh="fa71e50e" />
+        <e k="usedplus_setting_tirewear_desc" v="Włącz realistyczne zużywanie się opon" eh="0a955572" />
+        <e k="usedplus_setting_malfunctions" v="Awarie" eh="97801e8a" />
+        <e k="usedplus_setting_malfunctions_desc" v="Włącz losowe awarie i uszkodzenia komponentów" eh="fbbe01f9" />
+        <e k="usedplus_setting_partialRepair" v="Częściowa Naprawa" eh="dc6b627a" />
+        <e k="usedplus_setting_partialRepair_desc" v="Włącz częściowe naprawy w warsztacie (wyłączenie ukrywa przycisk naprawy)" eh="84fe180c" />
+        <e k="usedplus_setting_partialRepaint" v="Częściowe Lakierowanie" eh="3fca656d" />
+        <e k="usedplus_setting_partialRepaint_desc" v="Włącz częściowe lakierowanie w warsztacie (wyłączenie ukrywa przycisk lakierowania)" eh="4ca7214a" />
+        <!-- v2.0.0: Farmland Difficulty & Bank Interest -->
+        <e k="usedplus_setting_farmlandDifficulty" v="Skalowanie Cen Ziemi" eh="9118adb6" />
+        <e k="usedplus_setting_farmlandDifficulty_desc" v="Dostosuj ceny ziemi do poziomu trudności (jak pojazdy). Łatwy: 60%, Normalny: 100%, Trudny: 140%" eh="50a435ef" />
+        <e k="usedplus_setting_bankInterest" v="Odsetki Bankowe" eh="1267ace4" />
+        <e k="usedplus_setting_bankInterest_desc" v="Zarabiaj odsetki od dodatniego salda (miesięcznie, jak konto oszczędnościowe)" eh="8e706865" />
+        <e k="usedplus_setting_bankInterestRate" v="Stopa Procentowa (roczna)" eh="798c19e6" />
+        <e k="usedplus_setting_bankInterestRate_desc" v="Roczna stopa procentowa od gotówki. 1% = 10 000 zł rocznie przy 1M zł salda" eh="80e4314a" />
+
+        <!-- Money and rates -->
+        <e k="usedplus_setting_interestRate" v="Stopa Procentowa Finansowania" eh="ec5e55f4" />
+        <e k="usedplus_setting_interestRate_desc" v="Bazowa stopa dla wszystkich finansowań (pojazdy, ziemia, pożyczki). Ocena kredytowa modyfikuje tę wartość." eh="86443f38" />
+        <e k="usedplus_setting_tradeInValue" v="Wartość Wymiany %" eh="1f2d9066" />
+        <e k="usedplus_setting_tradeInValue_desc" v="Bazowy procent ceny sprzedaży dla wymian" eh="63d5cd26" />
+        <e k="usedplus_setting_repairCost" v="Mnożnik Kosztu Naprawy" eh="f6f74c79" />
+        <e k="usedplus_setting_repairCost_desc" v="Mnożnik stosowany do wszystkich kosztów napraw" eh="d20d8168" />
+        <e k="usedplus_setting_paintCost" v="Mnożnik Kosztu Lakierowania" eh="b5b8f53a" />
+        <e k="usedplus_setting_paintCost_desc" v="Mnożnik stosowany do kosztów lakierowania (oddzielny od napraw)" eh="4fcb0c32" />
+        <e k="usedplus_setting_leaseMarkup" v="Marża Leasingowa %" eh="aac70e2a" />
+        <e k="usedplus_setting_leaseMarkup_desc" v="Procentowa marża na miesięcznych ratach leasingowych" eh="23d9d6f0" />
+
+        <!-- Forgiveness and risk -->
+        <e k="usedplus_setting_missedPayments" v="Opuszczone Płatności do Konfiskaty" eh="be335e9f" />
+        <e k="usedplus_setting_missedPayments_desc" v="Liczba opuszczonych płatności przed konfiskatą pojazdu" eh="71688a5f" />
+        <e k="usedplus_setting_downPayment" v="Min. Wpłata Własna %" eh="b70d8e33" />
+        <e k="usedplus_setting_downPayment_desc" v="Minimalna wymagana wpłata własna do finansowania" eh="d290560c" />
+        <e k="usedplus_setting_startingCredit" v="Początkowa Ocena Kredytowa" eh="8fd1d387" />
+        <e k="usedplus_setting_startingCredit_desc" v="Początkowa ocena kredytowa dla nowych gier" eh="1861873e" />
+        <e k="usedplus_setting_latePenalty" v="Kara za Opóźnienie" eh="70703f0b" />
+        <e k="usedplus_setting_latePenalty_desc" v="Punkty kredytowe utracone za opóźnioną płatność" eh="a58e7e31" />
+
+        <!-- Marketplace -->
+        <e k="usedplus_setting_searchSuccess" v="Bazowy Sukces Wyszukiwania %" eh="01f7d1c0" />
+        <e k="usedplus_setting_searchSuccess_desc" v="Bazowa szansa znalezienia używanych pojazdów. Bonusy poziomów: Economy +0%, Standard +10%, Premium +20%, Elite +30%" eh="69f7bd7b" />
+        <e k="usedplus_setting_maxListings" v="Maks. Ogłoszeń na Gospodarstwo" eh="5f8a47bd" />
+        <e k="usedplus_setting_maxListings_desc" v="Maksimum aktywnych ogłoszeń sprzedaży na gospodarstwo (ustawienie wewnętrzne)" eh="88403541" />
+        <e k="usedplus_setting_offerExpiry" v="Wygaśnięcie Ofert" eh="8b1b7a6f" />
+        <e k="usedplus_setting_offerExpiry_desc" v="Godziny do wygaśnięcia ofert sprzedaży" eh="fe118057" />
+        <e k="usedplus_setting_commission" v="Prowizja Agenta %" eh="443d1555" />
+        <e k="usedplus_setting_commission_desc" v="Procent pobierany przez agentów sprzedaży" eh="8f42cc9d" />
+
+        <!-- Condition and quality -->
+        <e k="usedplus_setting_conditionMin" v="Min. Stan Używanych" eh="c2725712" />
+        <e k="usedplus_setting_conditionMin_desc" v="Minimalny stan dla używanych pojazdów" eh="67ff9bc5" />
+        <e k="usedplus_setting_conditionMax" v="Maks. Stan Używanych" eh="ff759d4c" />
+        <e k="usedplus_setting_conditionMax_desc" v="Maksymalny stan dla używanych pojazdów" eh="5eb8cfaf" />
+        <e k="usedplus_setting_conditionMult" v="Wpływ Stanu na Cenę" eh="b9ea233b" />
+        <e k="usedplus_setting_conditionMult_desc" v="Jak bardzo stan wpływa na cenę pojazdu" eh="1defc378" />
+        <e k="usedplus_setting_brandBonus" v="Bonus Lojalności Marki" eh="51d04913" />
+        <e k="usedplus_setting_brandBonus_desc" v="Dodatkowa wartość wymiany przy zakupie tej samej marki" eh="3256663b" />
+
+        <!-- Presets -->
+        <e k="usedplus_preset_title" v="Zastosuj Preset" eh="124235e0" />
+        <e k="usedplus_preset_easy" v="Łatwy" eh="7f943921" />
+        <e k="usedplus_preset_easy_desc" v="Maksymalna tolerancja - skup się na rolnictwie, nie finansach" eh="81004805" />
+        <e k="usedplus_preset_balanced" v="Zrównoważony" eh="c6589f52" />
+        <e k="usedplus_preset_balanced_desc" v="Domyślna zrównoważona symulacja - zamierzone doświadczenie" eh="e4b620f0" />
+        <e k="usedplus_preset_challenging" v="Wymagający" eh="4235e068" />
+        <e k="usedplus_preset_challenging_desc" v="Prawdziwe konsekwencje - decyzje mają znaczenie" eh="232773e0" />
+        <e k="usedplus_preset_hardcore" v="Hardcore" eh="1c800aa9" />
+        <e k="usedplus_preset_hardcore_desc" v="Ekonomiczne przetrwanie - każde euro się liczy" eh="f893227a" />
+        <e k="usedplus_preset_streamlined" v="Uproszczony" eh="093eb019" />
+        <e k="usedplus_preset_streamlined_desc" v="Tylko finansowanie i leasing - bez dodatków" eh="e3952520" />
+        <e k="usedplus_preset_immersive" v="Immersyjny" eh="7a7f14a4" />
+        <e k="usedplus_preset_immersive_desc" v="Pełna symulacja - najlepsza z modami RVB/UYT" eh="777e7831" />
+        <e k="usedplus_preset_realistic" v="Zrównoważony" eh="c6589f52" />
+        <e k="usedplus_preset_casual" v="Łatwy" eh="7f943921" />
+        <e k="usedplus_preset_lite" v="Uproszczony" eh="093eb019" />
+        <e k="usedplus_preset_realistic_desc" v="Domyślna zrównoważona symulacja - zamierzone doświadczenie" eh="e4b620f0" />
+        <e k="usedplus_preset_casual_desc" v="Maksymalna tolerancja - skup się na rolnictwie, nie finansach" eh="81004805" />
+        <e k="usedplus_preset_lite_desc" v="Tylko finansowanie i leasing - bez dodatków" eh="e3952520" />
+        <e k="usedplus_preset_apply" v="Zastosuj" eh="9639e32c" />
+        <e k="usedplus_preset_reset" v="Przywróć domyślne" eh="6795975d" />
 
     </elements>
 </l10n>

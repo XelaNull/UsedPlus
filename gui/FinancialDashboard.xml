@@ -20,8 +20,8 @@
 
             <!-- TOP ROW: Credit Score | Debt Ratio -->
             <GuiElement position="0px -80px">
-                <!-- Credit Score Section (Left) -->
-                <GuiElement position="-280px 0px">
+                <!-- Credit Score Section (Left) - Hidden when credit system disabled -->
+                <GuiElement id="creditScoreSection" position="-280px 0px">
                     <Text profile="dashboardSectionTitle" position="0px 0px" text="$l10n_usedplus_dash_creditScore"/>
                     <Text profile="dashboardScoreValue" id="creditScoreValue" position="0px -40px" text="650"/>
                     <Text profile="dashboardScoreRating" id="creditScoreRating" position="0px -80px" text=""/>

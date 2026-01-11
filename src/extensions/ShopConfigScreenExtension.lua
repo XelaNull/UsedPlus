@@ -27,10 +27,10 @@ function ShopConfigScreenExtension.setStoreItemHook(self, superFunc, storeItem, 
     UsedPlus.logDebug(string.format("ShopConfigScreenExtension.setStoreItemHook called - storeItem: %s",
         tostring(storeItem and storeItem.name or "nil")))
 
-    -- Call original function first and capture return value
-    local result = superFunc(self, storeItem, ...)
-
-    -- Wrap our customizations in pcall to prevent breaking the shop if something errors
+    -- v2.1.2: Create buttons BEFORE calling superFunc
+    -- superFunc internally calls updateButtons, and our updateButtonsHook needs buttons to exist
+    -- to set their visibility. If we create buttons after superFunc, updateButtonsHook runs
+    -- before applyCustomizations and can't find the buttons.
     local success, err = pcall(function()
         ShopConfigScreenExtension.applyCustomizations(self, storeItem)
     end)
@@ -38,6 +38,9 @@ function ShopConfigScreenExtension.setStoreItemHook(self, superFunc, storeItem, 
     if not success then
         UsedPlus.logError("ShopConfigScreenExtension error: " .. tostring(err))
     end
+
+    -- Call original function AFTER our customizations (so updateButtonsHook can find buttons)
+    local result = superFunc(self, storeItem, ...)
 
     -- Return original function's result to maintain shop flow
     UsedPlus.logDebug("ShopConfigScreenExtension.setStoreItemHook completed successfully")
@@ -56,9 +59,31 @@ function ShopConfigScreenExtension.applyCustomizations(self, storeItem)
     ShopConfigScreenExtension.currentStoreItem = storeItem
     ShopConfigScreenExtension.currentShopScreen = self
 
+    -- v2.1.2: Button validity check - clear stale references after shop refresh
+    -- If button reference exists but element is destroyed, clear it so we recreate
+    if self.usedPlusFinanceButton then
+        local hasParent = self.usedPlusFinanceButton.parent ~= nil
+        UsedPlus.logDebug(string.format("Finance button exists, hasParent=%s", tostring(hasParent)))
+        if not hasParent then
+            UsedPlus.logDebug("Finance button stale reference cleared")
+            self.usedPlusFinanceButton = nil
+        end
+    end
+    if self.usedPlusSearchButton then
+        local hasParent = self.usedPlusSearchButton.parent ~= nil
+        UsedPlus.logDebug(string.format("Search Used button exists, hasParent=%s", tostring(hasParent)))
+        if not hasParent then
+            UsedPlus.logDebug("Search Used button stale reference cleared")
+            self.usedPlusSearchButton = nil
+        end
+    end
+
     -- v1.8.1: Check if HirePurchasing handles financing
     -- If HP is installed, skip Finance button creation (HP provides its own)
     local shouldShowFinance = ModCompatibility.shouldShowFinanceButton()
+
+    UsedPlus.logDebug(string.format("Finance button creation check: shouldShow=%s, exists=%s, buyButton=%s",
+        tostring(shouldShowFinance), tostring(self.usedPlusFinanceButton ~= nil), tostring(buyButton ~= nil)))
 
     -- Create Finance button (between Buy and Search Used)
     if shouldShowFinance and not self.usedPlusFinanceButton and buyButton then
@@ -104,12 +129,12 @@ function ShopConfigScreenExtension.applyCustomizations(self, storeItem)
     -- If BUE is installed, skip Search Used button creation (BUE provides its own)
     local shouldShowSearch = ModCompatibility.shouldShowSearchButton()
 
+    UsedPlus.logDebug(string.format("Search Used button creation check: shouldShow=%s, exists=%s, buyButton=%s",
+        tostring(shouldShowSearch), tostring(self.usedPlusSearchButton ~= nil), tostring(buyButton ~= nil)))
+
     -- Create Search Used button (after Finance)
     if shouldShowSearch and not self.usedPlusSearchButton and buyButton then
         local parent = buyButton.parent
-
-        -- Log what the Buy button uses for reference
-        UsedPlus.logDebug(string.format("Buy button inputActionName: %s", tostring(buyButton.inputActionName)))
 
         self.usedPlusSearchButton = buyButton:clone(parent)
         self.usedPlusSearchButton.name = "usedPlusSearchButton"
@@ -151,15 +176,9 @@ function ShopConfigScreenExtension.applyCustomizations(self, storeItem)
         UsedPlus.logDebug("Search Used button skipped - BuyUsedEquipment detected")
     end
 
-    -- Update Search Used callback EVERY TIME setStoreItem is called
+    -- Update Search Used button text (visibility/callback handled in updateButtonsHook)
     if self.usedPlusSearchButton then
-        self.usedPlusSearchButton.onClickCallback = function()
-            ShopConfigScreenExtension.onSearchClick(self, storeItem)
-        end
         self.usedPlusSearchButton:setText(g_i18n:getText("usedplus_button_searchUsed"))
-        local canSearch = ShopConfigScreenExtension.canSearchItem(storeItem)
-        self.usedPlusSearchButton:setDisabled(not canSearch)
-        self.usedPlusSearchButton:setVisible(canSearch)
     end
 
     -- Create Inspect button for owned vehicles (maintenance report)
@@ -235,48 +254,59 @@ function ShopConfigScreenExtension.updateButtonsHook(self, storeItem, vehicle, s
         end
 
         -- v1.7.2: ACTIVE CALLBACK SWAP (every update, not a one-time wrapper)
+        -- v1.9.9: Check for hand tools BEFORE wrapping - don't touch their callbacks at all
         if self.buyButton then
+            local isHandTool = storeItem and storeItem.financeCategory == "SHOP_HANDTOOL_BUY"
+
             if isOwnedVehicle then
                 -- OWNED VEHICLE: Restore original game callback completely
                 -- Don't touch it - let the game handle customization natively
                 self.buyButton.onClickCallback = self.usedPlusOriginalBuyCallback
                 UsedPlus.logDebug("Buy button: restored original callback for owned vehicle")
+            elseif isHandTool then
+                -- HAND TOOL: Don't wrap callback - restore original and let game handle it
+                -- These items need the vanilla buy flow to work properly
+                self.buyButton.onClickCallback = self.usedPlusOriginalBuyCallback
+                UsedPlus.logDebug("Buy button: restored original callback for hand tool: " .. tostring(storeItem.name))
             else
-                -- NEW ITEM: Set our UnifiedPurchaseDialog callback
+                -- FINANCEABLE NEW ITEM: Set our UnifiedPurchaseDialog callback
                 local shopScreen = self
                 local currentStoreItem = storeItem
                 self.buyButton.onClickCallback = function()
                     UsedPlus.logDebug("Buy button clicked - new item: " .. tostring(currentStoreItem and currentStoreItem.name or "nil"))
                     if currentStoreItem and ShopConfigScreenExtension.canFinanceItem(currentStoreItem) then
                         ShopConfigScreenExtension.onUnifiedBuyClick(shopScreen, currentStoreItem, UnifiedPurchaseDialog.MODE_CASH)
-                    elseif shopScreen.usedPlusOriginalBuyCallback then
-                        -- Fallback to original for non-financeable items
-                        shopScreen.usedPlusOriginalBuyCallback()
                     end
+                    -- No fallback needed - we only set this callback for financeable items
                 end
                 UsedPlus.logDebug("Buy button: set UsedPlus callback for new item")
             end
         end
 
         -- v1.4.0: Check settings system for lease feature toggle
+        -- v1.9.9: Check for hand tools BEFORE wrapping - don't touch their callbacks at all
         if self.leaseButton then
             local leaseEnabled = not UsedPlusSettings or UsedPlusSettings:isSystemEnabled("Lease")
+            local isHandTool = storeItem and storeItem.financeCategory == "SHOP_HANDTOOL_BUY"
+
             if isOwnedVehicle or not leaseEnabled then
                 -- OWNED VEHICLE or LEASE DISABLED: Restore original game callback
                 self.leaseButton.onClickCallback = self.usedPlusOriginalLeaseCallback
                 UsedPlus.logDebug("Lease button: restored original callback for owned vehicle or disabled system")
+            elseif isHandTool then
+                -- HAND TOOL: Don't wrap callback - restore original and let game handle it
+                self.leaseButton.onClickCallback = self.usedPlusOriginalLeaseCallback
+                UsedPlus.logDebug("Lease button: restored original callback for hand tool")
             else
-                -- NEW ITEM: Set our UnifiedPurchaseDialog callback
+                -- LEASEABLE NEW ITEM: Set our UnifiedPurchaseDialog callback
                 local shopScreen = self
                 local currentStoreItem = storeItem
                 self.leaseButton.onClickCallback = function()
                     UsedPlus.logDebug("Lease button clicked - new item: " .. tostring(currentStoreItem and currentStoreItem.name or "nil"))
                     if currentStoreItem and ShopConfigScreenExtension.canLeaseItem(currentStoreItem) then
                         ShopConfigScreenExtension.onUnifiedBuyClick(shopScreen, currentStoreItem, UnifiedPurchaseDialog.MODE_LEASE)
-                    elseif shopScreen.usedPlusOriginalLeaseCallback then
-                        -- Fallback to original for non-leaseable items
-                        shopScreen.usedPlusOriginalLeaseCallback()
                     end
+                    -- No fallback needed - we only set this callback for leaseable items
                 end
                 UsedPlus.logDebug("Lease button: set UsedPlus callback for new item")
             end
@@ -287,10 +317,13 @@ function ShopConfigScreenExtension.updateButtonsHook(self, storeItem, vehicle, s
         -- v1.4.0: Check settings system for feature toggles
         if self.usedPlusFinanceButton then
             local financeEnabled = not UsedPlusSettings or UsedPlusSettings:isSystemEnabled("Finance")
-            local showFinanceButton = financeEnabled and
-                                       ModCompatibility.shouldShowFinanceButton() and
-                                       not isOwnedVehicle and
-                                       ShopConfigScreenExtension.canFinanceItem(storeItem)
+            local modCompatOk = ModCompatibility.shouldShowFinanceButton()
+            local canFinance = ShopConfigScreenExtension.canFinanceItem(storeItem)
+            local showFinanceButton = financeEnabled and modCompatOk and not isOwnedVehicle and canFinance
+
+            UsedPlus.logDebug(string.format("Finance button visibility: enabled=%s, modCompat=%s, notOwned=%s, canFinance=%s -> show=%s",
+                tostring(financeEnabled), tostring(modCompatOk), tostring(not isOwnedVehicle), tostring(canFinance), tostring(showFinanceButton)))
+
             self.usedPlusFinanceButton:setVisible(showFinanceButton)
             self.usedPlusFinanceButton:setDisabled(not showFinanceButton)
 
@@ -299,6 +332,8 @@ function ShopConfigScreenExtension.updateButtonsHook(self, storeItem, vehicle, s
                     ShopConfigScreenExtension.onUnifiedBuyClick(self, storeItem, UnifiedPurchaseDialog.MODE_FINANCE)
                 end
             end
+        else
+            UsedPlus.logDebug("Finance button not found - was it created?")
         end
 
         -- Show/hide Inspect button based on whether this is an owned vehicle
@@ -335,17 +370,30 @@ function ShopConfigScreenExtension.updateButtonsHook(self, storeItem, vehicle, s
             UsedPlus.logDebug("Service buttons shown for owned vehicle: " .. tostring(vehicleName))
         end
 
-        -- Hide Search Used button for owned vehicles (can't search for something you own)
+        -- Update Search Used button visibility and callback
         -- v1.8.1: Also check if BuyUsedEquipment handles used search
         -- v1.4.0: Check settings system for used vehicle search feature toggle
         if self.usedPlusSearchButton then
-            local searchEnabled = not UsedPlusSettings or UsedPlusSettings:isSystemEnabled("UsedVehicleSearch")
+            -- Note: enableUsedVehicleSearch doesn't follow the "System" suffix pattern, so check key directly
+            local searchEnabled = not UsedPlusSettings or UsedPlusSettings:get("enableUsedVehicleSearch") ~= false
+            local modCompatOk = ModCompatibility.shouldShowSearchButton()
             local isNewItem = vehicle == nil and saleItem == nil
-            local showSearchButton = searchEnabled and
-                                      ModCompatibility.shouldShowSearchButton() and
-                                      isNewItem and
-                                      ShopConfigScreenExtension.canSearchItem(storeItem)
+            local canSearch = ShopConfigScreenExtension.canSearchItem(storeItem)
+            local showSearchButton = searchEnabled and modCompatOk and isNewItem and canSearch
+
+            UsedPlus.logDebug(string.format("Search Used visibility: enabled=%s, modCompat=%s, isNewItem=%s, canSearch=%s -> show=%s",
+                tostring(searchEnabled), tostring(modCompatOk), tostring(isNewItem), tostring(canSearch), tostring(showSearchButton)))
+
             self.usedPlusSearchButton:setVisible(showSearchButton)
+            self.usedPlusSearchButton:setDisabled(not showSearchButton)
+
+            if showSearchButton then
+                self.usedPlusSearchButton.onClickCallback = function()
+                    ShopConfigScreenExtension.onSearchClick(self, storeItem)
+                end
+            end
+        else
+            UsedPlus.logDebug("Search Used button not found - was it created?")
         end
     end)
 
@@ -562,7 +610,8 @@ function ShopConfigScreenExtension.onUnifiedBuyClick(shopScreen, storeItem, init
             price = shopScreen.totalPrice
         end
 
-        dialog:setVehicleData(storeItem, price, nil)
+        -- Pass shopScreen reference so dialog can use vanilla buy flow for cash purchases
+        dialog:setVehicleData(storeItem, price, nil, shopScreen)
         dialog:setInitialMode(initialMode or UnifiedPurchaseDialog.MODE_CASH)
         g_gui:showDialog("UnifiedPurchaseDialog")
     end

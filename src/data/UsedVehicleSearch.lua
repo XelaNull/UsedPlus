@@ -478,6 +478,9 @@ end
     Generate condition and price for found vehicle (v1.4.0 - uses damageRange/wearRange)
     Called when monthly roll succeeds
     Returns table with damage, wear, price details for manager to use
+
+    v2.1.0: Now generates RVB-compatible part data and UYT-compatible tire data
+    for holistic inspection display and application on vehicle spawn
 ]]
 function UsedVehicleSearch:generateFoundVehicleDetails()
     local qualityTier = UsedVehicleSearch.QUALITY_TIERS[self.qualityLevel]
@@ -498,6 +501,15 @@ function UsedVehicleSearch:generateFoundVehicleDetails()
     -- v1.5.1: Generate hours and age based on quality tier
     local foundHours = math.floor(hoursRange[1] + (math.random() * (hoursRange[2] - hoursRange[1])))
     local foundAge = math.floor(ageRange[1] + (math.random() * (ageRange[2] - ageRange[1] + 1)))
+
+    -- v2.1.0: Generate RVB-compatible part data
+    -- Each part has a "life" (0-1, how much remains) based on overall condition
+    -- Individual parts vary around the mean to create realistic variation
+    local rvbPartsData = self:generateRVBPartsData(foundDamage, foundWear, foundHours)
+
+    -- v2.1.0: Generate UYT-compatible tire data
+    -- 4 wheels with individual conditions based on overall wear
+    local tireConditions = self:generateTireConditions(foundWear)
 
     -- Condition is inverse of damage (for compatibility)
     local foundCondition = 1.0 - foundDamage
@@ -563,7 +575,11 @@ function UsedVehicleSearch:generateFoundVehicleDetails()
         qualityLevel = self.qualityLevel,
         qualityName = qualityTier.name,
         foundMonth = self.monthsElapsed,
-        expirationMonths = expirationMonths  -- 2 or 3 months until offer expires
+        expirationMonths = expirationMonths,  -- 2 or 3 months until offer expires
+
+        -- v2.1.0: RVB/UYT compatible data for holistic inspection
+        rvbPartsData = rvbPartsData,       -- Engine, Thermostat, Generator, Battery, Starter, GlowPlug
+        tireConditions = tireConditions     -- Per-wheel conditions (FL, FR, RL, RR)
     }
 
     -- Add to portfolio immediately
@@ -641,6 +657,132 @@ function UsedVehicleSearch:getProgressPercent()
         return 100
     end
     return math.floor((self.monthsElapsed / self.maxMonths) * 100)
+end
+
+--[[
+    Generate RVB-compatible part data for a used vehicle
+    Creates realistic part wear based on overall vehicle condition
+
+    @param damage - Vehicle damage 0-1 (higher = more damaged)
+    @param wear - Vehicle wear 0-1 (higher = more worn)
+    @param operatingHours - Total operating hours
+    @return table - Part data compatible with RVB's spec_faultData structure
+]]
+function UsedVehicleSearch:generateRVBPartsData(damage, wear, operatingHours)
+    -- Base life is inverse of average damage/wear
+    local baseLife = 1.0 - ((damage + wear) / 2)
+
+    -- Helper to generate individual part life with variance
+    -- Some parts wear faster than others based on usage patterns
+    local function generatePartLife(baseLife, varianceFactor, wearBias)
+        -- varianceFactor: how much this part can deviate from base (0.1 = ±10%)
+        -- wearBias: tendency to wear faster (1.0 = normal, 1.2 = 20% faster wear)
+        local variance = (math.random() - 0.5) * 2 * varianceFactor
+        local adjusted = (baseLife + variance) / wearBias
+        return math.max(0.05, math.min(1.0, adjusted))
+    end
+
+    -- Calculate operating hours for each part
+    -- RVB uses operatingHours / lifetime to determine life remaining
+    -- We work backwards: generate life %, then calculate hours to match
+    local function calculatePartHours(life, defaultLifetime)
+        -- life = 1 - (hours / lifetime)
+        -- hours = (1 - life) * lifetime
+        local usedPercent = 1.0 - life
+        return math.floor(usedPercent * defaultLifetime)
+    end
+
+    -- RVB default lifetimes (from RVB mod configuration)
+    -- These are approximate values - actual RVB values may vary
+    local RVB_LIFETIMES = {
+        ENGINE = 1500,      -- Engine block
+        THERMOSTAT = 800,   -- Cooling system
+        GENERATOR = 1200,   -- Alternator
+        BATTERY = 600,      -- Battery (shorter life)
+        SELFSTARTER = 1000, -- Starter motor
+        GLOWPLUG = 500      -- Glow plugs (diesel)
+    }
+
+    -- Generate part data
+    local parts = {
+        ENGINE = {
+            life = generatePartLife(baseLife, 0.15, 1.0),
+            operatingHours = 0,
+            lifetime = RVB_LIFETIMES.ENGINE
+        },
+        THERMOSTAT = {
+            life = generatePartLife(baseLife, 0.20, 1.1),  -- Wears slightly faster
+            operatingHours = 0,
+            lifetime = RVB_LIFETIMES.THERMOSTAT
+        },
+        GENERATOR = {
+            life = generatePartLife(baseLife, 0.15, 1.0),
+            operatingHours = 0,
+            lifetime = RVB_LIFETIMES.GENERATOR
+        },
+        BATTERY = {
+            life = generatePartLife(baseLife, 0.25, 1.2),  -- High variance, wears faster
+            operatingHours = 0,
+            lifetime = RVB_LIFETIMES.BATTERY
+        },
+        SELFSTARTER = {
+            life = generatePartLife(baseLife, 0.15, 1.0),
+            operatingHours = 0,
+            lifetime = RVB_LIFETIMES.SELFSTARTER
+        },
+        GLOWPLUG = {
+            life = generatePartLife(baseLife, 0.30, 1.3),  -- Highest variance, wears fastest
+            operatingHours = 0,
+            lifetime = RVB_LIFETIMES.GLOWPLUG
+        }
+    }
+
+    -- Calculate operating hours for each part
+    for partKey, part in pairs(parts) do
+        part.operatingHours = calculatePartHours(part.life, part.lifetime)
+    end
+
+    UsedPlus.logDebug(string.format("Generated RVB parts data: Engine=%.0f%%, Thermo=%.0f%%, Gen=%.0f%%, Batt=%.0f%%, Start=%.0f%%, Glow=%.0f%%",
+        parts.ENGINE.life * 100, parts.THERMOSTAT.life * 100,
+        parts.GENERATOR.life * 100, parts.BATTERY.life * 100,
+        parts.SELFSTARTER.life * 100, parts.GLOWPLUG.life * 100))
+
+    return parts
+end
+
+--[[
+    Generate UYT-compatible tire conditions for a used vehicle
+    Creates per-wheel conditions based on overall wear
+
+    @param wear - Vehicle wear 0-1 (higher = more worn)
+    @return table - Array of 4 tire conditions (FL, FR, RL, RR)
+]]
+function UsedVehicleSearch:generateTireConditions(wear)
+    -- Base condition is inverse of wear
+    local baseCondition = 1.0 - wear
+
+    -- Helper to generate individual tire condition with variance
+    -- Front tires typically wear faster (steering), rear may vary
+    local function generateTireCondition(baseCondition, wearBias)
+        local variance = (math.random() - 0.5) * 0.15  -- ±7.5% variance
+        local adjusted = (baseCondition + variance) / wearBias
+        return math.max(0.05, math.min(1.0, adjusted))
+    end
+
+    -- Generate 4 tire conditions
+    -- FL (front-left), FR (front-right) typically wear faster
+    -- RL (rear-left), RR (rear-right) wear more evenly
+    local tires = {
+        FL = generateTireCondition(baseCondition, 1.1),  -- Front left - faster wear
+        FR = generateTireCondition(baseCondition, 1.1),  -- Front right - faster wear
+        RL = generateTireCondition(baseCondition, 1.0),  -- Rear left - normal
+        RR = generateTireCondition(baseCondition, 1.0)   -- Rear right - normal
+    }
+
+    UsedPlus.logDebug(string.format("Generated tire conditions: FL=%.0f%%, FR=%.0f%%, RL=%.0f%%, RR=%.0f%%",
+        tires.FL * 100, tires.FR * 100, tires.RL * 100, tires.RR * 100))
+
+    return tires
 end
 
 --[[
@@ -762,6 +904,26 @@ function UsedVehicleSearch:saveListingToXML(xmlFile, key, listing)
         xmlFile:setFloat(dataKey .. "#electricalReliability", listing.usedPlusData.electricalReliability or 0.5)
         xmlFile:setFloat(dataKey .. "#workhorseLemonScale", listing.usedPlusData.workhorseLemonScale or 0.5)
         xmlFile:setBool(dataKey .. "#wasInspected", listing.usedPlusData.wasInspected or false)
+    end
+
+    -- v2.1.0: Save RVB parts data
+    if listing.rvbPartsData then
+        local rvbKey = key .. ".rvbPartsData"
+        for partName, partData in pairs(listing.rvbPartsData) do
+            local partKey = rvbKey .. "." .. partName
+            xmlFile:setFloat(partKey .. "#life", partData.life or 1.0)
+            xmlFile:setInt(partKey .. "#operatingHours", partData.operatingHours or 0)
+            xmlFile:setInt(partKey .. "#lifetime", partData.lifetime or 1000)
+        end
+    end
+
+    -- v2.1.0: Save tire conditions
+    if listing.tireConditions then
+        local tireKey = key .. ".tireConditions"
+        xmlFile:setFloat(tireKey .. "#FL", listing.tireConditions.FL or 1.0)
+        xmlFile:setFloat(tireKey .. "#FR", listing.tireConditions.FR or 1.0)
+        xmlFile:setFloat(tireKey .. "#RL", listing.tireConditions.RL or 1.0)
+        xmlFile:setFloat(tireKey .. "#RR", listing.tireConditions.RR or 1.0)
     end
 end
 
@@ -889,6 +1051,42 @@ function UsedVehicleSearch:loadListingFromXML(xmlFile, key)
             electricalReliability = xmlFile:getFloat(dataKey .. "#electricalReliability", 0.5),
             workhorseLemonScale = xmlFile:getFloat(dataKey .. "#workhorseLemonScale", 0.5),
             wasInspected = xmlFile:getBool(dataKey .. "#wasInspected", false)
+        }
+    end
+
+    -- v2.1.0: Load RVB parts data if present
+    local rvbKey = key .. ".rvbPartsData"
+    local rvbParts = { "ENGINE", "THERMOSTAT", "GENERATOR", "BATTERY", "SELFSTARTER", "GLOWPLUG" }
+    local hasRvbData = false
+    for _, partName in ipairs(rvbParts) do
+        if xmlFile:hasProperty(rvbKey .. "." .. partName .. "#life") then
+            hasRvbData = true
+            break
+        end
+    end
+
+    if hasRvbData then
+        listing.rvbPartsData = {}
+        for _, partName in ipairs(rvbParts) do
+            local partKey = rvbKey .. "." .. partName
+            if xmlFile:hasProperty(partKey .. "#life") then
+                listing.rvbPartsData[partName] = {
+                    life = xmlFile:getFloat(partKey .. "#life", 1.0),
+                    operatingHours = xmlFile:getInt(partKey .. "#operatingHours", 0),
+                    lifetime = xmlFile:getInt(partKey .. "#lifetime", 1000)
+                }
+            end
+        end
+    end
+
+    -- v2.1.0: Load tire conditions if present
+    local tireKey = key .. ".tireConditions"
+    if xmlFile:hasProperty(tireKey .. "#FL") then
+        listing.tireConditions = {
+            FL = xmlFile:getFloat(tireKey .. "#FL", 1.0),
+            FR = xmlFile:getFloat(tireKey .. "#FR", 1.0),
+            RL = xmlFile:getFloat(tireKey .. "#RL", 1.0),
+            RR = xmlFile:getFloat(tireKey .. "#RR", 1.0)
         }
     end
 

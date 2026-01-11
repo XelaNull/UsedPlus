@@ -1,13 +1,14 @@
 # Workhorse/Lemon Scale System
 
-**Version:** 1.4.0
-**Last Updated:** 2025-12-27
-**Status:** IMPLEMENTED (Lua complete, translations pending)
+**Version:** 2.2.0
+**Last Updated:** 2026-01-11
+**Status:** IMPLEMENTED (Lua complete, RVB integration complete, translations pending)
 **Purpose:** Add permanent vehicle "DNA" that determines long-term reliability degradation
 
 **Related Documents:**
 - [Vehicle Inspection](VEHICLE_INSPECTION.md) - Reliability system, inspection reports, in-game effects
 - [Economics](ECONOMICS.md) - Buy/sell pricing model, vanilla comparison
+- [COMPATIBILITY.md](../COMPATIBILITY.md) - RVB mod integration details
 
 ---
 
@@ -17,7 +18,7 @@
 |-----------|--------|-------|
 | Core Concept | ✅ COMPLETE | Documented in this file |
 | Data Model | ✅ COMPLETE | Added to UsedPlusMaintenance.lua |
-| XML Schema | ✅ COMPLETE | workhorseLemonScale, maxReliabilityCeiling |
+| XML Schema | ✅ COMPLETE | workhorseLemonScale, maxReliabilityCeiling, component durabilities |
 | Generation Logic | ✅ COMPLETE | generateNewVehicleScale(), generateUsedVehicleScale() |
 | Repair Integration | ✅ COMPLETE | onVehicleRepaired() with ceiling degradation |
 | Multiplayer Sync | ✅ COMPLETE | stream read/write added |
@@ -25,6 +26,11 @@
 | Quote Selection Logic | ✅ COMPLETE | getInspectorQuote() function |
 | Inspection Dialog UI | ⏳ PENDING | Need to add "Mechanic's Assessment" section to dialog |
 | Quote Translations | ⏳ PENDING | Need 50 keys × 10 languages = 500 entries |
+| **RVB Initial DNA Multiplier** | ✅ COMPLETE | v2.2.0: applyDNAToRVBLifetimes() |
+| **RVB Repair Degradation** | ✅ COMPLETE | v2.2.0: applyRVBRepairDegradation() |
+| **RVB Breakdown Degradation** | ✅ COMPLETE | v2.2.0: applyRVBBreakdownDegradation() |
+| **UsedPlus Component Durability** | ✅ COMPLETE | v2.2.0: maxEngineDurability, etc. |
+| **Fault Monitoring** | ✅ COMPLETE | v2.2.0: RVBWorkshopIntegration fault tracking |
 
 ---
 
@@ -38,6 +44,7 @@
 6. [Implementation Plan](#implementation-plan)
 7. [Configuration Options](#configuration-options)
 8. [Edge Cases & Balance](#edge-cases--balance)
+9. [**RVB Progressive Degradation (v2.2.0)**](#rvb-progressive-degradation-v220)
 
 ---
 
@@ -1037,7 +1044,170 @@ This enhancement requires:
 
 ---
 
+## RVB Progressive Degradation (v2.2.0)
+
+### Overview
+
+When Real Vehicle Breakdowns (RVB) mod is installed, the Workhorse/Lemon DNA system extends to affect RVB's part lifetime system. This creates a **unified progressive degradation** where both UsedPlus reliability AND RVB part health respect the vehicle's hidden DNA.
+
+### The Core Concept: Legendary Workhorses Last Forever
+
+The key insight is that **legendary workhorses (DNA ≥ 0.90) can effectively last forever** if properly maintained:
+- They are **immune to repair degradation** - repairing doesn't wear them down
+- They take **reduced breakdown damage** - when things do fail, damage is minimal
+- As long as they're kept repaired and avoid breakdowns, they maintain full capacity indefinitely
+
+Meanwhile, **lemons spiral downward** - each repair and breakdown makes them worse, creating a "death spiral" where frequent problems lead to faster degradation which leads to more problems.
+
+### How It Works
+
+#### Phase 1: Initial DNA Multiplier (At Purchase)
+
+When a used vehicle is purchased, DNA affects initial RVB part lifetimes:
+
+```lua
+-- DNA 0.0 (lemon):     0.6x lifetime = parts fail faster from the start
+-- DNA 0.5 (average):   1.0x lifetime = normal behavior
+-- DNA 1.0 (workhorse): 1.4x lifetime = parts last 40% longer
+
+local initialMultiplier = 0.6 + (workhorseLemonScale * 0.8)
+```
+
+#### Phase 2: Repair Degradation (Ongoing)
+
+Each time a vehicle is repaired (through RVB Workshop or vanilla repair):
+
+```lua
+-- Legendary workhorses (DNA >= 0.90): IMMUNE - no degradation
+-- Others: Lose 0-2% of part lifetime per repair
+
+if workhorseLemonScale < 0.90 then
+    local degradation = (1 - workhorseLemonScale) * 0.02
+    part.tmp_lifetime = part.tmp_lifetime * (1 - degradation)
+end
+
+-- Lemon: -2% per repair
+-- Average: -1% per repair
+-- Workhorse (0.80): -0.4% per repair
+-- Legendary (0.90+): 0% per repair
+```
+
+#### Phase 3: Breakdown Degradation (On Fault)
+
+When an RVB part fails (fault occurs):
+
+```lua
+-- Everyone takes damage, but lemons take more
+local baseDegradation = 0.03  -- 3% base
+local lemonBonus = (1 - workhorseLemonScale) * 0.05  -- 0-5% extra
+local totalDegradation = baseDegradation + lemonBonus
+
+-- Legendary workhorses (DNA >= 0.95): Only 30% of normal damage
+if workhorseLemonScale >= 0.95 then
+    totalDegradation = totalDegradation * 0.3
+end
+
+-- Lemon: -8% per breakdown
+-- Average: -5.5% per breakdown
+-- Workhorse: -3.5% per breakdown
+-- Legendary: -2.4% per breakdown
+```
+
+### Long-Term Projections
+
+After 20 repairs and 5 breakdowns:
+
+| Vehicle Type | Repair Loss | Breakdown Loss | Final Lifetime | Fate |
+|--------------|-------------|----------------|----------------|------|
+| Lemon (DNA 0.0) | ~33% | ~34% | ~44% remaining | Dying |
+| Average (DNA 0.5) | ~18% | ~25% | ~61% remaining | Worn |
+| Workhorse (DNA 0.9) | ~4% | ~16% | ~80% remaining | Good |
+| **Legendary (DNA 1.0)** | **0%** | ~11% | **~89% remaining** | **Excellent** |
+
+### Legendary Workhorse Immortality
+
+A legendary workhorse (DNA ≥ 0.95) that **never breaks down** loses **ZERO lifetime**:
+
+```
+Year 1:  tmp_lifetime = 1400h, maintained, no breakdowns
+Year 5:  tmp_lifetime = 1400h, maintained, no breakdowns
+Year 10: tmp_lifetime = 1400h, maintained, no breakdowns
+Year 50: tmp_lifetime = 1400h, STILL PERFECT!
+```
+
+This creates a powerful incentive to:
+1. Search for high-quality vehicles (Excellent tier has ~40% workhorse chance)
+2. Keep workhorses well-maintained to prevent breakdowns
+3. Sell lemons before they become money pits
+
+### Affected Systems
+
+| System | What Degrades | Effect of Degradation |
+|--------|---------------|----------------------|
+| **RVB Parts** | `tmp_lifetime` per part | Shorter time between breakdowns |
+| **UsedPlus Reliability** | `maxReliabilityCeiling` | Lower max achievable reliability after repair |
+| **UsedPlus Components** | `maxEngineDurability`, etc. | Reduced component performance, capped repair |
+
+### New Schema Fields (v2.2.0)
+
+```lua
+-- Component Durability (progressive degradation)
+spec.maxEngineDurability = 1.0      -- Max achievable engine durability
+spec.maxHydraulicDurability = 1.0   -- Max achievable hydraulic durability
+spec.maxElectricalDurability = 1.0  -- Max achievable electrical durability
+
+-- RVB Integration Tracking
+spec.rvbLifetimeMultiplier = 1.0    -- Initial DNA-based multiplier applied
+spec.rvbLifetimesApplied = false    -- Whether initial multiplier has been applied
+spec.rvbTotalDegradation = 0        -- Cumulative degradation from repairs/breakdowns
+spec.rvbRepairCount = 0             -- Number of RVB repairs performed
+spec.rvbBreakdownCount = 0          -- Number of RVB breakdowns suffered
+```
+
+### Key Functions
+
+**ModCompatibility.lua:**
+- `applyDNAToRVBLifetimes(vehicle)` - Applies initial DNA multiplier to RVB parts
+- `applyRVBRepairDegradation(vehicle)` - Called when repair completes
+- `applyRVBBreakdownDegradation(vehicle, partKey)` - Called when fault occurs
+
+**UsedPlusMaintenance.lua:**
+- `applyRepairDegradation(vehicle)` - Reduces UsedPlus component durabilities
+- `applyBreakdownDegradation(vehicle, component)` - Breakdown damage to specific component
+
+**RVBWorkshopIntegration.lua:**
+- `hookServiceButton(dialog)` - Catches RVB service button for degradation
+- `checkForNewFaults(vehicle)` - Monitors fault state transitions
+- `initializeFaultTracking(vehicle)` - Establishes baseline fault states
+
+### Edge Cases Handled
+
+1. **Existing vehicles**: On load, check `rvbLifetimesApplied == false`, apply initial multiplier
+2. **RVB installed later**: Deferred sync applies multiplier when RVB becomes available
+3. **Difficulty change**: Re-apply initial multiplier (degradation persists)
+4. **Multiplayer**: Only server modifies lifetimes; RVB's network code syncs
+5. **Vehicle sold/removed**: Fault tracking cleaned up to prevent memory leaks
+
+---
+
 ## Changelog
+
+### v2.2.0 (2026-01-11)
+- **RVB Progressive Degradation System** - DNA now affects RVB part lifetimes
+  - Initial DNA multiplier: 0.6x (lemon) to 1.4x (workhorse) applied at purchase
+  - Repair degradation: 0-2% lifetime loss per repair (legendary workhorses immune)
+  - Breakdown degradation: 3-8% lifetime loss per fault (lemons lose more)
+  - Legendary workhorse immunity: DNA ≥ 0.90 immune to repair wear, DNA ≥ 0.95 reduced breakdown damage
+- **Component Durability System** - Per-component max durability tracking
+  - `maxEngineDurability`, `maxHydraulicDurability`, `maxElectricalDurability`
+  - Repairs capped by BOTH overall ceiling AND component durability
+  - Failed components take 1.5x extra durability damage
+- **Fault Monitoring** - Real-time RVB fault state tracking
+  - Detects fault state transitions during gameplay
+  - Applies breakdown degradation when parts fail
+  - Cleaned up when vehicles are sold/removed
+- **New functions**: `applyDNAToRVBLifetimes()`, `applyRVBRepairDegradation()`, `applyRVBBreakdownDegradation()`
+- **Service button hook**: RVB Service button now applies degradation
 
 ### v1.4.1 (PROPOSED)
 - Added Phase 2 enhancement section (damage/wear rate modifiers)

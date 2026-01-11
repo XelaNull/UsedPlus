@@ -128,6 +128,33 @@ That beat-up sprayer? Repair it to 75% for the season, skip the repaint entirely
 
 ---
 
+### The Workhorse/Lemon System - Vehicle DNA That Matters
+
+Every vehicle has hidden "DNA" - a permanent quality score that determines its long-term fate.
+
+| DNA Type | What It Means | Long-Term Effect |
+|----------|---------------|------------------|
+| **Lemon** (0.0-0.29) | Factory defect, poor assembly | Each repair makes it worse. Death spiral. |
+| **Average** (0.30-0.69) | Normal quality | Gradual degradation over time |
+| **Workhorse** (0.70-0.89) | Solid build quality | Minimal degradation from repairs |
+| **Legendary** (0.90-1.00) | Once-in-a-generation quality | **IMMUNE to repair degradation!** |
+
+**The key insight:** Legendary workhorses can last *forever* if you keep them maintained and prevent breakdowns. That "Old Betsy" tractor with 50,000 hours? She's not just sentimental - she's a measurably valuable workhorse that's survived decades without losing a drop of durability.
+
+Meanwhile, that "great deal" from the Poor quality tier? It might be a lemon that spirals into a money pit: frequent breakdowns → each breakdown causes permanent damage → more breakdowns → more damage → eventually unrepairable.
+
+**How do you know what you've got?** The mechanic's inspection gives hints through colorful quotes:
+- *"I'd burn some sage before driving this one off the lot"* → Run away 🍋
+- *"About what you'd expect from the factory"* → Average
+- *"In 30 years, I've seen maybe a dozen this well built"* → Legendary workhorse 🏆
+
+**This creates real gameplay decisions:**
+- Pay more for "Excellent" quality tier (40% chance of workhorse) or gamble on "Poor" (45% lemon risk)?
+- Keep that workhorse forever, or sell before the lemon spiral begins?
+- Invest in maintenance to prevent breakdowns, or let things fail and deal with consequences?
+
+---
+
 ### Your Official Credit Report
 
 Open the **Finance Manager** (Shift+F or ESC menu) and pull your credit report - styled like a real credit bureau document:
@@ -179,6 +206,10 @@ When a buyer makes an offer on your equipment, you'll see it here. Lease expirin
 - **Partial Repair/Repaint** - Fix only what you need
 - **Trade-In System** - Apply vehicle value toward new purchases
 - **Credit Report** - Official-style report with score factors and payment history
+- **Workhorse/Lemon DNA** - Hidden vehicle quality determines long-term fate
+- **Progressive Degradation** - Each repair/breakdown permanently affects max durability
+- **Legendary Workhorse Immunity** - DNA ≥ 0.90 = immune to repair wear, can last forever
+- **RVB Deep Integration** - DNA affects RVB part lifetimes, syncs degradation on faults
 - **Admin Console Commands** - For testing and emergencies
 - **Full Multiplayer Support** - All features work in co-op
 
@@ -222,8 +253,8 @@ UsedPlus automatically detects and **deeply integrates** with popular mods:
 
 | Mod | Status | How It Works |
 |-----|--------|--------------|
-| **Real Vehicle Breakdowns** | INTEGRATED | UsedPlus provides "symptoms before failure" using RVB part health |
-| **Use Up Your Tyres** | INTEGRATED | Tire condition syncs from UYT, flat tire triggers deferred |
+| **Real Vehicle Breakdowns** | DEEP INTEGRATION | DNA affects RVB part lifetimes (0.6x-1.4x), progressive degradation on repair/breakdown, legendary workhorses immune to repair wear |
+| **Use Up Your Tyres** | INTEGRATED | Tire condition syncs from UYT, OBD Scanner shows per-wheel wear |
 | **EnhancedLoanSystem** | INTEGRATED | ELS loans display in Finance Manager, Pay Early works with ELS |
 | **HirePurchasing** | INTEGRATED | HP leases display in Finance Manager for unified view |
 | **Employment** | INTEGRATED | Worker wages included in monthly obligations |
@@ -237,7 +268,11 @@ UsedPlus automatically detects and **deeply integrates** with popular mods:
 
 ### Best Experience Setup
 Run UsedPlus with these mods for the ultimate financial and maintenance experience:
-- **Real Vehicle Breakdowns + Use Up Your Tyres** - Gradual symptoms leading to catastrophic failures
+- **Real Vehicle Breakdowns + Use Up Your Tyres** - Deep integration with Workhorse/Lemon DNA system:
+  - DNA affects initial RVB part lifetimes (lemons start 40% weaker, workhorses 40% stronger)
+  - Progressive degradation: repairs and breakdowns permanently reduce part lifetimes
+  - Legendary workhorses immune to repair wear - can last forever if maintained!
+  - OBD Scanner shows RVB part health and UYT tire wear per wheel
 - **EnhancedLoanSystem + HirePurchasing** - All loans/leases visible in Finance Manager
 - **Employment** - Worker wages included in monthly obligations for complete budget visibility
 - Open Finance Manager (Shift+F) to see ALL your financial obligations in one unified dashboard
@@ -310,6 +345,8 @@ UsedPlus was built on the shoulders of giants. The FS25 modding community genero
 | **MobileServiceKit** (w33zl) | VehicleSellingPoint on vehicle type, portable workshop detection |
 | **FS25_useYourTyres** (50keda) | Per-wheel tracking, distance-based wear, friction modification, workshop button injection |
 | **FS25_Real_Vehicle_Breakdowns** (MathiasHun) | Part-based failure system, battery drain mechanics, component managers, thermostat/temperature tracking |
+| **FS25_FarmlandDifficulty** (GMNGjoy) | Farmland price scaling by difficulty, FarmlandManager hooks, EconomyManager multipliers |
+| **FS25_bankAccountInterest** (Evan Kirsch) | Bank interest on positive balances, PERIOD_CHANGED subscription, monthly interest calculations |
 
 ### Documentation References
 
@@ -359,7 +396,7 @@ If you build something using UsedPlus patterns, a simple credit like *"Patterns 
 
 ## Version
 
-**Current:** 1.3.0.0
+**Current:** 2.2.0
 **Game Version:** Farming Simulator 25
 
 ---

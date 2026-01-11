@@ -14,7 +14,7 @@
             <Text profile="fs25_dialogTitle" id="dialogTitleElement" position="0px -30px" text="$l10n_usedplus_sld_title"/>
 
             <!-- ===== VEHICLE INFO SECTION ===== -->
-            <!-- Height: 85px -->
+            <!-- Height: 100px (increased 15px for better layout) -->
             <GuiElement profile="sldVehicleContainer" position="0px -65px">
                 <Bitmap profile="sldVehicleBg" position="0px 0px"/>
                 <Text profile="sldSectionHeader" position="0px -5px" text="$l10n_usedplus_sld_sectionVehicle"/>
@@ -23,24 +23,22 @@
                 <Text profile="sldVehicleName" id="vehicleNameText" position="0px -28px" text=""/>
 
                 <!-- Condition and Hours row -->
-                <Text profile="sldLabel" position="-200px -52px" text="$l10n_usedplus_sld_condition"/>
-                <Text profile="sldConditionValue" id="conditionText" position="-100px -52px" text=""/>
-                <Text profile="sldLabel" position="50px -52px" text="$l10n_usedplus_sld_hours"/>
-                <Text profile="sldValue" id="hoursText" position="110px -52px" text=""/>
+                <Text profile="sldLabel" position="-200px -55px" text="$l10n_usedplus_sld_condition"/>
+                <Text profile="sldConditionValue" id="conditionText" position="-100px -55px" text=""/>
+                <Text profile="sldLabel" position="50px -55px" text="$l10n_usedplus_sld_hours"/>
+                <Text profile="sldValue" id="hoursText" position="130px -55px" text=""/>
 
-                <!-- Status display (right side) -->
-                <Text profile="sldLabel" position="180px -52px" text="Status:"/>
-                <Text profile="sldStatusValue" id="statusText" position="250px -52px" text=""/>
-
-                <!-- Time remaining -->
-                <Text profile="sldLabel" position="-200px -72px" text="$l10n_usedplus_sld_timeLeft"/>
-                <Text profile="sldTimeValue" id="timeRemainingText" position="-100px -72px" text=""/>
+                <!-- Time remaining and Status row -->
+                <Text profile="sldLabel" position="-200px -78px" text="$l10n_usedplus_sld_timeLeft"/>
+                <Text profile="sldTimeValue" id="timeRemainingText" position="-100px -78px" text=""/>
+                <Text profile="sldLabel" position="50px -78px" text="Status:"/>
+                <Text profile="sldStatusValue" id="statusText" position="180px -78px" text=""/>
             </GuiElement>
 
             <!-- ===== AGENT & PRICE TIERS SECTION ===== -->
-            <!-- 10px gap after Vehicle (85px) = -65 - 85 - 10 = -160 -->
+            <!-- 10px gap after Vehicle (100px) = -65 - 100 - 10 = -175 -->
             <!-- Height: 95px -->
-            <GuiElement profile="sldConfigContainer" position="0px -160px">
+            <GuiElement profile="sldConfigContainer" position="0px -175px">
                 <Bitmap profile="sldConfigBg" position="0px 0px"/>
                 <Text profile="sldSectionHeader" position="0px -5px" text="$l10n_usedplus_sld_sectionConfig"/>
 
@@ -66,9 +64,9 @@
             </GuiElement>
 
             <!-- ===== PRICING COMPARISON SECTION ===== -->
-            <!-- 10px gap after Config (95px) = -160 - 95 - 10 = -265 -->
+            <!-- 10px gap after Config (95px) = -175 - 95 - 10 = -280 -->
             <!-- Height: 95px -->
-            <GuiElement profile="sldValueContainer" position="0px -265px">
+            <GuiElement profile="sldValueContainer" position="0px -280px">
                 <Bitmap profile="sldValueBg" position="0px 0px"/>
                 <Text profile="sldSectionHeader" position="0px -5px" text="$l10n_usedplus_sld_sectionValue"/>
 
@@ -79,23 +77,23 @@
                 <Text profile="sldLabel" position="-220px -48px" text="$l10n_usedplus_sld_tradeInValue"/>
                 <Text profile="sldTradeInValue" id="tradeInValueText" position="-100px -48px" text=""/>
 
-                <Text profile="sldSmallNote" position="-220px -68px" text="$l10n_usedplus_sld_tradeInNote"/>
+                <Text profile="sldSmallNote" position="-100px -68px" text="$l10n_usedplus_sld_tradeInNote"/>
 
                 <!-- Right column: Expected Values -->
                 <Text profile="sldLabelBold" position="80px -28px" text="$l10n_usedplus_sld_expected"/>
                 <Text profile="sldExpectedValue" id="expectedValueText" position="210px -28px" text=""/>
 
                 <Text profile="sldLabel" position="80px -48px" text="$l10n_usedplus_sld_vsVanilla"/>
-                <Text profile="sldBonusValue" id="bonusVsVanillaText" position="190px -48px" text=""/>
+                <Text profile="sldBonusValue" id="bonusVsVanillaText" position="210px -48px" text=""/>
 
                 <Text profile="sldLabel" position="80px -68px" text="$l10n_usedplus_sld_netAfterFee"/>
-                <Text profile="sldNetValue" id="netAmountText" position="190px -68px" text=""/>
+                <Text profile="sldNetValue" id="netAmountText" position="210px -68px" text=""/>
             </GuiElement>
 
             <!-- ===== OFFER HISTORY SECTION ===== -->
-            <!-- 10px gap after Value (95px) = -265 - 95 - 10 = -370 -->
+            <!-- 10px gap after Value (95px) = -280 - 95 - 10 = -385 -->
             <!-- Height: 55px -->
-            <GuiElement profile="sldHistoryContainer" position="0px -370px">
+            <GuiElement profile="sldHistoryContainer" position="0px -385px">
                 <Bitmap profile="sldHistoryBg" position="0px 0px"/>
                 <Text profile="sldSectionHeader" position="0px -5px" text="$l10n_usedplus_sld_sectionOffers"/>
 
@@ -110,8 +108,8 @@
             </GuiElement>
 
             <!-- Info/Tips text -->
-            <!-- 10px gap after History (55px) = -370 - 55 - 10 = -435 -->
-            <Text profile="sldInfoText" id="infoText" position="0px -435px" text="$l10n_usedplus_sld_infoText"/>
+            <!-- 10px gap after History (55px) = -385 - 55 - 10 = -450 -->
+            <Text profile="sldInfoText" id="infoText" position="0px -450px" text="$l10n_usedplus_sld_infoText"/>
 
         </GuiElement>
 
@@ -124,7 +122,7 @@
     <GUIProfiles>
         <!-- ========== SECTION CONTAINERS ========== -->
         <Profile name="sldVehicleContainer" extends="emptyPanel" with="anchorTopCenter">
-            <size value="660px 85px"/>
+            <size value="660px 100px"/>
         </Profile>
 
         <Profile name="sldConfigContainer" extends="emptyPanel" with="anchorTopCenter">
@@ -141,7 +139,7 @@
 
         <!-- ========== BACKGROUNDS ========== -->
         <Profile name="sldVehicleBg" extends="baseReference" with="anchorTopCenter">
-            <size value="660px 85px"/>
+            <size value="660px 100px"/>
             <imageColor value="0.08 0.08 0.12 0.9"/>
         </Profile>
 
@@ -185,7 +183,7 @@
 
         <!-- ========== VALUES ========== -->
         <Profile name="sldValue" extends="fs25_textDefault" with="anchorTopCenter">
-            <size value="120px 18px"/>
+            <size value="130px 18px"/>
             <textSize value="13px"/>
             <textBold value="true"/>
             <textColor value="1 1 1 1"/>
@@ -207,7 +205,7 @@
         </Profile>
 
         <Profile name="sldStatusValue" extends="fs25_textDefault" with="anchorTopCenter">
-            <size value="120px 18px"/>
+            <size value="180px 18px"/>
             <textSize value="13px"/>
             <textBold value="true"/>
             <textColor value="0.7 0.7 0.7 1"/>
@@ -242,7 +240,7 @@
         </Profile>
 
         <Profile name="sldModValue" extends="fs25_textDefault" with="anchorTopCenter">
-            <size value="100px 18px"/>
+            <size value="130px 18px"/>
             <textSize value="13px"/>
             <textBold value="true"/>
             <textColor value="1 1 1 1"/>

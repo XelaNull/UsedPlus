@@ -4,7 +4,9 @@
     Central settings singleton with save/load and network sync.
     All managers query this for configuration values.
 
-    24 settings total: 9 toggles + 15 economic parameters
+    v2.0.0: 27 settings total: 13 toggles + 14 economic parameters
+    - Added farmland difficulty scaling based on GMNGjoy's FarmlandDifficulty
+    - Added bank interest based on Evan Kirsch's bankAccountInterest
 
     Usage:
         -- Check if system is enabled
@@ -32,8 +34,9 @@ UsedPlusSettings = {
 }
 
 -- Default values for ALL settings
+-- v2.0.0: Added paintCostMultiplier, enablePartialRepair, enablePartialRepaint
 UsedPlusSettings.DEFAULTS = {
-    -- === SYSTEM TOGGLES (9) ===
+    -- === SYSTEM TOGGLES (11) ===
     enableFinanceSystem = true,
     enableLeaseSystem = true,
     enableUsedVehicleSearch = true,
@@ -43,11 +46,14 @@ UsedPlusSettings.DEFAULTS = {
     enableCreditSystem = true,
     enableTireWearSystem = true,
     enableMalfunctionsSystem = true,
+    enablePartialRepair = true,      -- v2.0.0: Toggle partial repair shop integration
+    enablePartialRepaint = true,     -- v2.0.0: Toggle partial repaint shop integration
 
-    -- === MONEY & RATES (4) ===
-    baseInterestRate = 0.08,        -- 8%
+    -- === MONEY & RATES (5) ===
+    baseInterestRate = 0.08,        -- 8% (used for all financing: vehicles, land, cash loans)
     baseTradeInPercent = 55,        -- 55%
     repairCostMultiplier = 1.0,     -- 1.0x
+    paintCostMultiplier = 1.0,      -- v2.0.0: 1.0x (separate from repair)
     leaseMarkupPercent = 15,        -- 15%
 
     -- === FORGIVENESS & RISK (4) ===
@@ -57,8 +63,8 @@ UsedPlusSettings.DEFAULTS = {
     latePaymentPenalty = 15,        -- -15 points
 
     -- === MARKETPLACE (4) ===
-    searchSuccessPercent = 75,      -- 75% (averaged across tiers)
-    maxListingsPerFarm = 3,         -- 3 listings
+    baseSearchSuccessPercent = 75,  -- v2.0.0: Renamed for clarity (tiers add bonuses)
+    maxListingsPerFarm = 3,         -- 3 listings (internal, not shown in UI)
     offerExpirationHours = 48,      -- 48 hours
     agentCommissionPercent = 8,     -- 8% (averaged)
 
@@ -67,6 +73,19 @@ UsedPlusSettings.DEFAULTS = {
     usedConditionMax = 95,          -- 95%
     conditionPriceMultiplier = 1.0, -- 1.0x
     brandLoyaltyBonus = 5,          -- 5%
+
+    -- === DIFFICULTY SCALING (v2.0.0) ===
+    -- Based on: FS25_FarmlandDifficulty by GMNGjoy
+    -- Vanilla game scales vehicles/costs by difficulty but NOT farmland
+    -- This extends the same scaling to farmland for consistency
+    -- Uses game's standard EconomyManager.COST_MULTIPLIER: Easy=0.6, Normal=1.0, Hard=1.4
+    enableFarmlandDifficultyScaling = true,   -- Scale farmland prices by difficulty (like vehicles)
+
+    -- === BANK INTEREST (v2.0.0) ===
+    -- Based on: FS25_bankAccountInterest by Evan Kirsch
+    -- Real credit union rates: 1-5% APY
+    enableBankInterest = true,                -- Monthly interest on positive balances
+    bankInterestRate = 0.01,                  -- 1% APY (realistic credit union rate)
 }
 
 -- Current settings (merged defaults + loaded)
@@ -99,6 +118,9 @@ function UsedPlusSettings:init(savegameDirectory)
 
     -- Load saved settings (overwrites defaults with saved values)
     self:load()
+
+    -- v2.0.0: Migrate any renamed settings from older versions
+    self:migrateSettings()
 
     self.isInitialized = true
     UsedPlus.logInfo("UsedPlusSettings initialized")
@@ -392,6 +414,10 @@ function UsedPlusSettings:getSystemToggleKeys()
         "enableCreditSystem",
         "enableTireWearSystem",
         "enableMalfunctionsSystem",
+        "enablePartialRepair",              -- v2.0.0
+        "enablePartialRepaint",             -- v2.0.0
+        "enableFarmlandDifficultyScaling",  -- v2.0.0: GMNGjoy pattern
+        "enableBankInterest",               -- v2.0.0: Evan Kirsch pattern
     }
 end
 
@@ -404,20 +430,35 @@ function UsedPlusSettings:getEconomicSettingKeys()
         "baseInterestRate",
         "baseTradeInPercent",
         "repairCostMultiplier",
+        "paintCostMultiplier",      -- v2.0.0
         "leaseMarkupPercent",
         "missedPaymentsToDefault",
         "minDownPaymentPercent",
         "startingCreditScore",
         "latePaymentPenalty",
-        "searchSuccessPercent",
-        "maxListingsPerFarm",
+        "baseSearchSuccessPercent", -- v2.0.0: Renamed from searchSuccessPercent
         "offerExpirationHours",
         "agentCommissionPercent",
         "usedConditionMin",
         "usedConditionMax",
         "conditionPriceMultiplier",
         "brandLoyaltyBonus",
+        "bankInterestRate",         -- v2.0.0: Evan Kirsch pattern
+        -- Note: maxListingsPerFarm removed from UI (v2.0.0)
     }
+end
+
+--[[
+    v2.0.0: Handle backwards compatibility for renamed settings
+    Called during load to migrate old setting names to new ones
+]]
+function UsedPlusSettings:migrateSettings()
+    -- Migrate searchSuccessPercent -> baseSearchSuccessPercent
+    if self.current["searchSuccessPercent"] ~= nil and self.current["baseSearchSuccessPercent"] == nil then
+        self.current["baseSearchSuccessPercent"] = self.current["searchSuccessPercent"]
+        self.current["searchSuccessPercent"] = nil
+        UsedPlus.logInfo("Migrated searchSuccessPercent -> baseSearchSuccessPercent")
+    end
 end
 
 UsedPlus.logInfo("UsedPlusSettings loaded")

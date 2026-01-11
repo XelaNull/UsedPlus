@@ -101,7 +101,7 @@
         <e k="usedplus_confirmation_title" v="Potvrzení" eh="f4d1ea47" />
 
         <!--  Finance Manager Frame (InGameMenu page) -->
-        <e k="usedplus_inGameMenuTitle" v="Used Plus - Finance &amp; Vyhledávání" eh="483f0e06" />
+        <e k="usedplus_inGameMenuTitle" v="Used Plus - Finance &amp; Vyhledávání" eh="093c7b9e" />
         <e k="usedplus_activeFinanceDeals" v="Aktivní finanční nabídky:" eh="5cf7fac5" />
         <e k="usedplus_activeSearches" v="Aktivní vyhledávání:" eh="274e131d" />
         <e k="usedplus_creditScore" v="Kreditní skóre:" eh="0199e1a3" />
@@ -249,6 +249,7 @@
         <e k="input_USEDPLUS_OPEN_FINANCE_MANAGER" v="Otevřete Správce financí" eh="806bb897" />
         <e k="input_USEDPLUS_SEARCH_USED" v="Hledání použitého vybavení" eh="77397317" />
         <e k="input_USEDPLUS_INSPECT_VEHICLE" v="Zkontrolujte vozidlo" eh="c06f09f1" />
+        <e k="input_USEDPLUS_ACTIVATE_OBD" v="Použijte OBD skener" eh="9666e26b" />
 
         <!--  Tooltips for Finance Dialog -->
         <e k="usedplus_finance_loanTerm_tooltip" v="Rozložte splátky na 1-20 let. Delší termíny = menší měsíční splátky, ale vyšší celkové zaplacené úroky." eh="e1170142" />
@@ -280,7 +281,7 @@
         <!--  Tooltips for Finance Manager -->
         <e k="usedplus_manager_totalFinanced_tooltip" v="Celková částka, kterou stále dlužíte napříč všemi úvěry a leasingy. Udržujte pod hodnotou svého majetku!" eh="7c15778c" />
         <e k="usedplus_manager_monthlyObligations_tooltip" v="Celková částka odečtená z vašeho účtu každý měsíc. Ujistěte se, že máte vždy dostatek cash flow!" eh="c5cee5ec" />
-        <e k="usedplus_manager_creditScore_tooltip" v="Hodnocení 300-850. 750+ = výborný, 650-749 = dobrý, 550-649 = dobrý, &lt;550 = špatný. Ovlivňuje všechny budoucí úrokové sazby!" eh="8a7678ad" />
+        <e k="usedplus_manager_creditScore_tooltip" v="Hodnocení 300-850. 750+ = výborný, 650-749 = dobrý, 550-649 = dobrý, &lt;550 = špatný. Ovlivňuje všechny budoucí úrokové sazby!" eh="4b1c2269" />
         <e k="usedplus_manager_assetValue_tooltip" v="Kombinovaná hodnota vozidel, vybavení, polí a budov, které vlastníte. Měl by být vyšší než váš dluh!" eh="64ef61f3" />
         <e k="usedplus_manager_debtRatio_tooltip" v="Celkový dluh ÷ Hodnota aktiv. Udržujte pod 30 % pro vynikající kredit. Více než 50 % výrazně poškozuje vaše skóre!" eh="041f390c" />
 
@@ -311,7 +312,7 @@
         <e k="usedplus_repair_title_mechanical" v="Mechanická oprava" eh="60a0d54f" />
         <e k="usedplus_repair_title_repaint" v="Přelakovat vozidlo" eh="d5b4d6be" />
         <e k="usedplus_repair_mechanical" v="MECHANICKÁ OPRAVA" eh="6294bbee" />
-        <e k="usedplus_repair_cosmetic" v="BARVA &amp; KOSMETIKA" eh="94bb6ac8" />
+        <e k="usedplus_repair_cosmetic" v="BARVA &amp; KOSMETIKA" eh="d111819f" />
         <e k="usedplus_repair_slider" v="Částka opravy" eh="0dda5ee8" />
         <e k="usedplus_repair_cost" v="Náklady na opravu" eh="6f0504d5" />
         <e k="usedplus_repair_after" v="Stav Po" eh="d6d75451" />
@@ -321,6 +322,7 @@
         <e k="usedplus_repaint_slider" v="Částka přebarvení" eh="bf64833d" />
         <e k="usedplus_repaint_cost" v="Náklady na přemalování" eh="b994cb4e" />
         <e k="usedplus_button_repairVehicle" v="Oprava vozidla" eh="9592bc0d" />
+        <e k="usedplus_button_repaint" v="Přelakovat" />
         <e k="usedplus_button_tradeIn" v="Protiúčet" eh="d9a572a1" />
         <e k="usedplus_repair_financeSuccess" v="Oprava financována! %s přes %d měsíců za %s/měsíc" eh="ac520447" />
         <e k="usedplus_repair_noRepairsNeeded" v="Toto vozidlo nevyžaduje opravy." eh="58c85fca" />
@@ -793,6 +795,19 @@
         <e k="usedplus_irp_postRepairValue" v="Hodnota po opravě:" eh="676a8d00" />
         <e k="usedplus_irp_priceNote" v="Ceny odrážejí požadovanou cenu prodejce. Vyjednávejte na základě výsledků prohlídky." eh="1d136196" />
 
+        <!-- v2.1.0: RVB Parts Breakdown (Inspection Report) -->
+        <e k="usedplus_irp_sectionRvbParts" v="STAV KOMPONENT" eh="73555be1" />
+        <e k="usedplus_irp_part_engine" v="Motor" eh="7bfa3072" />
+        <e k="usedplus_irp_part_thermostat" v="Termostat" eh="91e0b95d" />
+        <e k="usedplus_irp_part_generator" v="Alternátor" eh="92a8f0b9" />
+        <e k="usedplus_irp_part_battery" v="Baterie" eh="d67c9286" />
+        <e k="usedplus_irp_part_starter" v="Startér" eh="ee6085db" />
+        <e k="usedplus_irp_part_glowplug" v="Žhavicí svíčka" eh="6fdb6ce6" />
+
+        <!-- v2.1.0: Tire Conditions (Inspection Report) -->
+        <e k="usedplus_irp_sectionTires" v="STAV PNEUMATIK" eh="d7d271cc" />
+        <e k="usedplus_irp_worstTire" v="Nejhorší:" eh="4ca3e96d" />
+
         <!-- Maintenance Report Dialog -->
         <e k="usedplus_mrp_title" v="ZPRÁVA O ÚDRŽBĚ" eh="a2ca3391" />
         <e k="usedplus_mrp_sectionReliability" v="HODNOCENÍ SPOLEHLIVOSTI" eh="87b5f6c4" />
@@ -1163,6 +1178,9 @@
         <e k="usedplus_cr_tip1" v="Plaťte včas pro lepší kredit" eh="a69f1a91" />
         <e k="usedplus_cr_tip2" v="Udržujte dluh pod 50% majetku" eh="70d62f24" />
         <e k="usedplus_cr_tip3" v="Budujte historii s malými půjčkami" eh="dc1c9766" />
+        <!-- v2.0.0: Credit system disabled messages -->
+        <e k="usedplus_cr_creditDisabled" v="Kreditní skóre je deaktivováno" eh="62d14b3c" />
+        <e k="usedplus_cr_creditDisabledHint" v="Povolte kreditní skóre v nastavení UsedPlus." eh="4c217397" />
         <!-- REMOVED: usedplus_button_close - duplicate, use Common Button Labels -->
 
         <!-- Search Details Dialog -->
@@ -1237,7 +1255,8 @@
         <!-- Finance Manager Frame -->
         <e k="usedplus_fmf_sectionFinances" v="FINANCOVÁNÍ" eh="15625374" />
         <e k="usedplus_fmf_sectionMarketplace" v="TRH S POUŽITÝM" eh="ad2d33e9" />
-        <e k="usedplus_fmf_sectionCredit" v="KREDIT &amp; STATISTIKY" eh="b9e2972c" />
+        <e k="usedplus_fmf_sectionCredit" v="KREDIT &amp; STATISTIKY" eh="8a71fbbe" />
+        <e k="usedplus_fmf_sectionStatistics" v="STATISTIKY" eh="bd71bd5e" />
         <e k="usedplus_fmf_noActiveDeals" v="Žádné aktivní finanční obchody" eh="171c5c5d" />
         <e k="usedplus_fmf_headerType" v="TYP" eh="94849514" />
         <e k="usedplus_fmf_headerItem" v="POLOŽKA" eh="2b911c01" />
@@ -1259,7 +1278,7 @@
         <e k="usedplus_fmf_nationalSearch" v="Národní vyhledávání" eh="c967061f" />
         <e k="usedplus_fmf_nationalStats" v="12% poplatek | 85% úspěch | 2-6 měsíců" eh="685c2f27" />
         <e k="usedplus_fmf_startFromShop" v="Spusťte hledání z obchodu přes 'Hledat použité'" eh="f0c6f05a" />
-        <e k="usedplus_fmf_viaSearchUsed" v="" />
+        <e k="usedplus_fmf_viaSearchUsed" v="" eh="d41d8cd9" />
         <e k="usedplus_fmf_usedVehicleSearches" v="Hledání použitých vozidel" eh="a3601db6" />
         <e k="usedplus_fmf_noActiveSearches" v="Žádné aktivní hledání. Zahajte v Obchodě." eh="6f447735" />
         <e k="usedplus_fmf_headerPrice" v="CENA" eh="6da7ab78" />
@@ -1362,7 +1381,7 @@
         <e k="usedplus_tl_good" v="Dobré 700-749: 7,5%" eh="98ac4cee" />
         <e k="usedplus_tl_fair" v="Slušné 650-699: 8,5%" eh="45ddaf78" />
         <e k="usedplus_tl_poor" v="Slabé 600-649: 9,5%" eh="58571247" />
-        <e k="usedplus_tl_veryPoor" v="Velmi Slabé &lt;600: 11%" eh="1065df64" />
+        <e k="usedplus_tl_veryPoor" v="Velmi Slabé &lt;600: 11%" eh="fbe67fc1" />
 
         <!-- ============================================================== -->
         <!-- INSPECTOR QUOTES - Workhorse/Lemon Scale System                 -->
@@ -1506,7 +1525,7 @@
         <e k="usedplus_tires_traction" v="Trakce:" eh="8d38bce1" />
         <e k="usedplus_tires_flatTire" v="PRÁZDNÁ PNEUMATIKA" eh="6e87cc30" />
         <e k="usedplus_tires_replace" v="Vyměnit pneumatiky" eh="3a0d1434" />
-        <e k="usedplus_tires_selectQuality" v="Vybrat kvalitu:" eh="98a3a185" />
+        <e k="usedplus_tires_selectQuality" v="Vybrat kvalitu:" eh="46aef69c" />
         <e k="usedplus_tires_retreadDesc" v="Rozpočtová volba - nižší přilnavost, vyšší riziko selhání" eh="f277d077" />
         <e k="usedplus_tires_normalDesc" v="Standardní pneumatiky - vyvážený výkon" eh="df677172" />
         <e k="usedplus_tires_qualityDesc" v="Prémiové pneumatiky - lepší přilnavost, nižší riziko selhání" eh="69e595ca" />
@@ -1525,7 +1544,7 @@
 
         <!-- v1.7.0: Tires Service Dialog -->
         <e k="usedplus_tires_title" v="Servis pneumatik" eh="b0234f4e" />
-        <e k="usedplus_tires_sectionStatus" v="STAV VOZIDLA &amp; PNEUMATIK" eh="089cd22b" />
+        <e k="usedplus_tires_sectionStatus" v="STAV VOZIDLA &amp; PNEUMATIK" eh="c0e3631e" />
         <e k="usedplus_tires_sectionSelect" v="VYBRAT KVALITU PNEUMATIK" eh="42abee54" />
         <e k="usedplus_tires_sectionPayment" v="PŘEHLED PLATBY" eh="0dd98605" />
         <e k="usedplus_tires_currentQuality" v="Aktuální kvalita:" eh="b46a9180" />
@@ -1547,7 +1566,7 @@
 
         <!-- v1.7.0: Fluids Service Dialog -->
         <e k="usedplus_fluids_title" v="Servis kapalin" eh="7eb767c6" />
-        <e k="usedplus_fluids_sectionStatus" v="STAV VOZIDLA &amp; KAPALIN" eh="027b5f21" />
+        <e k="usedplus_fluids_sectionStatus" v="STAV VOZIDLA &amp; KAPALIN" eh="2fb5c91e" />
         <e k="usedplus_fluids_sectionService" v="MOŽNOSTI SERVISU" eh="6a49411d" />
         <e k="usedplus_fluids_sectionPayment" v="PŘEHLED PLATBY" eh="0dd98605" />
         <e k="usedplus_fluids_oilLevel" v="Motorový olej:" eh="2168f846" />
@@ -1614,8 +1633,8 @@
         <e k="usedplus_fluid_fuelLeak" v="POZOR: Zjištěn únik paliva - nebezpečí požáru, je třeba opravit." eh="9016df52" />
         <e k="usedplus_fluid_allClear" v="Všechny systémy kapalin vypadají normálně." eh="339f1e72" />
 
-        <!-- v1.8.0: Field Service Kit with OBD Scanner -->
-        <e k="usedplus_fsk_name" v="Sada polního servisu (OBD skener)" eh="92be7850" />
+        <!-- v1.8.0: OBD Scanner (portable diagnostic tool) -->
+        <e k="usedplus_fsk_name" v="OBD skener" eh="96023669" />
         <e k="usedplus_fsk_function" v="Přenosný diagnostický skener OBD pro nouzové opravy v terénu. Připojuje se k diagnostickému portu vozidla pro čtení chybových kódů a dat senzorů. Spotřební materiál - jednorázové použití." eh="bfdb43fa" />
         <e k="usedplus_fsk_tier_basic" v="Základní OBD" eh="36823daa" />
         <e k="usedplus_fsk_activate" v="Připojit OBD skener" eh="dc1214b1" />
@@ -1723,8 +1742,9 @@
         <e k="usedplus_fsk_feedback_wrong" v="Skutečný problém byl v jiném systému." eh="9b04c318" />
         <e k="usedplus_fsk_temp_repair" v="DOČASNÁ POLNÍ OPRAVA" eh="b3bc3876" />
         <e k="usedplus_fsk_temp_repair_desc" v="Toto je nouzová oprava. Navštivte řádnou dílnu pro kompletní servis." eh="648457f5" />
-        <e k="usedplus_fsk_kit_consumed" v="Sada polního servisu byla spotřebována." eh="08530ba3" />
+        <e k="usedplus_fsk_kit_consumed" v="OBD skener byl spotřebován." eh="b2ea1455" />
         <e k="usedplus_fsk_cannot_cancel" v="Oprava probíhá - nelze zrušit v této fázi." eh="6172d2ec" />
+        <e k="usedplus_fsk_noVehicle" v="V dosahu nebylo detekováno žádné vozidlo. Přisuňte skener blíže k vozidlu." eh="e89e127f" />
 
         <!-- Tire repair -->
         <e k="usedplus_fsk_tire_repair" v="ZJIŠTĚNA PRÁZDNÁ PNEUMATIKA - Klikněte pro opravu" eh="0cd0073e" />
@@ -1736,6 +1756,136 @@
         <e k="usedplus_fsk_tire_plug" v="ZÁSTRČKA" eh="c18d6117" />
         <e k="usedplus_fsk_tire_plug_desc" v="Lepší nouzová oprava" eh="b3aa3113" />
         <e k="usedplus_fsk_tire_plug_result" v="Obnovuje na 50% stav" eh="98bf223c" />
+
+        <!-- v2.1.0: Scanner Readout Hints (Step 1 hints to deduce failed system) -->
+        <e k="usedplus_fsk_scanner_readout" v="ÚDAJE ZE SKENERU OBD" eh="e81cab15" />
+        <e k="usedplus_fsk_hint_no_faults" v="Žádné kritické chybové kódy uloženy" eh="56f7aa39" />
+        <e k="usedplus_fsk_hint_preventive" v="Doporučena preventivní údržba" eh="695fff39" />
+
+        <!-- ENGINE hints -->
+        <e k="usedplus_fsk_hint_engine_dtc" v="DTC P0xxx: Uloženy chybové kódy hnacího ústrojí" eh="3ef35761" />
+        <e k="usedplus_fsk_hint_engine_combustion" v="Zaznamenány nepravidelné vzorce spalovacího cyklu" eh="cfc95185" />
+        <e k="usedplus_fsk_hint_engine_airfuel" v="Údaje směsi vzduch-palivo mimo specifikaci" eh="e0a6626d" />
+        <e k="usedplus_fsk_hint_engine_exhaust" v="Abnormální údaje čidla výfukových plynů" eh="f491ddaa" />
+        <e k="usedplus_fsk_hint_engine_throttle" v="Zjištěna odchylka odezvy škrticí klapky" eh="b702d132" />
+        <e k="usedplus_fsk_hint_engine_timing" v="Zaznamenána odchylka časování klikového hřídele" eh="c6429837" />
+
+        <!-- ELECTRICAL hints -->
+        <e k="usedplus_fsk_hint_elec_dtc" v="DTC B/U kódy: Chyby síťové komunikace" eh="5dc3a478" />
+        <e k="usedplus_fsk_hint_elec_voltage" v="Regulace napětí mimo normální parametry" eh="f6b58c16" />
+        <e k="usedplus_fsk_hint_elec_signal" v="Zjištěny přerušované výpadky signálu čidla" eh="5f4e98be" />
+        <e k="usedplus_fsk_hint_elec_canbus" v="Zaznamenány chyby komunikace sběrnice CAN" eh="06868b16" />
+        <e k="usedplus_fsk_hint_elec_timeout" v="Zaznamenány časové limity odezvy modulu" eh="8d47cb04" />
+        <e k="usedplus_fsk_hint_elec_ground" v="Spuštěny indikátory zkratu na kostru" eh="aeded58c" />
+
+        <!-- HYDRAULIC hints -->
+        <e k="usedplus_fsk_hint_hyd_response" v="Doba odezvy nářadí překračuje prahovou hodnotu" eh="c51368ce" />
+        <e k="usedplus_fsk_hint_hyd_pressure" v="Zjištěny kolísání hydraulického tlaku" eh="c884962a" />
+        <e k="usedplus_fsk_hint_hyd_hitch" v="Drift čidla polohy tříbodového závěsu" eh="f047bc25" />
+        <e k="usedplus_fsk_hint_hyd_actuator" v="Zaznamenáno zhoršení doby cyklu pohonu" eh="78638bc2" />
+        <e k="usedplus_fsk_hint_hyd_flow" v="Nepravidelnosti průtoku v pomocných obvodech" eh="36d131ee" />
+        <e k="usedplus_fsk_hint_hyd_temp" v="Zaznamenána varování teploty hydraulické kapaliny" eh="cfc27131" />
+
+        <!-- ===== SETTINGS v2.0.0 ===== -->
+        <!-- Preset selector -->
+        <e k="usedplus_setting_preset" v="Rychlý Preset" eh="ef6e6470" />
+        <e k="usedplus_setting_preset_desc" v="Použít preset (změní všechna nastavení níže)" eh="63332963" />
+
+        <!-- System toggles -->
+        <e k="usedplus_setting_finance" v="Financování Vozidel/Pozemků" eh="8159256d" />
+        <e k="usedplus_setting_finance_desc" v="Povolit financování nákupů vozidel a pozemků" eh="4834038c" />
+        <e k="usedplus_setting_lease" v="Leasing" eh="9e668941" />
+        <e k="usedplus_setting_lease_desc" v="Povolit leasing vozidel a pozemků s opcí odkupu" eh="689ee038" />
+        <e k="usedplus_setting_search" v="Hledání Ojetých Vozidel" eh="07c38501" />
+        <e k="usedplus_setting_search_desc" v="Povolit hledání ojetého vybavení přes agenta" eh="73690f8f" />
+        <e k="usedplus_setting_sale" v="Prodej Vozidel" eh="9111fc3c" />
+        <e k="usedplus_setting_sale_desc" v="Povolit prodej vozidel přes agenta (nahrazuje okamžitý prodej)" eh="861c1a37" />
+        <e k="usedplus_setting_repair" v="Systém Oprav" eh="5a2967eb" />
+        <e k="usedplus_setting_repair_desc" v="Povolit částečné opravy a lakování" eh="a6774f7d" />
+        <e k="usedplus_setting_tradein" v="Systém Protiúčtu" eh="3e428cd4" />
+        <e k="usedplus_setting_tradein_desc" v="Povolit výměnu vozidel při nákupech" eh="464eed0d" />
+        <e k="usedplus_setting_credit" v="Kreditní Skóre" eh="c709b51e" />
+        <e k="usedplus_setting_credit_desc" v="Povolit dynamické úrokové sazby založené na kreditu" eh="ea6286a9" />
+        <e k="usedplus_setting_tirewear" v="Opotřebení Pneumatik" eh="fa71e50e" />
+        <e k="usedplus_setting_tirewear_desc" v="Povolit realistické opotřebení pneumatik" eh="0a955572" />
+        <e k="usedplus_setting_malfunctions" v="Poruchy" eh="97801e8a" />
+        <e k="usedplus_setting_malfunctions_desc" v="Povolit náhodné poruchy a selhání komponentů" eh="fbbe01f9" />
+        <e k="usedplus_setting_partialRepair" v="Částečná Oprava" eh="dc6b627a" />
+        <e k="usedplus_setting_partialRepair_desc" v="Povolit částečné opravy v dílně (zakázání skryje tlačítko opravy)" eh="84fe180c" />
+        <e k="usedplus_setting_partialRepaint" v="Částečné Lakování" eh="3fca656d" />
+        <e k="usedplus_setting_partialRepaint_desc" v="Povolit částečné lakování v dílně (zakázání skryje tlačítko lakování)" eh="4ca7214a" />
+        <!-- v2.0.0: Farmland Difficulty & Bank Interest -->
+        <e k="usedplus_setting_farmlandDifficulty" v="Škálování Cen Pozemků" eh="9118adb6" />
+        <e k="usedplus_setting_farmlandDifficulty_desc" v="Upravit ceny pozemků podle obtížnosti (jako vozidla). Lehká: 60%, Normální: 100%, Těžká: 140%" eh="50a435ef" />
+        <e k="usedplus_setting_bankInterest" v="Bankovní Úroky" eh="1267ace4" />
+        <e k="usedplus_setting_bankInterest_desc" v="Získávat úroky z kladného zůstatku (měsíčně, jako spořicí účet)" eh="8e706865" />
+        <e k="usedplus_setting_bankInterestRate" v="Úroková Sazba (roční)" eh="798c19e6" />
+        <e k="usedplus_setting_bankInterestRate_desc" v="Roční úroková sazba z hotovosti. 1% = 10 000 Kč ročně při zůstatku 1M Kč" eh="80e4314a" />
+
+        <!-- Money and rates -->
+        <e k="usedplus_setting_interestRate" v="Úroková Sazba Financování" eh="ec5e55f4" />
+        <e k="usedplus_setting_interestRate_desc" v="Základní sazba pro veškeré financování (vozidla, pozemky, půjčky). Kreditní skóre tuto sazbu ovlivňuje." eh="86443f38" />
+        <e k="usedplus_setting_tradeInValue" v="Hodnota Protiúčtu %" eh="1f2d9066" />
+        <e k="usedplus_setting_tradeInValue_desc" v="Základní procento prodejní ceny pro protiúčty" eh="63d5cd26" />
+        <e k="usedplus_setting_repairCost" v="Násobitel Nákladů na Opravu" eh="f6f74c79" />
+        <e k="usedplus_setting_repairCost_desc" v="Násobitel aplikovaný na všechny náklady na opravy" eh="d20d8168" />
+        <e k="usedplus_setting_paintCost" v="Násobitel Nákladů na Lakování" eh="b5b8f53a" />
+        <e k="usedplus_setting_paintCost_desc" v="Násobitel aplikovaný na náklady na lakování (odděleno od oprav)" eh="4fcb0c32" />
+        <e k="usedplus_setting_leaseMarkup" v="Přirážka Leasingu %" eh="aac70e2a" />
+        <e k="usedplus_setting_leaseMarkup_desc" v="Procentní přirážka na měsíční leasingové splátky" eh="23d9d6f0" />
+
+        <!-- Forgiveness and risk -->
+        <e k="usedplus_setting_missedPayments" v="Zmeškané Platby do Zabavení" eh="be335e9f" />
+        <e k="usedplus_setting_missedPayments_desc" v="Počet zmeškaných plateb před zabavením vozidla" eh="71688a5f" />
+        <e k="usedplus_setting_downPayment" v="Min. Záloha %" eh="b70d8e33" />
+        <e k="usedplus_setting_downPayment_desc" v="Minimální požadovaná záloha pro financování" eh="d290560c" />
+        <e k="usedplus_setting_startingCredit" v="Počáteční Kreditní Skóre" eh="8fd1d387" />
+        <e k="usedplus_setting_startingCredit_desc" v="Počáteční kreditní skóre pro nové hry" eh="1861873e" />
+        <e k="usedplus_setting_latePenalty" v="Penále za Zpoždění" eh="70703f0b" />
+        <e k="usedplus_setting_latePenalty_desc" v="Kreditní body ztracené za opožděnou platbu" eh="a58e7e31" />
+
+        <!-- Marketplace -->
+        <e k="usedplus_setting_searchSuccess" v="Základní Úspěšnost Hledání %" eh="01f7d1c0" />
+        <e k="usedplus_setting_searchSuccess_desc" v="Základní šance najít ojetá vozidla. Bonusy úrovní: Economy +0%, Standard +10%, Premium +20%, Elite +30%" eh="69f7bd7b" />
+        <e k="usedplus_setting_maxListings" v="Max Inzerátů na Farmu" eh="5f8a47bd" />
+        <e k="usedplus_setting_maxListings_desc" v="Maximum aktivních prodejních inzerátů na farmu (interní nastavení)" eh="88403541" />
+        <e k="usedplus_setting_offerExpiry" v="Vypršení Nabídek" eh="8b1b7a6f" />
+        <e k="usedplus_setting_offerExpiry_desc" v="Hodiny do vypršení prodejních nabídek" eh="fe118057" />
+        <e k="usedplus_setting_commission" v="Provize Agenta %" eh="443d1555" />
+        <e k="usedplus_setting_commission_desc" v="Procento účtované prodejními agenty" eh="8f42cc9d" />
+
+        <!-- Condition and quality -->
+        <e k="usedplus_setting_conditionMin" v="Min. Stav Ojetých" eh="c2725712" />
+        <e k="usedplus_setting_conditionMin_desc" v="Minimální stav pro ojetá vozidla" eh="67ff9bc5" />
+        <e k="usedplus_setting_conditionMax" v="Max. Stav Ojetých" eh="ff759d4c" />
+        <e k="usedplus_setting_conditionMax_desc" v="Maximální stav pro ojetá vozidla" eh="5eb8cfaf" />
+        <e k="usedplus_setting_conditionMult" v="Vliv Stavu na Cenu" eh="b9ea233b" />
+        <e k="usedplus_setting_conditionMult_desc" v="Jak moc stav ovlivňuje cenu vozidla" eh="1defc378" />
+        <e k="usedplus_setting_brandBonus" v="Bonus Věrnosti Značce" eh="51d04913" />
+        <e k="usedplus_setting_brandBonus_desc" v="Extra hodnota protiúčtu při nákupu stejné značky" eh="3256663b" />
+
+        <!-- Presets -->
+        <e k="usedplus_preset_title" v="Použít Preset" eh="124235e0" />
+        <e k="usedplus_preset_easy" v="Snadný" eh="7f943921" />
+        <e k="usedplus_preset_easy_desc" v="Maximální tolerance - soustřeďte se na farmaření, ne finance" eh="81004805" />
+        <e k="usedplus_preset_balanced" v="Vyvážený" eh="c6589f52" />
+        <e k="usedplus_preset_balanced_desc" v="Výchozí vyvážená simulace - zamýšlený zážitek" eh="e4b620f0" />
+        <e k="usedplus_preset_challenging" v="Náročný" eh="4235e068" />
+        <e k="usedplus_preset_challenging_desc" v="Skutečné důsledky - rozhodnutí mají význam" eh="232773e0" />
+        <e k="usedplus_preset_hardcore" v="Hardcore" eh="1c800aa9" />
+        <e k="usedplus_preset_hardcore_desc" v="Ekonomické přežití - každá koruna se počítá" eh="f893227a" />
+        <e k="usedplus_preset_streamlined" v="Zjednodušený" eh="093eb019" />
+        <e k="usedplus_preset_streamlined_desc" v="Pouze financování a leasing - bez doplňků" eh="e3952520" />
+        <e k="usedplus_preset_immersive" v="Pohlcující" eh="7a7f14a4" />
+        <e k="usedplus_preset_immersive_desc" v="Plná simulace - nejlepší s mody RVB/UYT" eh="777e7831" />
+        <e k="usedplus_preset_realistic" v="Vyvážený" eh="c6589f52" />
+        <e k="usedplus_preset_casual" v="Snadný" eh="7f943921" />
+        <e k="usedplus_preset_lite" v="Zjednodušený" eh="093eb019" />
+        <e k="usedplus_preset_realistic_desc" v="Výchozí vyvážená simulace - zamýšlený zážitek" eh="e4b620f0" />
+        <e k="usedplus_preset_casual_desc" v="Maximální tolerance - soustřeďte se na farmaření, ne finance" eh="81004805" />
+        <e k="usedplus_preset_lite_desc" v="Pouze financování a leasing - bez doplňků" eh="e3952520" />
+        <e k="usedplus_preset_apply" v="Použít" eh="9639e32c" />
+        <e k="usedplus_preset_reset" v="Obnovit výchozí" eh="6795975d" />
 
     </elements>
 </l10n>

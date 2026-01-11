@@ -62,7 +62,7 @@
                     <GuiElement id="financeRow0" position="0px 324px" size="600px 36px" visible="false">
                         <Bitmap profile="baseReference" id="financeRow0Bg" imageColor="0.1 0.1 0.1 1" size="600px 36px"/>
                         <Text profile="fs25_textDefault" id="financeRow0Type" text="" position="5px 10px" textSize="12px" textColor="0.5 0.8 1 1"/>
-                        <Text profile="fs25_textDefault" id="financeRow0Item" text="" position="45px 10px" textSize="12px" textColor="1 1 1 1"/>
+                        <Text profile="fs25_textDefault" id="financeRow0Item" text="" position="65px 10px" textSize="12px" textColor="1 1 1 1"/>
                         <Text profile="fs25_textDefault" id="financeRow0Balance" text="" position="185px 10px" textSize="12px" textColor="1 0.8 0.2 1"/>
                         <Text profile="fs25_textDefault" id="financeRow0Monthly" text="" position="280px 10px" textSize="12px" textColor="1 0.6 0.6 1"/>
                         <Text profile="fs25_textDefault" id="financeRow0Progress" text="" position="380px 10px" textSize="12px" textColor="0.7 0.7 0.7 1"/>
@@ -73,7 +73,7 @@
                     <GuiElement id="financeRow1" position="0px 288px" size="600px 36px" visible="false">
                         <Bitmap profile="baseReference" id="financeRow1Bg" imageColor="0.12 0.12 0.12 1" size="600px 36px"/>
                         <Text profile="fs25_textDefault" id="financeRow1Type" text="" position="5px 10px" textSize="12px" textColor="0.5 0.8 1 1"/>
-                        <Text profile="fs25_textDefault" id="financeRow1Item" text="" position="45px 10px" textSize="12px" textColor="1 1 1 1"/>
+                        <Text profile="fs25_textDefault" id="financeRow1Item" text="" position="65px 10px" textSize="12px" textColor="1 1 1 1"/>
                         <Text profile="fs25_textDefault" id="financeRow1Balance" text="" position="185px 10px" textSize="12px" textColor="1 0.8 0.2 1"/>
                         <Text profile="fs25_textDefault" id="financeRow1Monthly" text="" position="280px 10px" textSize="12px" textColor="1 0.6 0.6 1"/>
                         <Text profile="fs25_textDefault" id="financeRow1Progress" text="" position="380px 10px" textSize="12px" textColor="0.7 0.7 0.7 1"/>
@@ -84,7 +84,7 @@
                     <GuiElement id="financeRow2" position="0px 252px" size="600px 36px" visible="false">
                         <Bitmap profile="baseReference" id="financeRow2Bg" imageColor="0.1 0.1 0.1 1" size="600px 36px"/>
                         <Text profile="fs25_textDefault" id="financeRow2Type" text="" position="5px 10px" textSize="12px" textColor="0.5 0.8 1 1"/>
-                        <Text profile="fs25_textDefault" id="financeRow2Item" text="" position="45px 10px" textSize="12px" textColor="1 1 1 1"/>
+                        <Text profile="fs25_textDefault" id="financeRow2Item" text="" position="65px 10px" textSize="12px" textColor="1 1 1 1"/>
                         <Text profile="fs25_textDefault" id="financeRow2Balance" text="" position="185px 10px" textSize="12px" textColor="1 0.8 0.2 1"/>
                         <Text profile="fs25_textDefault" id="financeRow2Monthly" text="" position="280px 10px" textSize="12px" textColor="1 0.6 0.6 1"/>
                         <Text profile="fs25_textDefault" id="financeRow2Progress" text="" position="380px 10px" textSize="12px" textColor="0.7 0.7 0.7 1"/>
@@ -95,7 +95,7 @@
                     <GuiElement id="financeRow3" position="0px 216px" size="600px 36px" visible="false">
                         <Bitmap profile="baseReference" id="financeRow3Bg" imageColor="0.12 0.12 0.12 1" size="600px 36px"/>
                         <Text profile="fs25_textDefault" id="financeRow3Type" text="" position="5px 10px" textSize="12px" textColor="0.5 0.8 1 1"/>
-                        <Text profile="fs25_textDefault" id="financeRow3Item" text="" position="45px 10px" textSize="12px" textColor="1 1 1 1"/>
+                        <Text profile="fs25_textDefault" id="financeRow3Item" text="" position="65px 10px" textSize="12px" textColor="1 1 1 1"/>
                         <Text profile="fs25_textDefault" id="financeRow3Balance" text="" position="185px 10px" textSize="12px" textColor="1 0.8 0.2 1"/>
                         <Text profile="fs25_textDefault" id="financeRow3Monthly" text="" position="280px 10px" textSize="12px" textColor="1 0.6 0.6 1"/>
                         <Text profile="fs25_textDefault" id="financeRow3Progress" text="" position="380px 10px" textSize="12px" textColor="0.7 0.7 0.7 1"/>
@@ -106,7 +106,7 @@
                     <GuiElement id="financeRow4" position="0px 180px" size="600px 36px" visible="false">
                         <Bitmap profile="baseReference" id="financeRow4Bg" imageColor="0.1 0.1 0.1 1" size="600px 36px"/>
                         <Text profile="fs25_textDefault" id="financeRow4Type" text="" position="5px 10px" textSize="12px" textColor="0.5 0.8 1 1"/>
-                        <Text profile="fs25_textDefault" id="financeRow4Item" text="" position="45px 10px" textSize="12px" textColor="1 1 1 1"/>
+                        <Text profile="fs25_textDefault" id="financeRow4Item" text="" position="65px 10px" textSize="12px" textColor="1 1 1 1"/>
                         <Text profile="fs25_textDefault" id="financeRow4Balance" text="" position="185px 10px" textSize="12px" textColor="1 0.8 0.2 1"/>
                         <Text profile="fs25_textDefault" id="financeRow4Monthly" text="" position="280px 10px" textSize="12px" textColor="1 0.6 0.6 1"/>
                         <Text profile="fs25_textDefault" id="financeRow4Progress" text="" position="380px 10px" textSize="12px" textColor="0.7 0.7 0.7 1"/>
@@ -117,7 +117,7 @@
                     <GuiElement id="financeRow5" position="0px 144px" size="600px 36px" visible="false">
                         <Bitmap profile="baseReference" id="financeRow5Bg" imageColor="0.12 0.12 0.12 1" size="600px 36px"/>
                         <Text profile="fs25_textDefault" id="financeRow5Type" text="" position="5px 10px" textSize="12px" textColor="0.5 0.8 1 1"/>
-                        <Text profile="fs25_textDefault" id="financeRow5Item" text="" position="45px 10px" textSize="12px" textColor="1 1 1 1"/>
+                        <Text profile="fs25_textDefault" id="financeRow5Item" text="" position="65px 10px" textSize="12px" textColor="1 1 1 1"/>
                         <Text profile="fs25_textDefault" id="financeRow5Balance" text="" position="185px 10px" textSize="12px" textColor="1 0.8 0.2 1"/>
                         <Text profile="fs25_textDefault" id="financeRow5Monthly" text="" position="280px 10px" textSize="12px" textColor="1 0.6 0.6 1"/>
                         <Text profile="fs25_textDefault" id="financeRow5Progress" text="" position="380px 10px" textSize="12px" textColor="0.7 0.7 0.7 1"/>
@@ -128,7 +128,7 @@
                     <GuiElement id="financeRow6" position="0px 108px" size="600px 36px" visible="false">
                         <Bitmap profile="baseReference" id="financeRow6Bg" imageColor="0.1 0.1 0.1 1" size="600px 36px"/>
                         <Text profile="fs25_textDefault" id="financeRow6Type" text="" position="5px 10px" textSize="12px" textColor="0.5 0.8 1 1"/>
-                        <Text profile="fs25_textDefault" id="financeRow6Item" text="" position="45px 10px" textSize="12px" textColor="1 1 1 1"/>
+                        <Text profile="fs25_textDefault" id="financeRow6Item" text="" position="65px 10px" textSize="12px" textColor="1 1 1 1"/>
                         <Text profile="fs25_textDefault" id="financeRow6Balance" text="" position="185px 10px" textSize="12px" textColor="1 0.8 0.2 1"/>
                         <Text profile="fs25_textDefault" id="financeRow6Monthly" text="" position="280px 10px" textSize="12px" textColor="1 0.6 0.6 1"/>
                         <Text profile="fs25_textDefault" id="financeRow6Progress" text="" position="380px 10px" textSize="12px" textColor="0.7 0.7 0.7 1"/>
@@ -139,7 +139,7 @@
                     <GuiElement id="financeRow7" position="0px 72px" size="600px 36px" visible="false">
                         <Bitmap profile="baseReference" id="financeRow7Bg" imageColor="0.12 0.12 0.12 1" size="600px 36px"/>
                         <Text profile="fs25_textDefault" id="financeRow7Type" text="" position="5px 10px" textSize="12px" textColor="0.5 0.8 1 1"/>
-                        <Text profile="fs25_textDefault" id="financeRow7Item" text="" position="45px 10px" textSize="12px" textColor="1 1 1 1"/>
+                        <Text profile="fs25_textDefault" id="financeRow7Item" text="" position="65px 10px" textSize="12px" textColor="1 1 1 1"/>
                         <Text profile="fs25_textDefault" id="financeRow7Balance" text="" position="185px 10px" textSize="12px" textColor="1 0.8 0.2 1"/>
                         <Text profile="fs25_textDefault" id="financeRow7Monthly" text="" position="280px 10px" textSize="12px" textColor="1 0.6 0.6 1"/>
                         <Text profile="fs25_textDefault" id="financeRow7Progress" text="" position="380px 10px" textSize="12px" textColor="0.7 0.7 0.7 1"/>
@@ -150,7 +150,7 @@
                     <GuiElement id="financeRow8" position="0px 36px" size="600px 36px" visible="false">
                         <Bitmap profile="baseReference" id="financeRow8Bg" imageColor="0.1 0.1 0.1 1" size="600px 36px"/>
                         <Text profile="fs25_textDefault" id="financeRow8Type" text="" position="5px 10px" textSize="12px" textColor="0.5 0.8 1 1"/>
-                        <Text profile="fs25_textDefault" id="financeRow8Item" text="" position="45px 10px" textSize="12px" textColor="1 1 1 1"/>
+                        <Text profile="fs25_textDefault" id="financeRow8Item" text="" position="65px 10px" textSize="12px" textColor="1 1 1 1"/>
                         <Text profile="fs25_textDefault" id="financeRow8Balance" text="" position="185px 10px" textSize="12px" textColor="1 0.8 0.2 1"/>
                         <Text profile="fs25_textDefault" id="financeRow8Monthly" text="" position="280px 10px" textSize="12px" textColor="1 0.6 0.6 1"/>
                         <Text profile="fs25_textDefault" id="financeRow8Progress" text="" position="380px 10px" textSize="12px" textColor="0.7 0.7 0.7 1"/>
@@ -162,7 +162,7 @@
                 <GuiElement position="0px 365px" size="600px 24px">
                     <Bitmap profile="baseReference" imageColor="0.18 0.18 0.18 1" size="600px 24px"/>
                     <Text profile="fs25_textDefault" text="$l10n_usedplus_fmf_headerType" position="5px 5px" textSize="11px" textBold="true" textColor="0.7 0.7 0.7 1"/>
-                    <Text profile="fs25_textDefault" text="$l10n_usedplus_fmf_headerItem" position="45px 5px" textSize="11px" textBold="true" textColor="0.7 0.7 0.7 1"/>
+                    <Text profile="fs25_textDefault" text="$l10n_usedplus_fmf_headerItem" position="65px 5px" textSize="11px" textBold="true" textColor="0.7 0.7 0.7 1"/>
                     <Text profile="fs25_textDefault" text="$l10n_usedplus_fmf_headerBalance" position="185px 5px" textSize="11px" textBold="true" textColor="0.7 0.7 0.7 1"/>
                     <Text profile="fs25_textDefault" text="$l10n_usedplus_fmf_headerMonthly" position="280px 5px" textSize="11px" textBold="true" textColor="0.7 0.7 0.7 1"/>
                     <Text profile="fs25_textDefault" text="$l10n_usedplus_fmf_headerProgress" position="380px 5px" textSize="11px" textBold="true" textColor="0.7 0.7 0.7 1"/>
@@ -511,8 +511,8 @@
                     <Text profile="fs25_textDefault" id="lifetimeSavingsText" text="" position="20px 15px" textSize="26px" textBold="true" textColor="0.5 1 0.5 1"/>
                 </GuiElement>
 
-                <!-- Credit Score Box -->
-                <GuiElement position="0px 260px" size="510px 170px">
+                <!-- Credit Score Box (hidden when credit system disabled) -->
+                <GuiElement id="creditScoreBox" position="0px 260px" size="510px 170px">
                     <Bitmap profile="baseReference" imageColor="0.12 0.12 0.12 1" size="510px 170px"/>
 
                     <!-- Title row -->
@@ -548,10 +548,10 @@
                     <Text profile="fs25_textDefault" id="assetsText" text="" position="260px 15px" textSize="11px" textColor="0.6 0.6 0.6 1"/>
                 </GuiElement>
 
-                <!-- Section Header -->
+                <!-- Section Header (text changes when credit system disabled) -->
                 <GuiElement position="0px 435px" size="510px 40px">
                     <Bitmap profile="baseReference" imageColor="0.25 0.4 0.25 1" size="510px 40px"/>
-                    <Text profile="fs25_textDefault" text="$l10n_usedplus_fmf_sectionCredit" position="12px 10px" textSize="20px" textBold="true" textColor="1 1 1 1"/>
+                    <Text profile="fs25_textDefault" id="statsSectionHeaderText" text="$l10n_usedplus_fmf_sectionCredit" position="12px 10px" textSize="20px" textBold="true" textColor="1 1 1 1"/>
                 </GuiElement>
             </GuiElement>
 

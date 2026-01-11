@@ -16,7 +16,8 @@
             <!-- ===== YOUR CREDIT SECTION ===== -->
             <!-- Redesigned: Score/Rate on top, rating table below with highlighting -->
             <!-- Height: 105px (content ends at ~94px + 10px padding) -->
-            <GuiElement profile="tlCreditContainer" position="0px -70px">
+            <!-- v2.0.0: Hidden when credit system disabled in settings -->
+            <GuiElement profile="tlCreditContainer" id="creditSection" position="0px -70px">
                 <Bitmap profile="tlCreditBg" position="0px 0px"/>
                 <Text profile="tlSectionHeader" position="0px -5px" text="$l10n_usedplus_tl_sectionCredit"/>
 

@@ -179,11 +179,16 @@ end
 
 --[[
     Set vehicle data for purchase
+    @param storeItem - The store item being purchased
+    @param price - The configured price
+    @param saleItem - Used vehicle listing (optional)
+    @param shopScreen - Reference to shop screen for vanilla buy flow (optional)
 ]]
-function UnifiedPurchaseDialog:setVehicleData(storeItem, price, saleItem)
+function UnifiedPurchaseDialog:setVehicleData(storeItem, price, saleItem, shopScreen)
     self.storeItem = storeItem
     self.vehiclePrice = price or 0
     self.saleItem = saleItem
+    self.shopScreen = shopScreen  -- Store for vanilla buy flow
 
     -- Use consolidated utility functions for vehicle name and category
     self.vehicleName = UIHelper.Vehicle.getFullName(storeItem)
@@ -198,10 +203,9 @@ function UnifiedPurchaseDialog:setVehicleData(storeItem, price, saleItem)
         self.usedCondition = 100
     end
 
-    -- Set item image with dynamic scaling to prevent stretching
-    -- Using 210x105 (2:1 ratio) to match FS25 store image format (512x256)
+    -- Set item image - XML profile handles aspect ratio via imageSliceId="noSlice"
     if self.itemImage then
-        UIHelper.Image.setStoreItemImageScaled(self.itemImage, storeItem, 210, 105)
+        UIHelper.Image.set(self.itemImage, storeItem)
     end
 
     -- Calculate credit parameters
@@ -223,12 +227,24 @@ function UnifiedPurchaseDialog:setInitialMode(mode)
 end
 
 --[[
+    v2.0.0: Helper function to check if credit system is enabled
+]]
+function UnifiedPurchaseDialog.isCreditSystemEnabled()
+    if UsedPlusSettings and UsedPlusSettings.get then
+        return UsedPlusSettings:get("enableCreditSystem") ~= false
+    end
+    return true  -- Default to enabled
+end
+
+--[[
     Calculate credit parameters
+    v2.0.0: Respects enableCreditSystem setting
 ]]
 function UnifiedPurchaseDialog:calculateCreditParameters()
     local farmId = g_currentMission:getFarmId()
+    local creditEnabled = UnifiedPurchaseDialog.isCreditSystemEnabled()
 
-    if CreditScore then
+    if creditEnabled and CreditScore then
         self.creditScore = CreditScore.calculate(farmId)
         self.creditRating = CreditScore.getRating(self.creditScore)
 
@@ -241,6 +257,7 @@ function UnifiedPurchaseDialog:calculateCreditParameters()
         self.canFinance, self.financeMinScore = CreditScore.canFinance(farmId, "VEHICLE_FINANCE")
         self.canLease, self.leaseMinScore = CreditScore.canFinance(farmId, "VEHICLE_LEASE")
     else
+        -- Credit system disabled - use defaults (always qualified)
         self.creditScore = 650
         self.creditRating = "Fair"
         self.interestRate = 0.08
@@ -799,6 +816,9 @@ end
 function UnifiedPurchaseDialog:updateModeSelectorTexts()
     if not self.modeSelector then return end
 
+    -- v2.1.2: Preserve current state - setTexts() resets state to 1
+    local currentState = self.currentMode or 1
+
     local texts = {}
 
     -- Cash is always available
@@ -821,6 +841,9 @@ function UnifiedPurchaseDialog:updateModeSelectorTexts()
     end
 
     self.modeSelector:setTexts(texts)
+
+    -- v2.1.2: Restore state after setTexts() resets it
+    self.modeSelector:setState(currentState)
 end
 
 --[[
@@ -894,7 +917,14 @@ function UnifiedPurchaseDialog:updateFinanceDisplay()
     UIHelper.Element.setTextWithColor(self.financeTotalInterestText,
         UIHelper.Text.formatMoney(math.max(0, totalInterest)), UIHelper.Colors.COST_ORANGE)
     UIHelper.Element.setText(self.financeDueTodayText, UIHelper.Text.formatMoney(dueTodayAmount))
-    UIHelper.Element.setText(self.financeCreditText, UIHelper.Text.formatCreditScore(self.creditScore, self.creditRating))
+
+    -- v2.0.0: Only show credit score if credit system enabled
+    if UnifiedPurchaseDialog.isCreditSystemEnabled() then
+        UIHelper.Element.setText(self.financeCreditText, UIHelper.Text.formatCreditScore(self.creditScore, self.creditRating))
+        UIHelper.Element.setVisible(self.financeCreditText, true)
+    else
+        UIHelper.Element.setVisible(self.financeCreditText, false)
+    end
 end
 
 --[[
@@ -970,7 +1000,14 @@ function UnifiedPurchaseDialog:updateLeaseDisplay()
     UIHelper.Element.setText(self.leaseRateText, UIHelper.Text.formatInterestRateWithRating(self.interestRate, self.creditRating))
     UIHelper.Element.setText(self.leaseTotalText, UIHelper.Text.formatMoney(totalLeaseCost))
     UIHelper.Element.setText(self.leaseBuyoutText, UIHelper.Text.formatMoney(residualValue))
-    UIHelper.Element.setText(self.leaseCreditText, UIHelper.Text.formatCreditScore(self.creditScore, self.creditRating))
+
+    -- v2.0.0: Only show credit score if credit system enabled
+    if UnifiedPurchaseDialog.isCreditSystemEnabled() then
+        UIHelper.Element.setText(self.leaseCreditText, UIHelper.Text.formatCreditScore(self.creditScore, self.creditRating))
+        UIHelper.Element.setVisible(self.leaseCreditText, true)
+    else
+        UIHelper.Element.setVisible(self.leaseCreditText, false)
+    end
 
     -- Update down payment dropdown to show dollar amounts (e.g., "10% (4,250 $)")
     self:updateDownPaymentOptions(self.leaseDownSlider, self.leaseDownIndex)
@@ -1005,15 +1042,15 @@ function UnifiedPurchaseDialog:onConfirmPurchase()
     local confirmMessage = self:buildConfirmationMessage()
 
     -- Show YesNo confirmation dialog
+    -- Signature: YesNoDialog.show(callback, target, text, ...)
     YesNoDialog.show(
-        confirmMessage,
         function(yes)
             if yes then
                 self:executeConfirmedPurchase()
             end
         end,
         self,
-        "Confirm Purchase"
+        confirmMessage
     )
 end
 
@@ -1116,7 +1153,8 @@ end
 --[[
     Execute cash purchase
 
-    Uses the game's shop controller to spawn the vehicle properly.
+    Uses BuyVehicleData and BuyVehicleEvent to spawn the vehicle properly.
+    Pattern from HirePurchasing mod (working reference).
 ]]
 function UnifiedPurchaseDialog:executeCashPurchase()
     local farmId = g_currentMission:getFarmId()
@@ -1136,24 +1174,54 @@ function UnifiedPurchaseDialog:executeCashPurchase()
         return
     end
 
-    -- Handle trade-in first
+    -- Handle trade-in first (adds money to player's account)
     if self.tradeInEnabled and self.tradeInVehicle then
         self:executeTradeIn()
     end
 
-    -- Spawn vehicle using shop controller
-    local spawnSuccess = self:spawnVehicle(farmId, totalDue)
+    -- Get configurations from shop screen
+    local configurations = {}
+    local configurationData = nil
+    local licensePlateData = nil
 
-    if spawnSuccess then
-        g_currentMission:addIngameNotification(FSBaseMission.INGAME_NOTIFICATION_OK,
-            string.format(g_i18n:getText("usedplus_notify_vehiclePurchased"), self.vehicleName, g_i18n:formatMoney(math.max(0, totalDue))))
-    else
-        -- Fallback: just deduct money and show message
-        if totalDue ~= 0 then
-            g_currentMission:addMoney(-totalDue, farmId, MoneyType.SHOP_VEHICLE_BUY, true, true)
+    if self.shopScreen then
+        configurations = self.shopScreen.configurations or {}
+        configurationData = self.shopScreen.configurationData
+        licensePlateData = self.shopScreen.licensePlateData
+    elseif g_shopConfigScreen then
+        configurations = g_shopConfigScreen.configurations or {}
+        configurationData = g_shopConfigScreen.configurationData
+        licensePlateData = g_shopConfigScreen.licensePlateData
+    end
+
+    -- Use BuyVehicleData/BuyVehicleEvent pattern (from HirePurchasing)
+    if BuyVehicleData and BuyVehicleEvent and g_client then
+        local event = BuyVehicleData.new()
+        event:setOwnerFarmId(farmId)
+        event:setPrice(totalDue)
+        event:setStoreItem(self.storeItem)
+        event:setConfigurations(configurations)
+
+        if configurationData then
+            event:setConfigurationData(configurationData)
         end
+        if licensePlateData then
+            event:setLicensePlateData(licensePlateData)
+        end
+        if self.saleItem then
+            event:setSaleItem(self.saleItem)
+        end
+
+        g_client:getServerConnection():sendEvent(BuyVehicleEvent.new(event))
+
+        UsedPlus.logDebug("Cash purchase: Sent BuyVehicleEvent for " .. tostring(self.vehicleName))
         g_currentMission:addIngameNotification(FSBaseMission.INGAME_NOTIFICATION_OK,
-            string.format(g_i18n:getText("usedplus_notify_vehiclePurchasedShop"), self.vehicleName))
+            string.format(g_i18n:getText("usedplus_notify_vehiclePurchased") or "Purchased %s for %s",
+                self.vehicleName, g_i18n:formatMoney(math.max(0, totalDue))))
+    else
+        UsedPlus.logError("BuyVehicleData/BuyVehicleEvent not available - cannot complete cash purchase")
+        g_currentMission:addIngameNotification(FSBaseMission.INGAME_NOTIFICATION_CRITICAL,
+            g_i18n:getText("usedplus_error_purchaseFailed") or "Purchase failed - game API not available")
     end
 
     self:close()

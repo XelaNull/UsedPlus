@@ -15,6 +15,17 @@ FinanceManagerFrame.MAX_FINANCE_ROWS = 9
 FinanceManagerFrame.MAX_SEARCH_ROWS = 5
 FinanceManagerFrame.MAX_SALE_ROWS = 3  -- Agent-based vehicle sale listings
 
+--[[
+    v2.0.0: Helper function to check if credit system is enabled
+    Returns true if credit system is enabled in settings (default: true)
+]]
+function FinanceManagerFrame.isCreditSystemEnabled()
+    if UsedPlusSettings and UsedPlusSettings.get then
+        return UsedPlusSettings:get("enableCreditSystem") ~= false
+    end
+    return true  -- Default to enabled
+end
+
 function FinanceManagerFrame.new()
     local self = FinanceManagerFrame:superClass().new(nil, FinanceManagerFrame._mt)
 
@@ -64,12 +75,19 @@ function FinanceManagerFrame.new()
 
     -- v1.8.1: Build button list conditionally based on mod compatibility
     -- If EnhancedLoanSystem is installed, hide Take Loan button (ELS handles loans)
+    -- v2.0.0: Credit Report button hidden when credit system is disabled
     local buttons = {
         self.btnBack,
         self.btnNextPage,
-        self.btnPreviousPage,
-        self.btnDashboard
+        self.btnPreviousPage
     }
+
+    -- Only show Credit Report button if credit system is enabled
+    if FinanceManagerFrame.isCreditSystemEnabled() then
+        table.insert(buttons, self.btnDashboard)
+    else
+        UsedPlus.logDebug("Credit Report button hidden - Credit System disabled")
+    end
 
     if ModCompatibility.shouldShowTakeLoanOption() then
         table.insert(buttons, self.btnTakeLoan)
@@ -348,32 +366,54 @@ function FinanceManagerFrame:updateFinancesSection(farmId, farm)
     end
 
     if vanillaLoanAmount > 0 then
-        -- Create a pseudo-deal for the vanilla loan display
+        -- Vanilla loan is a REVOLVING CREDIT LINE, not a term loan:
+        -- - Player borrows/repays in $5k increments anytime
+        -- - Interest accrues on outstanding balance
+        -- - No fixed term, no maturity date, no scheduled payments
+        -- Interest rate is ~10% APY in vanilla
+        local vanillaInterestRate = 0.10
+        local monthlyInterestCost = math.floor(vanillaLoanAmount * vanillaInterestRate / 12)
+
+        -- Get stored payment multiplier for this farm's vanilla loan
+        local storedMultiplier = 1.0
+        if g_financeManager then
+            storedMultiplier = g_financeManager:getVanillaLoanMultiplier(farmId)
+        end
+
+        -- Create a pseudo-deal for the credit line display
         local vanillaLoanDeal = {
             id = "VANILLA_LOAN",
-            dealType = 0,  -- Special type for vanilla loan
-            itemName = g_i18n:getText("usedplus_vanillaLoan") or "Bank Loan",
+            dealType = 0,  -- Special type for vanilla credit line
+            itemName = g_i18n:getText("usedplus_vanillaLoan") or "Bank Credit Line",
             currentBalance = vanillaLoanAmount,
-            monthlyPayment = 0,  -- Vanilla loans don't have structured payments
-            interestRate = 0,
-            termMonths = 0,
+            monthlyPayment = monthlyInterestCost,  -- Interest cost per month
+            interestRate = vanillaInterestRate,
+            termMonths = 0,  -- No fixed term (revolving)
             monthsPaid = 0,
             totalInterestPaid = 0,
             status = "active",
             isVanillaLoan = true,
+            isCreditLine = true,  -- Flag for UI to display differently
+            farmId = farmId,  -- Needed for DealDetailsDialog to save multiplier
+            paymentMultiplier = storedMultiplier,  -- Load stored multiplier
         }
         table.insert(self.activeDeals, vanillaLoanDeal)
 
-        -- Update row for vanilla loan
+        -- Update row for credit line (different display than term loans)
         local row = self.financeRows[rowIndex]
         if row then
             if row.row then row.row:setVisible(true) end
-            if row.type then row.type:setText("BANK") end
+            if row.type then row.type:setText("CREDIT") end  -- "CREDIT" not "BANK" to distinguish from term loans
             if row.item then row.item:setText(vanillaLoanDeal.itemName) end
             if row.balance then row.balance:setText(g_i18n:formatMoney(vanillaLoanAmount, 0, true, true)) end
-            if row.monthly then row.monthly:setText("--") end  -- No structured payment
-            if row.progress then row.progress:setText("--") end
-            if row.remaining then row.remaining:setText("--") end
+            -- Credit line display: show monthly interest cost, type indicator, and "Open" term
+            if row.monthly then
+                -- Show monthly interest cost (what player pays just to hold this balance)
+                row.monthly:setText("~" .. g_i18n:formatMoney(monthlyInterestCost, 0, true, true))
+                row.monthly:setTextColor(1, 0.6, 0.3, 1)  -- Orange to indicate interest cost
+            end
+            if row.progress then row.progress:setText("Revolving") end  -- Indicates credit line type
+            if row.remaining then row.remaining:setText("Open") end  -- No fixed term
         end
 
         totalFinanced = totalFinanced + vanillaLoanAmount
@@ -853,9 +893,10 @@ function FinanceManagerFrame:updateSearchesSection(farmId)
 
             local isReady = item.isReady
             local itemName, searchLevel, ttl, basePrice
+            local search = nil  -- Declare at this scope so it's accessible later for quality display
 
             if item.type == "search" then
-                local search = item.data
+                search = item.data  -- Assign without 'local' so it persists outside this block
                 itemName = search.storeItemName or "Unknown"
                 searchLevel = search.searchLevel or 1
                 ttl = search.ttl or 0
@@ -1709,17 +1750,33 @@ end
 
 --[[
     Update Stats section (right column) with credit score and lifetime stats
+    v2.0.0: Respects enableCreditSystem setting - hides credit section when disabled
 ]]
 function FinanceManagerFrame:updateStatsSection(farmId, farm)
-    -- Calculate Credit Score
-    -- Default to realistic base score (650) not unrealistic 999
+    local creditEnabled = FinanceManagerFrame.isCreditSystemEnabled()
+
+    -- v2.0.0: Update section header text and credit box visibility
+    if self.statsSectionHeaderText then
+        if creditEnabled then
+            self.statsSectionHeaderText:setText(g_i18n:getText("usedplus_fmf_sectionCredit") or "Credit & Statistics")
+        else
+            self.statsSectionHeaderText:setText(g_i18n:getText("usedplus_fmf_sectionStatistics") or "Statistics")
+        end
+    end
+
+    -- v2.0.0: Hide/show the credit score box based on setting
+    if self.creditScoreBox then
+        self.creditScoreBox:setVisible(creditEnabled)
+    end
+
+    -- Only calculate and display credit score if credit system is enabled
     local score = 650  -- Base FICO-like score for new farms
     local rating = "fair"  -- Fair rating for base score
     local interestAdj = 1.0  -- Fair tier adjustment
     local assets = 0
     local debt = 0
 
-    if CreditScore then
+    if creditEnabled and CreditScore then
         score = CreditScore.calculate(farmId)
         rating = CreditScore.getRating(score)
         interestAdj = CreditScore.getInterestAdjustment(score)
@@ -1727,40 +1784,40 @@ function FinanceManagerFrame:updateStatsSection(farmId, farm)
         -- Get assets and debt for display
         assets = CreditScore.calculateAssets(farm)
         debt = CreditScore.calculateDebt(farm)
-    end
 
-    -- Rating is now returned directly as display text from CreditScore.getRating()
-    local ratingText = rating or "Unknown"
+        -- Rating is now returned directly as display text from CreditScore.getRating()
+        local ratingText = rating or "Unknown"
 
-    -- Interest adjustment text
-    local adjText = interestAdj >= 0 and string.format("+%.1f%% interest", interestAdj) or string.format("%.1f%% interest", interestAdj)
+        -- Interest adjustment text
+        local adjText = interestAdj >= 0 and string.format("+%.1f%% interest", interestAdj) or string.format("%.1f%% interest", interestAdj)
 
-    -- Update credit score display
-    if self.creditScoreValueText then
-        self.creditScoreValueText:setText(tostring(score))
-    end
-    if self.creditRatingText then
-        self.creditRatingText:setText(ratingText)
-    end
-    if self.interestAdjustText then
-        self.interestAdjustText:setText(adjText)
-    end
-    if self.assetsText then
-        -- v1.8.1 Phase 2: Show farmland count in assets display
-        local farmlandCount = ModCompatibility.getFarmlandCount(farmId)
-        local assetsStr = g_i18n:formatMoney(assets, 0, true, true)
-        if farmlandCount > 0 then
-            self.assetsText:setText(string.format("Assets: %s (%d fields)", assetsStr, farmlandCount))
-        else
-            self.assetsText:setText(string.format(g_i18n:getText("usedplus_manager_assetsLabel"), assetsStr))
+        -- Update credit score display
+        if self.creditScoreValueText then
+            self.creditScoreValueText:setText(tostring(score))
         end
-    end
-    if self.debtText then
-        self.debtText:setText(string.format(g_i18n:getText("usedplus_manager_debtLabel"), g_i18n:formatMoney(debt, 0, true, true)))
-    end
+        if self.creditRatingText then
+            self.creditRatingText:setText(ratingText)
+        end
+        if self.interestAdjustText then
+            self.interestAdjustText:setText(adjText)
+        end
+        if self.assetsText then
+            -- v1.8.1 Phase 2: Show farmland count in assets display
+            local farmlandCount = ModCompatibility.getFarmlandCount(farmId)
+            local assetsStr = g_i18n:formatMoney(assets, 0, true, true)
+            if farmlandCount > 0 then
+                self.assetsText:setText(string.format("Assets: %s (%d fields)", assetsStr, farmlandCount))
+            else
+                self.assetsText:setText(string.format(g_i18n:getText("usedplus_manager_assetsLabel"), assetsStr))
+            end
+        end
+        if self.debtText then
+            self.debtText:setText(string.format(g_i18n:getText("usedplus_manager_debtLabel"), g_i18n:formatMoney(debt, 0, true, true)))
+        end
 
-    -- Highlight the current credit tier in the Credit Ranges box
-    self:highlightCreditTier(score)
+        -- Highlight the current credit tier in the Credit Ranges box
+        self:highlightCreditTier(score)
+    end
 
     -- Calculate lifetime statistics from current deals
     local lifetimeFinanced = 0
@@ -1822,8 +1879,8 @@ function FinanceManagerFrame:updateStatsSection(farmId, farm)
         self.lifetimeSavingsText:setText(g_i18n:formatMoney(stats.totalSavingsFromUsed or 0, 0, true, true))
     end
 
-    -- Display credit history summary
-    if CreditHistory then
+    -- Display credit history summary (only if credit system enabled)
+    if creditEnabled and CreditHistory then
         local summary = CreditHistory.getSummary(farmId)
 
         -- Update credit history stats if elements exist
@@ -2078,6 +2135,12 @@ function FinanceManagerFrame:showPaymentOptionsDialog(deal, farm)
     -- v1.8.1: Handle HP leases (external mod)
     if deal.isHPLease then
         self:showHPPaymentDialog(deal, farm)
+        return
+    end
+
+    -- v2.1.1: Handle vanilla bank loans (require amount selection since no fixed monthly)
+    if deal.isVanillaLoan then
+        self:showVanillaLoanPaymentDialog(deal, farm)
         return
     end
 
@@ -3053,6 +3116,196 @@ function FinanceManagerFrame:onHPSettleConfirm()
     end
     self.pendingHPDeal = nil
     self.pendingHPMonthlyAmount = nil
+    self:updateDisplay()
+end
+
+--[[
+    v2.1.1: Show payment dialog for vanilla bank loans
+    Presents payment amount options since vanilla loans have no fixed monthly payment
+    @param deal - Pseudo-deal object with vanilla loan info
+    @param farm - The player's farm
+]]
+function FinanceManagerFrame:showVanillaLoanPaymentDialog(deal, farm)
+    local currentBalance = deal.currentBalance or 0
+    local farmMoney = farm.money or 0
+    local itemName = deal.itemName or "Bank Credit Line"
+
+    local balanceStr = g_i18n:formatMoney(currentBalance, 0, true, true)
+    local moneyStr = g_i18n:formatMoney(farmMoney, 0, true, true)
+
+    -- Calculate monthly interest cost for display
+    local monthlyInterest = math.floor(currentBalance * 0.10 / 12)
+    local interestStr = g_i18n:formatMoney(monthlyInterest, 0, true, true)
+
+    -- Calculate payment options based on balance and available money
+    local paymentOptions = {}
+    local optionAmounts = {10000, 25000, 50000, 100000, 250000}
+
+    for _, amount in ipairs(optionAmounts) do
+        if amount <= farmMoney and amount <= currentBalance then
+            table.insert(paymentOptions, amount)
+        end
+    end
+
+    -- Add full balance clear option if affordable
+    local canPayFull = farmMoney >= currentBalance
+
+    -- Build message showing credit line details (different from term loan)
+    local message = string.format(
+        "%s\n\n" ..
+        "Balance Owed: %s\n" ..
+        "Monthly Interest: ~%s\n" ..
+        "Your Money: %s\n\n" ..
+        "How much to pay down?",
+        itemName, balanceStr, interestStr, moneyStr
+    )
+
+    -- Store deal reference for callbacks
+    self.pendingVanillaLoan = deal
+    self.pendingVanillaFarm = farm
+
+    -- If player can't afford any option, show notification
+    if #paymentOptions == 0 and not canPayFull then
+        g_currentMission:addIngameNotification(
+            FSBaseMission.INGAME_NOTIFICATION_INFO,
+            string.format("Insufficient funds. Minimum payment: %s, You have: %s",
+                g_i18n:formatMoney(math.min(10000, currentBalance), 0, true, true),
+                moneyStr)
+        )
+        return
+    end
+
+    -- Build option labels with amounts and resulting balance
+    local optionLabels = {}
+    local optionValues = {}  -- Store actual amounts for each option index
+
+    for _, amount in ipairs(paymentOptions) do
+        local amountStr = g_i18n:formatMoney(amount, 0, true, true)
+        local newBalance = currentBalance - amount
+        local newBalanceStr = g_i18n:formatMoney(newBalance, 0, true, true)
+        table.insert(optionLabels, string.format("Pay %s (Balance: %s)", amountStr, newBalanceStr))
+        table.insert(optionValues, amount)
+    end
+
+    -- Add "clear full balance" option if affordable and not already in list
+    if canPayFull then
+        local alreadyHasFullPayoff = false
+        for _, amount in ipairs(paymentOptions) do
+            if amount >= currentBalance then
+                alreadyHasFullPayoff = true
+                break
+            end
+        end
+        if not alreadyHasFullPayoff then
+            local payoffStr = g_i18n:formatMoney(currentBalance, 0, true, true)
+            table.insert(optionLabels, string.format("Clear Full Balance (%s)", payoffStr))
+            table.insert(optionValues, currentBalance)
+        end
+    end
+
+    -- Store option values for callback
+    self.pendingVanillaPaymentOptions = optionValues
+
+    -- Show OptionDialog with all available amounts
+    if #optionLabels > 0 then
+        OptionDialog.show(
+            function(selectedIndex)
+                if selectedIndex > 0 and selectedIndex <= #self.pendingVanillaPaymentOptions then
+                    local selectedAmount = self.pendingVanillaPaymentOptions[selectedIndex]
+                    self:processVanillaLoanPayment(selectedAmount)
+                end
+                -- Clear pending state on cancel too
+                self.pendingVanillaPaymentOptions = nil
+            end,
+            message,  -- text
+            "Credit Line Payment",  -- title (not "Loan Payment" - different product)
+            optionLabels  -- options array
+        )
+    else
+        g_currentMission:addIngameNotification(
+            FSBaseMission.INGAME_NOTIFICATION_INFO,
+            "No payment options available"
+        )
+    end
+end
+
+--[[
+    v2.1.1: Process payment on vanilla bank loan
+    Directly modifies farm.loan (the game's standard loan system)
+    @param amount - Amount to pay toward the loan
+]]
+function FinanceManagerFrame:processVanillaLoanPayment(amount)
+    if not amount or amount <= 0 then
+        UsedPlus.logDebug("processVanillaLoanPayment: Invalid amount")
+        return
+    end
+
+    local farm = self.pendingVanillaFarm or g_farmManager:getFarmByUserId(g_currentMission.playerUserId)
+    if not farm then
+        g_currentMission:addIngameNotification(
+            FSBaseMission.INGAME_NOTIFICATION_CRITICAL,
+            g_i18n:getText("usedplus_error_farmNotFound")
+        )
+        return
+    end
+
+    -- Check funds
+    if farm.money < amount then
+        g_currentMission:addIngameNotification(
+            FSBaseMission.INGAME_NOTIFICATION_CRITICAL,
+            g_i18n:getText("usedplus_error_insufficientFundsForPayment")
+        )
+        return
+    end
+
+    -- Get current vanilla loan balance
+    local currentLoan = farm.loan or 0
+    if currentLoan <= 0 then
+        g_currentMission:addIngameNotification(
+            FSBaseMission.INGAME_NOTIFICATION_INFO,
+            "No vanilla loan balance to pay"
+        )
+        return
+    end
+
+    -- Cap payment at actual balance
+    local actualPayment = math.min(amount, currentLoan)
+
+    -- Process the payment:
+    -- 1. Deduct money from farm
+    -- 2. Reduce loan balance
+    UsedPlus.logDebug(string.format("processVanillaLoanPayment: Paying %d toward loan of %d", actualPayment, currentLoan))
+
+    -- Use g_currentMission:addMoney to properly deduct funds (handles multiplayer sync)
+    -- Using MoneyType.OTHER for loan principal repayment (no dedicated loan repayment type in vanilla)
+    g_currentMission:addMoney(-actualPayment, farm.farmId, MoneyType.OTHER, true, true)
+
+    -- Reduce loan balance
+    farm.loan = currentLoan - actualPayment
+
+    -- Show success notification
+    local paidStr = g_i18n:formatMoney(actualPayment, 0, true, true)
+    local newBalanceStr = g_i18n:formatMoney(farm.loan, 0, true, true)
+
+    if farm.loan <= 0 then
+        g_currentMission:addIngameNotification(
+            FSBaseMission.INGAME_NOTIFICATION_OK,
+            string.format("Loan paid off! Total paid: %s", paidStr)
+        )
+    else
+        g_currentMission:addIngameNotification(
+            FSBaseMission.INGAME_NOTIFICATION_OK,
+            string.format("Payment processed: %s. Remaining balance: %s", paidStr, newBalanceStr)
+        )
+    end
+
+    -- Clear pending state
+    self.pendingVanillaLoan = nil
+    self.pendingVanillaFarm = nil
+    self.pendingVanillaPaymentAmount = nil
+    self.pendingVanillaPaymentOptions = nil
+
+    -- Refresh display
     self:updateDisplay()
 end
 

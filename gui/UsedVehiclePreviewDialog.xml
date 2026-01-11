@@ -25,8 +25,8 @@
 
                 <!-- Two-column layout: Image left, Info right -->
                 <GuiElement position="0px -28px">
-                    <!-- Vehicle Image (left) - Y=52px moves UP for proper display -->
-                    <Bitmap profile="uvpVehicleImage" id="vehicleImage" position="-185px 52px"/>
+                    <!-- Vehicle Image (left) - Standard position -185px 42px -->
+                    <Bitmap profile="uvpVehicleImage" id="vehicleImage" position="-185px 75px"/>
 
                     <!-- Vehicle Info (right) -->
                     <Text profile="uvpVehicleName" id="vehicleNameText" position="120px -5px" text=""/>
@@ -142,9 +142,10 @@
         </Profile>
 
         <!-- ========== VEHICLE INFO ========== -->
-        <!-- EMPIRICALLY TESTED: 210x140px displays store images without stretching -->
-        <Profile name="uvpVehicleImage" extends="fs25_vehiclesDetailsImage" with="anchorTopCenter">
-            <size value="210px 140px"/>
+        <!-- Following RVB pattern: baseReference + square size + noSlice -->
+        <Profile name="uvpVehicleImage" extends="baseReference" with="anchorTopCenter">
+            <size value="180px 180px"/>
+            <imageSliceId value="noSlice"/>
         </Profile>
 
         <Profile name="uvpVehicleName" extends="fs25_textDefault" with="anchorTopCenter">

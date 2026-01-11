@@ -23,7 +23,8 @@
                 <Text profile="mrSectionHeader" position="0px -5px" text="$l10n_usedplus_irp_sectionVehicle"/>
 
                 <!-- Two-column: Image left, Info right -->
-                <Bitmap profile="mrVehicleImage" id="vehicleImage" position="-185px 49px"/>
+                <!-- Standard position: -185px 42px (X=left of center, Y=moves UP) -->
+                <Bitmap profile="mrVehicleImage" id="vehicleImage" position="-185px 75px"/>
                 <Text profile="mrVehicleName" id="vehicleNameText" position="120px -30px" text=""/>
                 <Text profile="mrVehicleDetails" id="vehicleDetailsText" position="120px -52px" text=""/>
                 <Text profile="mrVehicleOrigin" id="originText" position="120px -74px" text=""/>
@@ -160,8 +161,10 @@
         </Profile>
 
         <!-- ========== VEHICLE IMAGE ========== -->
-        <Profile name="mrVehicleImage" extends="fs25_vehiclesDetailsImage" with="anchorTopCenter">
-            <size value="210px 140px"/>
+        <!-- Following RVB pattern: baseReference + square size + noSlice -->
+        <Profile name="mrVehicleImage" extends="baseReference" with="anchorTopCenter">
+            <size value="180px 180px"/>
+            <imageSliceId value="noSlice"/>
         </Profile>
 
         <Profile name="mrVehicleName" extends="fs25_textDefault" with="anchorTopCenter">

@@ -2,12 +2,13 @@
 <!--
     FS25_UsedPlus - Search Expired Dialog
     Popup when agent search term ends, offering renewal option
+    v2.1.2: Added vehicle preview image, enlarged dialog, fixed alignment
 -->
 <GUI onOpen="onOpen" onClose="onClose" onCreate="onCreate">
     <GuiElement profile="newLayer" />
     <Bitmap profile="dialogFullscreenBg" id="dialogBg" />
 
-    <GuiElement profile="dialogBg" id="dialogElement" size="520px 380px">
+    <GuiElement profile="dialogBg" id="dialogElement" size="600px 480px">
         <ThreePartBitmap profile="fs25_dialogBgMiddle" />
         <ThreePartBitmap profile="fs25_dialogBgTop" />
         <ThreePartBitmap profile="fs25_dialogBgBottom" />
@@ -16,43 +17,44 @@
             <!-- Title -->
             <Text profile="sedTitle" id="titleText" position="0px -25px" text="Search Complete"/>
 
-            <!-- Search Summary Section -->
+            <!-- Search Summary Section with Vehicle Image -->
             <GuiElement profile="sedSectionContainer" position="0px -60px">
                 <Bitmap profile="sedSectionBg" position="0px 0px"/>
                 <Text profile="sedSectionHeader" position="0px -5px" text="SEARCH SUMMARY"/>
 
-                <!-- Vehicle searched for -->
-                <Text profile="sedLabel" position="-180px -32px" text="Searched For:"/>
-                <Text profile="sedValue" id="vehicleNameText" position="30px -32px" text=""/>
+                <!-- Vehicle Image (left side) - Standard position -->
+                <Bitmap profile="sedVehicleImage" id="vehicleImage" position="-185px 60px"/>
 
-                <!-- Search tier -->
-                <Text profile="sedLabel" position="-180px -55px" text="Agent Tier:"/>
-                <Text profile="sedValue" id="searchTierText" position="30px -55px" text=""/>
+                <!-- Search details (right side) -->
+                <Text profile="sedLabel" position="20px -32px" text="Searched For:"/>
+                <Text profile="sedValue" id="vehicleNameText" position="130px -32px" text=""/>
 
-                <!-- Quality filter -->
-                <Text profile="sedLabel" position="-180px -78px" text="Quality:"/>
-                <Text profile="sedValue" id="qualityTierText" position="30px -78px" text=""/>
+                <Text profile="sedLabel" position="20px -55px" text="Agent Tier:"/>
+                <Text profile="sedValue" id="searchTierText" position="130px -55px" text=""/>
 
-                <!-- Duration -->
-                <Text profile="sedLabel" position="-180px -101px" text="Duration:"/>
-                <Text profile="sedValue" id="durationText" position="30px -101px" text=""/>
+                <Text profile="sedLabel" position="20px -78px" text="Quality:"/>
+                <Text profile="sedValue" id="qualityTierText" position="130px -78px" text=""/>
+
+                <Text profile="sedLabel" position="20px -101px" text="Duration:"/>
+                <Text profile="sedValue" id="durationText" position="130px -101px" text=""/>
             </GuiElement>
 
             <!-- Results Section -->
-            <GuiElement profile="sedResultsSection" position="0px -195px">
+            <GuiElement profile="sedResultsSection" position="0px -210px">
                 <Bitmap profile="sedResultsBg" position="0px 0px"/>
                 <Text profile="sedSectionHeader" position="0px -5px" text="RESULTS"/>
 
-                <Text profile="sedResultsValue" id="resultsText" position="0px -35px" text=""/>
+                <Text profile="sedResultsValue" id="resultsText" position="0px -40px" text=""/>
             </GuiElement>
 
             <!-- Renewal Option -->
-            <GuiElement profile="sedRenewalSection" position="0px -275px">
+            <GuiElement profile="sedRenewalSection" position="0px -300px">
                 <Bitmap profile="sedRenewalBg" position="0px 0px"/>
                 <Text profile="sedSectionHeader" position="0px -5px" text="RENEW SEARCH?"/>
 
-                <Text profile="sedLabel" position="-100px -32px" text="Renewal Cost:"/>
-                <Text profile="sedRenewCost" id="renewCostText" position="70px -32px" text=""/>
+                <Text profile="sedRenewalInfo" position="0px -32px" text="Continue searching for more options"/>
+                <Text profile="sedLabel" position="-80px -55px" text="Renewal Cost:"/>
+                <Text profile="sedRenewCost" id="renewCostText" position="40px -55px" text=""/>
             </GuiElement>
 
         </GuiElement>
@@ -68,45 +70,51 @@
     <GUIProfiles>
         <!-- Title -->
         <Profile name="sedTitle" extends="fs25_textDefault" with="anchorTopCenter">
-            <size value="450px 30px"/>
+            <size value="550px 30px"/>
             <textSize value="20px"/>
             <textBold value="true"/>
             <textColor value="0.5 0.8 1 1"/>
             <textAlignment value="center"/>
         </Profile>
 
-        <!-- Section Container -->
+        <!-- Section Containers -->
         <Profile name="sedSectionContainer" extends="emptyPanel" with="anchorTopCenter">
-            <size value="460px 125px"/>
+            <size value="540px 140px"/>
         </Profile>
 
         <Profile name="sedResultsSection" extends="emptyPanel" with="anchorTopCenter">
-            <size value="460px 70px"/>
+            <size value="540px 80px"/>
         </Profile>
 
         <Profile name="sedRenewalSection" extends="emptyPanel" with="anchorTopCenter">
-            <size value="460px 60px"/>
+            <size value="540px 80px"/>
         </Profile>
 
         <!-- Section Backgrounds -->
         <Profile name="sedSectionBg" extends="baseReference" with="anchorTopCenter">
-            <size value="460px 125px"/>
+            <size value="540px 140px"/>
             <imageColor value="0.08 0.08 0.12 0.9"/>
         </Profile>
 
         <Profile name="sedResultsBg" extends="baseReference" with="anchorTopCenter">
-            <size value="460px 70px"/>
+            <size value="540px 80px"/>
             <imageColor value="0.06 0.10 0.08 0.9"/>
         </Profile>
 
         <Profile name="sedRenewalBg" extends="baseReference" with="anchorTopCenter">
-            <size value="460px 60px"/>
+            <size value="540px 80px"/>
             <imageColor value="0.10 0.08 0.06 0.9"/>
+        </Profile>
+
+        <!-- Following RVB pattern: baseReference + square size + noSlice -->
+        <Profile name="sedVehicleImage" extends="baseReference" with="anchorTopCenter">
+            <size value="180px 180px"/>
+            <imageSliceId value="noSlice"/>
         </Profile>
 
         <!-- Section Header -->
         <Profile name="sedSectionHeader" extends="fs25_textDefault" with="anchorTopCenter">
-            <size value="440px 22px"/>
+            <size value="520px 22px"/>
             <textSize value="13px"/>
             <textBold value="true"/>
             <textColor value="1 0.8 0.2 1"/>
@@ -115,14 +123,14 @@
 
         <!-- Labels and Values -->
         <Profile name="sedLabel" extends="fs25_textDefault" with="anchorTopCenter">
-            <size value="120px 18px"/>
+            <size value="100px 18px"/>
             <textSize value="12px"/>
             <textColor value="0.6 0.6 0.6 1"/>
             <textAlignment value="left"/>
         </Profile>
 
         <Profile name="sedValue" extends="fs25_textDefault" with="anchorTopCenter">
-            <size value="200px 18px"/>
+            <size value="180px 18px"/>
             <textSize value="13px"/>
             <textBold value="true"/>
             <textColor value="1 1 1 1"/>
@@ -131,17 +139,25 @@
 
         <!-- Results value (large, centered) -->
         <Profile name="sedResultsValue" extends="fs25_textDefault" with="anchorTopCenter">
-            <size value="440px 24px"/>
-            <textSize value="16px"/>
+            <size value="520px 28px"/>
+            <textSize value="18px"/>
             <textBold value="true"/>
             <textColor value="0.3 1 0.4 1"/>
             <textAlignment value="center"/>
         </Profile>
 
+        <!-- Renewal info text -->
+        <Profile name="sedRenewalInfo" extends="fs25_textDefault" with="anchorTopCenter">
+            <size value="520px 18px"/>
+            <textSize value="11px"/>
+            <textColor value="0.5 0.5 0.5 1"/>
+            <textAlignment value="center"/>
+        </Profile>
+
         <!-- Renewal cost -->
         <Profile name="sedRenewCost" extends="fs25_textDefault" with="anchorTopCenter">
-            <size value="150px 20px"/>
-            <textSize value="14px"/>
+            <size value="120px 20px"/>
+            <textSize value="15px"/>
             <textBold value="true"/>
             <textColor value="1 0.9 0.5 1"/>
             <textAlignment value="left"/>

@@ -219,7 +219,7 @@ function TiresDialog:updatePaymentSummary()
         end
     else
         if self.selectedTireText then
-            self.selectedTireText:setText(g_i18n:getText("usedplus_tires_selectOne") or "Select a tire...")
+            self.selectedTireText:setText(g_i18n:getText("usedplus_tires_selectAbove") or "Select above")
         end
         if self.totalCostText then
             self.totalCostText:setText("$0")

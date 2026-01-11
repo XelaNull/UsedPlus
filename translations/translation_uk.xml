@@ -101,7 +101,7 @@
         <e k="usedplus_confirmation_title" v="Підтвердження" eh="f4d1ea47" />
 
         <!--  Finance Manager Frame (InGameMenu page) -->
-        <e k="usedplus_inGameMenuTitle" v="Використані пошуки Plus - Finance &amp;" eh="483f0e06" />
+        <e k="usedplus_inGameMenuTitle" v="Used Plus - Фінанси &amp; Пошуки" eh="093c7b9e" />
         <e k="usedplus_activeFinanceDeals" v="Активні фінансові угоди:" eh="5cf7fac5" />
         <e k="usedplus_activeSearches" v="Активні пошуки:" eh="274e131d" />
         <e k="usedplus_creditScore" v="Кредитний рейтинг:" eh="0199e1a3" />
@@ -249,6 +249,7 @@
         <e k="input_USEDPLUS_OPEN_FINANCE_MANAGER" v="Відкрити фінансовий менеджер" eh="806bb897" />
         <e k="input_USEDPLUS_SEARCH_USED" v="Пошук вживаного обладнання" eh="77397317" />
         <e k="input_USEDPLUS_INSPECT_VEHICLE" v="Огляньте транспортний засіб" eh="c06f09f1" />
+        <e k="input_USEDPLUS_ACTIVATE_OBD" v="Використати OBD-сканер" eh="9666e26b" />
 
         <!--  Tooltips for Finance Dialog -->
         <e k="usedplus_finance_loanTerm_tooltip" v="Розподіліть виплати на 1-20 років. Довші терміни = менші щомісячні платежі, але більша загальна сплата відсотків." eh="e1170142" />
@@ -280,7 +281,7 @@
         <!--  Tooltips for Finance Manager -->
         <e k="usedplus_manager_totalFinanced_tooltip" v="Загальна сума вашої заборгованості за всіма кредитами та лізингом. Тримайте нижчу вартість активів!" eh="7c15778c" />
         <e k="usedplus_manager_monthlyObligations_tooltip" v="Усього списується з вашого рахунку щомісяця. Переконайтеся, що у вас завжди є достатній грошовий потік!" eh="c5cee5ec" />
-        <e k="usedplus_manager_creditScore_tooltip" v="Рейтинг 300-850. 750+ = Відмінно, 650-749 = Добре, 550-649 = Задовільно, &lt;550 = Погано. Впливає на всі майбутні процентні ставки!" eh="8a7678ad" />
+        <e k="usedplus_manager_creditScore_tooltip" v="Рейтинг 300-850. 750+ = Відмінно, 650-749 = Добре, 550-649 = Задовільно, &lt;550 = Погано. Впливає на всі майбутні процентні ставки!" eh="4b1c2269" />
         <e k="usedplus_manager_assetValue_tooltip" v="Загальна вартість транспортних засобів, обладнання, полів і будівель, якими ви володієте. Має бути більше, ніж ваш борг!" eh="64ef61f3" />
         <e k="usedplus_manager_debtRatio_tooltip" v="Загальний борг ÷ вартість активів. Тримайте менше 30% для відмінного кредиту. Понад 50% значно погіршує ваш рахунок!" eh="041f390c" />
 
@@ -311,7 +312,7 @@
         <e k="usedplus_repair_title_mechanical" v="Механічний ремонт" eh="60a0d54f" />
         <e k="usedplus_repair_title_repaint" v="Перефарбувати автомобіль" eh="d5b4d6be" />
         <e k="usedplus_repair_mechanical" v="РЕМОНТ МЕХАН" eh="6294bbee" />
-        <e k="usedplus_repair_cosmetic" v="ФАРБА &amp; КОСМЕТИЧНА" eh="94bb6ac8" />
+        <e k="usedplus_repair_cosmetic" v="ФАРБА &amp; КОСМЕТИЧНА" eh="d111819f" />
         <e k="usedplus_repair_slider" v="Сума ремонту" eh="0dda5ee8" />
         <e k="usedplus_repair_cost" v="Вартість ремонту" eh="6f0504d5" />
         <e k="usedplus_repair_after" v="Стан Після" eh="d6d75451" />
@@ -321,6 +322,7 @@
         <e k="usedplus_repaint_slider" v="Сума перефарбування" eh="bf64833d" />
         <e k="usedplus_repaint_cost" v="Вартість перефарбування" eh="b994cb4e" />
         <e k="usedplus_button_repairVehicle" v="Ремонт автомобіля" eh="9592bc0d" />
+        <e k="usedplus_button_repaint" v="Перефарбувати" />
         <e k="usedplus_button_tradeIn" v="Обмін" eh="d9a572a1" />
         <e k="usedplus_repair_financeSuccess" v="Ремонт профінансовано! %s протягом %d місяців за %s/місяць" eh="ac520447" />
         <e k="usedplus_repair_noRepairsNeeded" v="Цей автомобіль не потребує ремонту." eh="58c85fca" />
@@ -793,6 +795,19 @@
         <e k="usedplus_irp_postRepairValue" v="Вартість після ремонту:" eh="676a8d00" />
         <e k="usedplus_irp_priceNote" v="Ціни відображають запитувану продавцем ціну. Торгуйтесь на основі результатів огляду." eh="1d136196" />
 
+        <!-- v2.1.0: RVB Parts Breakdown (Inspection Report) -->
+        <e k="usedplus_irp_sectionRvbParts" v="СТАН КОМПОНЕНТІВ" eh="73555be1" />
+        <e k="usedplus_irp_part_engine" v="Двигун" eh="7bfa3072" />
+        <e k="usedplus_irp_part_thermostat" v="Термостат" eh="91e0b95d" />
+        <e k="usedplus_irp_part_generator" v="Генератор" eh="92a8f0b9" />
+        <e k="usedplus_irp_part_battery" v="Акумулятор" eh="d67c9286" />
+        <e k="usedplus_irp_part_starter" v="Стартер" eh="ee6085db" />
+        <e k="usedplus_irp_part_glowplug" v="Свічка розжарювання" eh="6fdb6ce6" />
+
+        <!-- v2.1.0: Tire Conditions (Inspection Report) -->
+        <e k="usedplus_irp_sectionTires" v="СТАН ШИН" eh="d7d271cc" />
+        <e k="usedplus_irp_worstTire" v="Найгірша:" eh="4ca3e96d" />
+
         <!-- Maintenance Report Dialog -->
         <e k="usedplus_mrp_title" v="ЗВІТ ПРО ОБСЛУГОВУВАННЯ" eh="a2ca3391" />
         <e k="usedplus_mrp_sectionReliability" v="РЕЙТИНГИ НАДІЙНОСТІ" eh="87b5f6c4" />
@@ -1163,6 +1178,9 @@
         <e k="usedplus_cr_tip1" v="Платіть вчасно для кредитної історії" eh="a69f1a91" />
         <e k="usedplus_cr_tip2" v="Тримайте борг нижче 50% активів" eh="70d62f24" />
         <e k="usedplus_cr_tip3" v="Будуйте історію малими позиками" eh="dc1c9766" />
+        <!-- v2.0.0: Credit system disabled messages -->
+        <e k="usedplus_cr_creditDisabled" v="Кредитний рейтинг вимкнено" eh="62d14b3c" />
+        <e k="usedplus_cr_creditDisabledHint" v="Увімкніть кредитний рейтинг у налаштуваннях UsedPlus." eh="4c217397" />
         <!-- REMOVED: usedplus_button_close - duplicate, use Common Button Labels -->
 
         <!-- Search Details Dialog -->
@@ -1237,7 +1255,8 @@
         <!-- Finance Manager Frame -->
         <e k="usedplus_fmf_sectionFinances" v="ФІНАНСИ" eh="15625374" />
         <e k="usedplus_fmf_sectionMarketplace" v="РИНОК ВЖИВАНОГО" eh="ad2d33e9" />
-        <e k="usedplus_fmf_sectionCredit" v="КРЕДИТ &amp; СТАТИСТИКА" eh="b9e2972c" />
+        <e k="usedplus_fmf_sectionCredit" v="КРЕДИТ &amp; СТАТИСТИКА" eh="8a71fbbe" />
+        <e k="usedplus_fmf_sectionStatistics" v="СТАТИСТИКА" eh="bd71bd5e" />
         <e k="usedplus_fmf_noActiveDeals" v="Немає активних фінансових угод" eh="171c5c5d" />
         <e k="usedplus_fmf_headerType" v="ТИП" eh="94849514" />
         <e k="usedplus_fmf_headerItem" v="ПРЕДМЕТ" eh="2b911c01" />
@@ -1259,7 +1278,7 @@
         <e k="usedplus_fmf_nationalSearch" v="Національний пошук" eh="c967061f" />
         <e k="usedplus_fmf_nationalStats" v="12% збір | 85% успіх | 2-6 місяців" eh="685c2f27" />
         <e k="usedplus_fmf_startFromShop" v="Почніть пошук у магазині через 'Шукати вживане'" eh="f0c6f05a" />
-        <e k="usedplus_fmf_viaSearchUsed" v="" />
+        <e k="usedplus_fmf_viaSearchUsed" v="" eh="d41d8cd9" />
         <e k="usedplus_fmf_usedVehicleSearches" v="Пошуки вживаного транспорту" eh="a3601db6" />
         <e k="usedplus_fmf_noActiveSearches" v="Немає активних пошуків. Почніть у Магазині." eh="6f447735" />
         <e k="usedplus_fmf_headerPrice" v="ЦІНА" eh="6da7ab78" />
@@ -1362,7 +1381,7 @@
         <e k="usedplus_tl_good" v="Добре 700-749: 7,5%" eh="98ac4cee" />
         <e k="usedplus_tl_fair" v="Непогано 650-699: 8,5%" eh="45ddaf78" />
         <e k="usedplus_tl_poor" v="Погано 600-649: 9,5%" eh="58571247" />
-        <e k="usedplus_tl_veryPoor" v="Дуже Погано &lt;600: 11%" eh="1065df64" />
+        <e k="usedplus_tl_veryPoor" v="Дуже Погано &lt;600: 11%" eh="fbe67fc1" />
 
         <!-- ============================================================== -->
         <!-- INSPECTOR QUOTES - Workhorse/Lemon Scale System                 -->
@@ -1506,7 +1525,7 @@
         <e k="usedplus_tires_traction" v="Зчеплення:" eh="8d38bce1" />
         <e k="usedplus_tires_flatTire" v="СПУЩЕНА ШИНА" eh="6e87cc30" />
         <e k="usedplus_tires_replace" v="Замінити шини" eh="3a0d1434" />
-        <e k="usedplus_tires_selectQuality" v="Обрати якість:" eh="98a3a185" />
+        <e k="usedplus_tires_selectQuality" v="Обрати якість:" eh="46aef69c" />
         <e k="usedplus_tires_retreadDesc" v="Бюджетний варіант - менше зчеплення, вищий ризик відмови" eh="f277d077" />
         <e k="usedplus_tires_normalDesc" v="Стандартні шини - збалансовані характеристики" eh="df677172" />
         <e k="usedplus_tires_qualityDesc" v="Преміум шини - краще зчеплення, нижчий ризик відмови" eh="69e595ca" />
@@ -1525,7 +1544,7 @@
 
         <!-- v1.7.0: Tires Service Dialog -->
         <e k="usedplus_tires_title" v="Шиномонтаж" eh="b0234f4e" />
-        <e k="usedplus_tires_sectionStatus" v="СТАТУС ТРАНСПОРТУ &amp; ШИН" eh="089cd22b" />
+        <e k="usedplus_tires_sectionStatus" v="СТАТУС ТРАНСПОРТУ &amp; ШИН" eh="c0e3631e" />
         <e k="usedplus_tires_sectionSelect" v="ОБЕРІТЬ ЯКІСТЬ ШИН" eh="42abee54" />
         <e k="usedplus_tires_sectionPayment" v="РЕЗЮМЕ ОПЛАТИ" eh="0dd98605" />
         <e k="usedplus_tires_currentQuality" v="Поточна якість:" eh="b46a9180" />
@@ -1547,7 +1566,7 @@
 
         <!-- v1.7.0: Fluids Service Dialog -->
         <e k="usedplus_fluids_title" v="Обслуговування рідин" eh="7eb767c6" />
-        <e k="usedplus_fluids_sectionStatus" v="СТАТУС ТРАНСПОРТУ &amp; РІДИН" eh="027b5f21" />
+        <e k="usedplus_fluids_sectionStatus" v="СТАТУС ТРАНСПОРТУ &amp; РІДИН" eh="2fb5c91e" />
         <e k="usedplus_fluids_sectionService" v="ВАРІАНТИ ОБСЛУГОВУВАННЯ" eh="6a49411d" />
         <e k="usedplus_fluids_sectionPayment" v="РЕЗЮМЕ ОПЛАТИ" eh="0dd98605" />
         <e k="usedplus_fluids_oilLevel" v="Моторна олива:" eh="2168f846" />
@@ -1614,8 +1633,8 @@
         <e k="usedplus_fluid_fuelLeak" v="УВАГА: Виявлено витік палива - небезпека пожежі, потрібен ремонт." eh="9016df52" />
         <e k="usedplus_fluid_allClear" v="Усі системи рідин виглядають нормально." eh="339f1e72" />
 
-        <!-- v1.8.0: Field Service Kit with OBD Scanner -->
-        <e k="usedplus_fsk_name" v="Польовий сервісний набір (OBD-сканер)" eh="92be7850" />
+        <!-- v1.8.0: OBD Scanner (portable diagnostic tool) -->
+        <e k="usedplus_fsk_name" v="OBD-сканер" eh="96023669" />
         <e k="usedplus_fsk_function" v="Портативний діагностичний сканер OBD для екстреного польового ремонту. Підключається до діагностичного порту для зчитування кодів помилок та даних датчиків. Витратний матеріал - одноразове використання." eh="bfdb43fa" />
         <e k="usedplus_fsk_tier_basic" v="Базовий OBD" eh="36823daa" />
         <e k="usedplus_fsk_activate" v="Підключити OBD-сканер" eh="dc1214b1" />
@@ -1723,8 +1742,9 @@
         <e k="usedplus_fsk_feedback_wrong" v="Справжня проблема була в іншій системі." eh="9b04c318" />
         <e k="usedplus_fsk_temp_repair" v="ТИМЧАСОВИЙ ПОЛЬОВИЙ РЕМОНТ" eh="b3bc3876" />
         <e k="usedplus_fsk_temp_repair_desc" v="Це екстрений ремонт. Відвідайте належну майстерню для повного обслуговування." eh="648457f5" />
-        <e k="usedplus_fsk_kit_consumed" v="Польовий сервісний набір використано." eh="08530ba3" />
+        <e k="usedplus_fsk_kit_consumed" v="OBD-сканер використано." eh="b2ea1455" />
         <e k="usedplus_fsk_cannot_cancel" v="Ремонт у процесі - неможливо скасувати на цьому етапі." eh="6172d2ec" />
+        <e k="usedplus_fsk_noVehicle" v="Транспортний засіб не виявлено в радіусі. Піднесіть сканер ближче до транспорту." eh="e89e127f" />
 
         <!-- Tire repair -->
         <e k="usedplus_fsk_tire_repair" v="ВИЯВЛЕНО СПУЩЕНУ ШИНУ - Натисніть для ремонту" eh="0cd0073e" />
@@ -1736,6 +1756,136 @@
         <e k="usedplus_fsk_tire_plug" v="РОЗ'ЄМ" eh="c18d6117" />
         <e k="usedplus_fsk_tire_plug_desc" v="Кращий екстрений ремонт" eh="b3aa3113" />
         <e k="usedplus_fsk_tire_plug_result" v="Відновлює до 50% стану" eh="98bf223c" />
+
+        <!-- v2.1.0: Scanner Readout Hints (Step 1 hints to deduce failed system) -->
+        <e k="usedplus_fsk_scanner_readout" v="ДАНІ СКАНЕРА OBD" eh="e81cab15" />
+        <e k="usedplus_fsk_hint_no_faults" v="Критичні коди несправностей відсутні" eh="56f7aa39" />
+        <e k="usedplus_fsk_hint_preventive" v="Рекомендовано профілактичне обслуговування" eh="695fff39" />
+
+        <!-- ENGINE hints -->
+        <e k="usedplus_fsk_hint_engine_dtc" v="DTC P0xxx: Збережені коди несправностей силової установки" eh="3ef35761" />
+        <e k="usedplus_fsk_hint_engine_combustion" v="Зафіксовано нерегулярні паттерни циклу згоряння" eh="cfc95185" />
+        <e k="usedplus_fsk_hint_engine_airfuel" v="Показання повітряно-паливної суміші поза допуском" eh="e0a6626d" />
+        <e k="usedplus_fsk_hint_engine_exhaust" v="Аномальні показання датчика вихлопних газів" eh="f491ddaa" />
+        <e k="usedplus_fsk_hint_engine_throttle" v="Виявлено відхилення відгуку дросельної заслінки" eh="b702d132" />
+        <e k="usedplus_fsk_hint_engine_timing" v="Зафіксовано відхилення фаз газорозподілу" eh="c6429837" />
+
+        <!-- ELECTRICAL hints -->
+        <e k="usedplus_fsk_hint_elec_dtc" v="DTC B/U коди: Помилки мережевого зв'язку" eh="5dc3a478" />
+        <e k="usedplus_fsk_hint_elec_voltage" v="Регулювання напруги поза нормальними параметрами" eh="f6b58c16" />
+        <e k="usedplus_fsk_hint_elec_signal" v="Виявлено періодичні пропадання сигналу датчика" eh="5f4e98be" />
+        <e k="usedplus_fsk_hint_elec_canbus" v="Зафіксовано помилки зв'язку по шині CAN" eh="06868b16" />
+        <e k="usedplus_fsk_hint_elec_timeout" v="Зафіксовано таймаути відповіді модуля" eh="8d47cb04" />
+        <e k="usedplus_fsk_hint_elec_ground" v="Спрацювали індикатори замикання на масу" eh="aeded58c" />
+
+        <!-- HYDRAULIC hints -->
+        <e k="usedplus_fsk_hint_hyd_response" v="Час відгуку навісного обладнання перевищує поріг" eh="c51368ce" />
+        <e k="usedplus_fsk_hint_hyd_pressure" v="Виявлено коливання гідравлічного тиску" eh="c884962a" />
+        <e k="usedplus_fsk_hint_hyd_hitch" v="Дрейф датчика положення триточкової навіски" eh="f047bc25" />
+        <e k="usedplus_fsk_hint_hyd_actuator" v="Відмічено погіршення часу циклу приводу" eh="78638bc2" />
+        <e k="usedplus_fsk_hint_hyd_flow" v="Нерегулярність потоку у допоміжних контурах" eh="36d131ee" />
+        <e k="usedplus_fsk_hint_hyd_temp" v="Зафіксовано попередження про температуру гідравлічної рідини" eh="cfc27131" />
+
+        <!-- ===== SETTINGS v2.0.0 ===== -->
+        <!-- Preset selector -->
+        <e k="usedplus_setting_preset" v="Швидкий Пресет" eh="ef6e6470" />
+        <e k="usedplus_setting_preset_desc" v="Застосувати пресет (змінює всі налаштування нижче)" eh="63332963" />
+
+        <!-- System toggles -->
+        <e k="usedplus_setting_finance" v="Фінансування Техніки/Землі" eh="8159256d" />
+        <e k="usedplus_setting_finance_desc" v="Увімкнути фінансування покупок техніки та землі" eh="4834038c" />
+        <e k="usedplus_setting_lease" v="Лізинг" eh="9e668941" />
+        <e k="usedplus_setting_lease_desc" v="Увімкнути лізинг техніки та землі з опцією викупу" eh="689ee038" />
+        <e k="usedplus_setting_search" v="Пошук Б/В Техніки" eh="07c38501" />
+        <e k="usedplus_setting_search_desc" v="Увімкнути пошук б/в обладнання через агента" eh="73690f8f" />
+        <e k="usedplus_setting_sale" v="Продаж Техніки" eh="9111fc3c" />
+        <e k="usedplus_setting_sale_desc" v="Увімкнути продаж техніки через агента (замінює миттєвий продаж)" eh="861c1a37" />
+        <e k="usedplus_setting_repair" v="Система Ремонту" eh="5a2967eb" />
+        <e k="usedplus_setting_repair_desc" v="Увімкнути частковий ремонт та фарбування" eh="a6774f7d" />
+        <e k="usedplus_setting_tradein" v="Система Обміну" eh="3e428cd4" />
+        <e k="usedplus_setting_tradein_desc" v="Увімкнути обмін техніки при покупках" eh="464eed0d" />
+        <e k="usedplus_setting_credit" v="Кредитний Рейтинг" eh="c709b51e" />
+        <e k="usedplus_setting_credit_desc" v="Увімкнути динамічні відсоткові ставки на основі кредитного рейтингу" eh="ea6286a9" />
+        <e k="usedplus_setting_tirewear" v="Знос Шин" eh="fa71e50e" />
+        <e k="usedplus_setting_tirewear_desc" v="Увімкнути реалістичний знос шин" eh="0a955572" />
+        <e k="usedplus_setting_malfunctions" v="Поломки" eh="97801e8a" />
+        <e k="usedplus_setting_malfunctions_desc" v="Увімкнути випадкові поломки та відмови компонентів" eh="fbbe01f9" />
+        <e k="usedplus_setting_partialRepair" v="Частковий Ремонт" eh="dc6b627a" />
+        <e k="usedplus_setting_partialRepair_desc" v="Увімкнути частковий ремонт у майстерні (вимкнення приховує кнопку ремонту)" eh="84fe180c" />
+        <e k="usedplus_setting_partialRepaint" v="Часткове Фарбування" eh="3fca656d" />
+        <e k="usedplus_setting_partialRepaint_desc" v="Увімкнути часткове фарбування у майстерні (вимкнення приховує кнопку фарбування)" eh="4ca7214a" />
+        <!-- v2.0.0: Farmland Difficulty & Bank Interest -->
+        <e k="usedplus_setting_farmlandDifficulty" v="Масштабування Цін Землі" eh="9118adb6" />
+        <e k="usedplus_setting_farmlandDifficulty_desc" v="Масштабувати ціни землі за складністю (як техніку). Легко: 60%, Нормально: 100%, Складно: 140%" eh="50a435ef" />
+        <e k="usedplus_setting_bankInterest" v="Банківські Відсотки" eh="1267ace4" />
+        <e k="usedplus_setting_bankInterest_desc" v="Отримувати відсотки на позитивний баланс (щомісяця, як ощадний рахунок)" eh="8e706865" />
+        <e k="usedplus_setting_bankInterestRate" v="Відсоткова Ставка (річна)" eh="798c19e6" />
+        <e k="usedplus_setting_bankInterestRate_desc" v="Річна відсоткова ставка на готівку. 1% = 10 000₴ на рік при балансі 1М₴" eh="80e4314a" />
+
+        <!-- Money and rates -->
+        <e k="usedplus_setting_interestRate" v="Відсоткова Ставка Фінансування" eh="ec5e55f4" />
+        <e k="usedplus_setting_interestRate_desc" v="Базова ставка для всього фінансування (техніка, земля, кредити). Кредитний рейтинг впливає на цю ставку." eh="86443f38" />
+        <e k="usedplus_setting_tradeInValue" v="Вартість Обміну %" eh="1f2d9066" />
+        <e k="usedplus_setting_tradeInValue_desc" v="Базовий відсоток від ціни продажу для обмінів" eh="63d5cd26" />
+        <e k="usedplus_setting_repairCost" v="Множник Вартості Ремонту" eh="f6f74c79" />
+        <e k="usedplus_setting_repairCost_desc" v="Множник для всіх витрат на ремонт" eh="d20d8168" />
+        <e k="usedplus_setting_paintCost" v="Множник Вартості Фарбування" eh="b5b8f53a" />
+        <e k="usedplus_setting_paintCost_desc" v="Множник для витрат на фарбування (окремо від ремонту)" eh="4fcb0c32" />
+        <e k="usedplus_setting_leaseMarkup" v="Націнка Лізингу %" eh="aac70e2a" />
+        <e k="usedplus_setting_leaseMarkup_desc" v="Відсоток націнки на щомісячні лізингові платежі" eh="23d9d6f0" />
+
+        <!-- Forgiveness and risk -->
+        <e k="usedplus_setting_missedPayments" v="Пропущених Платежів до Вилучення" eh="be335e9f" />
+        <e k="usedplus_setting_missedPayments_desc" v="Кількість пропущених платежів до вилучення техніки" eh="71688a5f" />
+        <e k="usedplus_setting_downPayment" v="Мін. Початковий Внесок %" eh="b70d8e33" />
+        <e k="usedplus_setting_downPayment_desc" v="Мінімальний необхідний початковий внесок для фінансування" eh="d290560c" />
+        <e k="usedplus_setting_startingCredit" v="Початковий Кредитний Рейтинг" eh="8fd1d387" />
+        <e k="usedplus_setting_startingCredit_desc" v="Початковий кредитний рейтинг для нових ігор" eh="1861873e" />
+        <e k="usedplus_setting_latePenalty" v="Штраф за Прострочення" eh="70703f0b" />
+        <e k="usedplus_setting_latePenalty_desc" v="Кредитні бали, втрачені за прострочений платіж" eh="a58e7e31" />
+
+        <!-- Marketplace -->
+        <e k="usedplus_setting_searchSuccess" v="Базовий Успіх Пошуку %" eh="01f7d1c0" />
+        <e k="usedplus_setting_searchSuccess_desc" v="Базовий шанс знайти б/в техніку. Бонуси рівнів: Економ +0%, Стандарт +10%, Преміум +20%, Еліт +30%" eh="69f7bd7b" />
+        <e k="usedplus_setting_maxListings" v="Макс. Оголошень на Ферму" eh="5f8a47bd" />
+        <e k="usedplus_setting_maxListings_desc" v="Максимум активних оголошень про продаж на ферму (внутрішнє налаштування)" eh="88403541" />
+        <e k="usedplus_setting_offerExpiry" v="Закінчення Пропозицій" eh="8b1b7a6f" />
+        <e k="usedplus_setting_offerExpiry_desc" v="Години до закінчення пропозицій про продаж" eh="fe118057" />
+        <e k="usedplus_setting_commission" v="Комісія Агента %" eh="443d1555" />
+        <e k="usedplus_setting_commission_desc" v="Відсоток, що стягується агентами з продажу" eh="8f42cc9d" />
+
+        <!-- Condition and quality -->
+        <e k="usedplus_setting_conditionMin" v="Мін. Стан Б/В" eh="c2725712" />
+        <e k="usedplus_setting_conditionMin_desc" v="Мінімальний стан для б/в техніки" eh="67ff9bc5" />
+        <e k="usedplus_setting_conditionMax" v="Макс. Стан Б/В" eh="ff759d4c" />
+        <e k="usedplus_setting_conditionMax_desc" v="Максимальний стан для б/в техніки" eh="5eb8cfaf" />
+        <e k="usedplus_setting_conditionMult" v="Вплив Стану на Ціну" eh="b9ea233b" />
+        <e k="usedplus_setting_conditionMult_desc" v="Наскільки стан впливає на ціну техніки" eh="1defc378" />
+        <e k="usedplus_setting_brandBonus" v="Бонус Лояльності Бренду" eh="51d04913" />
+        <e k="usedplus_setting_brandBonus_desc" v="Додаткова вартість обміну при покупці тієї ж марки" eh="3256663b" />
+
+        <!-- Presets -->
+        <e k="usedplus_preset_title" v="Застосувати Пресет" eh="124235e0" />
+        <e k="usedplus_preset_easy" v="Легкий" eh="7f943921" />
+        <e k="usedplus_preset_easy_desc" v="Максимальна поблажливість - зосередьтеся на фермерстві, не на фінансах" eh="81004805" />
+        <e k="usedplus_preset_balanced" v="Збалансований" eh="c6589f52" />
+        <e k="usedplus_preset_balanced_desc" v="Збалансована симуляція за замовчуванням - запланований досвід" eh="e4b620f0" />
+        <e k="usedplus_preset_challenging" v="Складний" eh="4235e068" />
+        <e k="usedplus_preset_challenging_desc" v="Реальні наслідки - рішення мають значення" eh="232773e0" />
+        <e k="usedplus_preset_hardcore" v="Хардкор" eh="1c800aa9" />
+        <e k="usedplus_preset_hardcore_desc" v="Економічне виживання - кожна гривня на рахунку" eh="f893227a" />
+        <e k="usedplus_preset_streamlined" v="Спрощений" eh="093eb019" />
+        <e k="usedplus_preset_streamlined_desc" v="Тільки фінансування та лізинг - без доповнень" eh="e3952520" />
+        <e k="usedplus_preset_immersive" v="Занурення" eh="7a7f14a4" />
+        <e k="usedplus_preset_immersive_desc" v="Повна симуляція - найкраще з модами RVB/UYT" eh="777e7831" />
+        <e k="usedplus_preset_realistic" v="Збалансований" eh="c6589f52" />
+        <e k="usedplus_preset_casual" v="Легкий" eh="7f943921" />
+        <e k="usedplus_preset_lite" v="Спрощений" eh="093eb019" />
+        <e k="usedplus_preset_realistic_desc" v="Збалансована симуляція за замовчуванням - запланований досвід" eh="e4b620f0" />
+        <e k="usedplus_preset_casual_desc" v="Максимальна поблажливість - зосередьтеся на фермерстві, не на фінансах" eh="81004805" />
+        <e k="usedplus_preset_lite_desc" v="Тільки фінансування та лізинг - без доповнень" eh="e3952520" />
+        <e k="usedplus_preset_apply" v="Застосувати" eh="9639e32c" />
+        <e k="usedplus_preset_reset" v="Скинути за замовчуванням" eh="6795975d" />
 
     </elements>
 </l10n>

@@ -13,7 +13,7 @@
     <GuiElement profile="newLayer" />
     <Bitmap profile="dialogFullscreenBg" id="dialogBg" />
 
-    <GuiElement profile="dialogBg" id="dialogElement" size="720px 570px">
+    <GuiElement profile="dialogBg" id="dialogElement" size="720px 600px">
         <ThreePartBitmap profile="fs25_dialogBgMiddle" />
         <ThreePartBitmap profile="fs25_dialogBgTop" />
         <ThreePartBitmap profile="fs25_dialogBgBottom" />
@@ -31,7 +31,7 @@
                 <!-- Two-column layout: image left, info right -->
                 <GuiElement profile="tiresVehicleRow" position="0px -28px">
                     <!-- Vehicle Image -->
-                    <Bitmap profile="tiresVehicleImage" id="vehicleImageElement" position="-185px 42px"/>
+                    <Bitmap profile="tiresVehicleImage" id="vehicleImageElement" position="-185px 75px"/>
 
                     <!-- Vehicle Info -->
                     <Text profile="tiresVehicleName" id="vehicleNameText" position="120px -5px" text=""/>
@@ -86,7 +86,7 @@
                 <Bitmap profile="tiresPaymentSectionBg" position="0px 0px"/>
                 <Text profile="tiresSectionHeader" position="0px -5px" text="$l10n_usedplus_tires_sectionPayment"/>
 
-                <Text profile="tiresPaymentLabel" position="-100px -35px" text="$l10n_usedplus_tires_selectedTire"/>
+                <Text profile="tiresPaymentLabel" position="-100px -35px" text="$l10n_usedplus_tires_selectedQuality"/>
                 <Text profile="tiresPaymentValue" id="selectedTireText" position="-100px -58px" text=""/>
 
                 <Text profile="tiresPaymentLabel" position="100px -35px" text="$l10n_usedplus_tires_totalCost"/>
@@ -151,8 +151,10 @@
             <size value="660px 100px"/>
         </Profile>
 
-        <Profile name="tiresVehicleImage" extends="fs25_vehiclesDetailsImage" with="anchorTopCenter">
-            <size value="180px 120px"/>
+        <!-- Following RVB pattern: baseReference + square size + noSlice -->
+        <Profile name="tiresVehicleImage" extends="baseReference" with="anchorTopCenter">
+            <size value="180px 180px"/>
+            <imageSliceId value="noSlice"/>
         </Profile>
 
         <Profile name="tiresVehicleName" extends="fs25_textDefault" with="anchorTopCenter">

@@ -34,7 +34,8 @@
             <!-- ================================================================ -->
             <GuiElement profile="soSectionBg" position="0px -60px" size="680px 95px">
                 <!-- Vehicle image on left, info on right -->
-                <Bitmap profile="soVehicleImage" id="vehicleImage" position="-230px 40px"/>
+                <!-- Standard position: -185px 42px (X=left of center, Y=moves UP) -->
+                <Bitmap profile="soVehicleImage" id="vehicleImage" position="-185px 75px"/>
                 <GuiElement position="60px -10px">
                     <Text profile="soVehicleName" id="vehicleNameText" position="0px 0px"/>
                     <Text profile="soAgentInfo" id="agentTierText" position="0px -28px"/>
@@ -95,9 +96,9 @@
             <!-- SECTION 5: Expiration Warning -->
             <!-- ================================================================ -->
             <GuiElement position="0px -480px">
-                <Text profile="soExpirationIcon" position="-100px 0px" text="⏱"/>
-                <Text profile="soExpirationLabel" position="-70px 0px" text="$l10n_usedplus_so_expiresIn"/>
-                <Text profile="soExpirationValue" id="expirationText" position="50px 0px"/>
+                <Text profile="soExpirationIcon" position="-80px 0px" text="⏱"/>
+                <Text profile="soExpirationLabel" position="0px 0px" text="$l10n_usedplus_so_expiresIn"/>
+                <Text profile="soExpirationValue" id="expirationText" position="100px 0px"/>
             </GuiElement>
 
         </GuiElement>
@@ -120,9 +121,10 @@
             <bgColor value="0.05 0.05 0.08 0.9"/>
         </Profile>
 
-        <!-- Vehicle image (210x140 empirically tested) -->
-        <Profile name="soVehicleImage" extends="fs25_vehiclesDetailsImage" with="anchorTopCenter">
-            <size value="180px 120px"/>
+        <!-- Following RVB pattern: baseReference + square size + noSlice -->
+        <Profile name="soVehicleImage" extends="baseReference" with="anchorTopCenter">
+            <size value="180px 180px"/>
+            <imageSliceId value="noSlice"/>
         </Profile>
 
         <!-- Vehicle name -->
@@ -252,13 +254,13 @@
         </Profile>
 
         <!-- Expiration label -->
-        <Profile name="soExpirationLabel" extends="fs25_textDefault" with="anchorTopLeft">
+        <Profile name="soExpirationLabel" extends="fs25_textDefault" with="anchorTopCenter">
             <textSize value="14px"/>
             <textColor value="1 0.7 0.3 1"/>
         </Profile>
 
         <!-- Expiration value -->
-        <Profile name="soExpirationValue" extends="fs25_textDefault" with="anchorTopLeft">
+        <Profile name="soExpirationValue" extends="fs25_textDefault" with="anchorTopCenter">
             <textSize value="14px"/>
             <textBold value="true"/>
             <textColor value="1 0.5 0.2 1"/>

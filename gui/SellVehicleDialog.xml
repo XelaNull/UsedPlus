@@ -27,8 +27,8 @@
 
                 <!-- Flat layout: image left, text right (matching UsedSearchDialog pattern) -->
                 <GuiElement profile="svVehicleRow" position="0px -28px">
-                    <!-- IMAGE: Centered in left half, Y=42px moves up for proper display -->
-                    <Bitmap profile="svVehicleImage" id="vehicleImage" position="-200px 42px"/>
+                    <!-- IMAGE: Standard position -185px 42px -->
+                    <Bitmap profile="svVehicleImage" id="vehicleImage" position="-185px 75px"/>
 
                     <!-- TEXT: Left-aligned in right half -->
                     <Text profile="svVehicleName" id="vehicleNameText" position="100px -15px" text=""/>
@@ -195,9 +195,10 @@
         </Profile>
 
         <!-- ========== VEHICLE IMAGE (centered in left column) ========== -->
-        <!-- 10% larger than standard 210x140px -->
-        <Profile name="svVehicleImage" extends="fs25_vehiclesDetailsImage" with="anchorTopCenter">
-            <size value="230px 154px"/>
+        <!-- Following RVB pattern: baseReference + square size + noSlice -->
+        <Profile name="svVehicleImage" extends="baseReference" with="anchorTopCenter">
+            <size value="180px 180px"/>
+            <imageSliceId value="noSlice"/>
         </Profile>
 
         <!-- ========== VEHICLE INFO (left-aligned in right column) ========== -->

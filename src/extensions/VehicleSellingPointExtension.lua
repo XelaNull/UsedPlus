@@ -376,6 +376,23 @@ function VehicleSellingPointExtension.hookShowYesNoDialog()
             UsedPlus.logTrace("Detected REPAINT dialog (German)")
         end
 
+        -- v2.0.0: Check if partial repair/repaint is enabled in settings
+        -- If disabled, don't intercept - let vanilla handle it
+        if isRepair and UsedPlusSettings and UsedPlusSettings:get("enablePartialRepair") == false then
+            UsedPlus.logTrace("Partial repair disabled in settings, using vanilla dialog")
+            isRepair = false
+        end
+        if isRepaint and UsedPlusSettings and UsedPlusSettings:get("enablePartialRepaint") == false then
+            UsedPlus.logTrace("Partial repaint disabled in settings, using vanilla dialog")
+            isRepaint = false
+        end
+
+        -- v2.1.2: When RVB is installed, skip repaint interception - Repaint is in RVB Workshop
+        if isRepaint and ModCompatibility and ModCompatibility.rvbInstalled then
+            UsedPlus.logTrace("RVB installed, skipping repaint interception (using RVB Workshop)")
+            isRepaint = false
+        end
+
         -- If this is a repair or repaint dialog, try to find the vehicle
         if isRepair or isRepaint then
             -- Try to get vehicle from target (WorkshopScreen)
@@ -735,6 +752,22 @@ function VehicleSellingPointExtension.hookAllDialogs()
                     end
                     if string.find(textLower, "lackieren") or string.find(textLower, "lackierung") then
                         isRepaint = true
+                    end
+
+                    -- v2.0.0: Check if partial repair/repaint is enabled in settings
+                    if isRepair and UsedPlusSettings and UsedPlusSettings:get("enablePartialRepair") == false then
+                        UsedPlus.logTrace("Partial repair disabled in settings, using vanilla dialog")
+                        isRepair = false
+                    end
+                    if isRepaint and UsedPlusSettings and UsedPlusSettings:get("enablePartialRepaint") == false then
+                        UsedPlus.logTrace("Partial repaint disabled in settings, using vanilla dialog")
+                        isRepaint = false
+                    end
+
+                    -- v2.1.2: When RVB is installed, skip repaint interception - Repaint is in RVB Workshop
+                    if isRepaint and ModCompatibility and ModCompatibility.rvbInstalled then
+                        UsedPlus.logTrace("RVB installed, skipping repaint interception (using RVB Workshop)")
+                        isRepaint = false
                     end
 
                     if isRepair or isRepaint then

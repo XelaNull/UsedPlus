@@ -249,10 +249,9 @@ function UsedSearchDialog:setData(storeItem, storeItemIndex, farmId)
         UsedPlus.logWarn("itemCategoryText element not found!")
     end
 
-    -- Set item image with dynamic scaling to prevent stretching
-    -- Using 210x105 (2:1 ratio) to match FS25 store image format (512x256)
+    -- Set item image - XML profile handles aspect ratio via imageSliceId="noSlice"
     if self.itemImage then
-        UIHelper.Image.setStoreItemImageScaled(self.itemImage, storeItem, 210, 105)
+        UIHelper.Image.set(self.itemImage, storeItem)
     end
 
     -- Define search tier data (matches UsedVehicleSearch.SEARCH_TIERS)

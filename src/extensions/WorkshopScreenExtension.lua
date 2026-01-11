@@ -95,11 +95,42 @@ function WorkshopScreenExtension.onWorkshopOpen(screen)
     -- Log screen properties to find buttons
     WorkshopScreenExtension:logProperties(screen, "WorkshopScreen instance")
 
+    -- v2.1.2: Hide vanilla repaint button when RVB is installed
+    -- Repaint is available in RVB's Workshop dialog instead
+    WorkshopScreenExtension:hideRepaintButtonForRVB(screen)
+
     -- Try to create inspect button by cloning an existing button
     WorkshopScreenExtension:tryCreateInspectButton(screen)
 
     -- Hook the sell button to show our dialog instead
     WorkshopScreenExtension:hookSellButton(screen)
+end
+
+--[[
+    v2.1.2: Hide the vanilla Repaint button when RVB is installed
+    Repaint functionality is available in RVB's Workshop dialog instead
+]]
+function WorkshopScreenExtension:hideRepaintButtonForRVB(screen)
+    -- Only hide if RVB is installed
+    if not ModCompatibility or not ModCompatibility.rvbInstalled then
+        return
+    end
+
+    -- Find and hide the repaint button
+    if screen.repaintButton then
+        screen.repaintButton:setVisible(false)
+        UsedPlus.logDebug("WorkshopScreenExtension: Hidden vanilla repaintButton (RVB installed)")
+    else
+        -- Try alternative names
+        local buttonNames = {"repaintButton", "buttonRepaint", "btnRepaint"}
+        for _, name in ipairs(buttonNames) do
+            if screen[name] and screen[name].setVisible then
+                screen[name]:setVisible(false)
+                UsedPlus.logDebug(string.format("WorkshopScreenExtension: Hidden %s (RVB installed)", name))
+                break
+            end
+        end
+    end
 end
 
 --[[
@@ -189,6 +220,9 @@ function WorkshopScreenExtension.onSetVehicle(screen, vehicle)
         -- Log screen properties to find buttons
         WorkshopScreenExtension:logProperties(screen, "WorkshopScreen instance")
 
+        -- v2.1.2: Hide vanilla repaint button when RVB is installed
+        WorkshopScreenExtension:hideRepaintButtonForRVB(screen)
+
         -- Try to create inspect button
         WorkshopScreenExtension:tryCreateInspectButton(screen)
 
@@ -202,6 +236,13 @@ end
 ]]
 function WorkshopScreenExtension:tryCreateInspectButton(screen)
     if screen == nil then
+        return
+    end
+
+    -- Skip if RVB is installed - they have their own Workshop button
+    -- that opens a comprehensive diagnostics dialog. Our data is injected there instead.
+    if ModCompatibility and ModCompatibility.rvbInstalled then
+        UsedPlus.logDebug("WorkshopScreenExtension: RVB installed, skipping Inspect button (using RVB integration)")
         return
     end
 

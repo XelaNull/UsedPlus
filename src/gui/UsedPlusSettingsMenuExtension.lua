@@ -15,26 +15,35 @@
 
 UsedPlusSettingsMenuExtension = {}
 
--- Preset options
-UsedPlusSettingsMenuExtension.presetOptions = {"Realistic", "Casual", "Hardcore", "Lite"}
-UsedPlusSettingsMenuExtension.presetKeys = {"realistic", "casual", "hardcore", "lite"}
+-- v2.0.0: Expanded preset options (6 presets)
+UsedPlusSettingsMenuExtension.presetOptions = {"Easy", "Balanced", "Challenging", "Hardcore", "Streamlined", "Immersive"}
+UsedPlusSettingsMenuExtension.presetKeys = {"easy", "balanced", "challenging", "hardcore", "streamlined", "immersive"}
 
 -- Economic parameter value ranges (for dropdowns)
+-- v2.0.0: Expanded ranges for more flexible presets
 UsedPlusSettingsMenuExtension.ranges = {
+    -- Interest Rate: 4-12%
     interestRate = {"4%", "5%", "6%", "7%", "8%", "9%", "10%", "11%", "12%"},
     interestRateValues = {0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.10, 0.11, 0.12},
 
-    tradeInPercent = {"45%", "50%", "55%", "60%", "65%"},
-    tradeInPercentValues = {45, 50, 55, 60, 65},
+    -- v2.0.0: Trade-In expanded to 40-80% for easy mode
+    tradeInPercent = {"40%", "45%", "50%", "55%", "60%", "65%", "70%", "75%", "80%"},
+    tradeInPercentValues = {40, 45, 50, 55, 60, 65, 70, 75, 80},
 
-    repairMultiplier = {"0.5x", "0.75x", "1.0x", "1.25x", "1.5x", "1.75x", "2.0x"},
-    repairMultiplierValues = {0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0},
+    -- v2.0.0: Repair multiplier now starts at 0.25x
+    repairMultiplier = {"0.25x", "0.5x", "0.75x", "1.0x", "1.25x", "1.5x", "1.75x", "2.0x"},
+    repairMultiplierValues = {0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0},
+
+    -- v2.0.0: NEW - Paint multiplier (separate from repair)
+    paintMultiplier = {"0.25x", "0.5x", "0.75x", "1.0x", "1.25x", "1.5x", "1.75x", "2.0x"},
+    paintMultiplierValues = {0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0},
 
     leaseMarkup = {"5%", "10%", "15%", "20%", "25%"},
     leaseMarkupValues = {5, 10, 15, 20, 25},
 
-    missedPayments = {"1", "2", "3", "4", "5", "6"},
-    missedPaymentsValues = {1, 2, 3, 4, 5, 6},
+    -- v2.0.0: Missed payments extended to 10 for easy mode
+    missedPayments = {"1", "2", "3", "4", "5", "6", "8", "10"},
+    missedPaymentsValues = {1, 2, 3, 4, 5, 6, 8, 10},
 
     downPayment = {"0%", "5%", "10%", "15%", "20%", "25%", "30%"},
     downPaymentValues = {0, 5, 10, 15, 20, 25, 30},
@@ -42,14 +51,15 @@ UsedPlusSettingsMenuExtension.ranges = {
     startingCredit = {"500", "550", "600", "650", "700", "750"},
     startingCreditValues = {500, 550, 600, 650, 700, 750},
 
-    latePenalty = {"5", "10", "15", "20", "25", "30"},
-    latePenaltyValues = {5, 10, 15, 20, 25, 30},
+    -- v2.0.0: Late penalty now includes 0 and 2 for easy mode
+    latePenalty = {"0", "2", "5", "10", "15", "20", "25", "30"},
+    latePenaltyValues = {0, 2, 5, 10, 15, 20, 25, 30},
 
-    searchSuccess = {"50%", "60%", "70%", "75%", "80%", "90%", "100%"},
-    searchSuccessValues = {50, 60, 70, 75, 80, 90, 100},
+    -- v2.0.0: Search success with full range for all presets (35-95%)
+    searchSuccess = {"35%", "40%", "45%", "50%", "55%", "60%", "65%", "70%", "75%", "80%", "85%", "90%", "95%"},
+    searchSuccessValues = {35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95},
 
-    maxListings = {"1", "2", "3", "4", "5"},
-    maxListingsValues = {1, 2, 3, 4, 5},
+    -- v2.0.0: REMOVED from UI - maxListings kept internal only
 
     offerExpiry = {"24h", "48h", "72h", "96h", "120h", "168h"},
     offerExpiryValues = {24, 48, 72, 96, 120, 168},
@@ -68,6 +78,10 @@ UsedPlusSettingsMenuExtension.ranges = {
 
     brandBonus = {"0%", "2%", "5%", "7%", "10%"},
     brandBonusValues = {0, 2, 5, 7, 10},
+
+    -- v2.0.0: Bank Interest Rate (APY)
+    bankInterestRate = {"0%", "0.5%", "1%", "1.5%", "2%", "2.5%", "3%", "3.5%", "4%", "5%"},
+    bankInterestRateValues = {0, 0.005, 0.01, 0.015, 0.02, 0.025, 0.03, 0.035, 0.04, 0.05},
 }
 
 --[[
@@ -176,11 +190,40 @@ function UsedPlusSettingsMenuExtension:addSettingsElements(frame)
         g_i18n:getText("usedplus_setting_malfunctions_desc") or "Enable random breakdowns and failures"
     )
 
+    -- v2.0.0: NEW - Partial Repair toggle
+    frame.usedplus_partialRepairToggle = UsedPlusSettingsMenuExtension:addBinaryOption(
+        frame, "onPartialRepairToggleChanged",
+        g_i18n:getText("usedplus_setting_partialRepair") or "Partial Repair",
+        g_i18n:getText("usedplus_setting_partialRepair_desc") or "Enable partial repairs in vehicle shop"
+    )
+
+    -- v2.0.0: NEW - Partial Repaint toggle
+    frame.usedplus_partialRepaintToggle = UsedPlusSettingsMenuExtension:addBinaryOption(
+        frame, "onPartialRepaintToggleChanged",
+        g_i18n:getText("usedplus_setting_partialRepaint") or "Partial Repaint",
+        g_i18n:getText("usedplus_setting_partialRepaint_desc") or "Enable partial repaints in vehicle shop"
+    )
+
+    -- v2.0.0: NEW - Farmland Difficulty Scaling toggle
+    frame.usedplus_farmlandDifficultyToggle = UsedPlusSettingsMenuExtension:addBinaryOption(
+        frame, "onFarmlandDifficultyToggleChanged",
+        g_i18n:getText("usedplus_setting_farmlandDifficulty") or "Farmland Difficulty Scaling",
+        g_i18n:getText("usedplus_setting_farmlandDifficulty_desc") or "Scale land prices with game difficulty (Easy: 60%, Normal: 100%, Hard: 140%)"
+    )
+
+    -- v2.0.0: NEW - Bank Interest toggle
+    frame.usedplus_bankInterestToggle = UsedPlusSettingsMenuExtension:addBinaryOption(
+        frame, "onBankInterestToggleChanged",
+        g_i18n:getText("usedplus_setting_bankInterest") or "Bank Interest",
+        g_i18n:getText("usedplus_setting_bankInterest_desc") or "Earn monthly interest on positive cash balances"
+    )
+
     -- Economic parameters
+    -- v2.0.0: Updated tooltip to clarify what interest rate applies to
     frame.usedplus_interestRate = UsedPlusSettingsMenuExtension:addMultiTextOption(
         frame, "onInterestRateChanged", ranges.interestRate,
-        g_i18n:getText("usedplus_setting_interestRate") or "Base Interest Rate",
-        g_i18n:getText("usedplus_setting_interestRate_desc") or "Base annual interest rate for loans"
+        g_i18n:getText("usedplus_setting_interestRate") or "Financing Interest Rate",
+        g_i18n:getText("usedplus_setting_interestRate_desc") or "Base rate for all financing (vehicles, land, loans). Credit score modifies this."
     )
 
     frame.usedplus_tradeInPercent = UsedPlusSettingsMenuExtension:addMultiTextOption(
@@ -193,6 +236,13 @@ function UsedPlusSettingsMenuExtension:addSettingsElements(frame)
         frame, "onRepairMultiplierChanged", ranges.repairMultiplier,
         g_i18n:getText("usedplus_setting_repairCost") or "Repair Cost Multiplier",
         g_i18n:getText("usedplus_setting_repairCost_desc") or "Multiplier applied to repair costs"
+    )
+
+    -- v2.0.0: NEW - Paint Cost Multiplier (separate from repair)
+    frame.usedplus_paintMultiplier = UsedPlusSettingsMenuExtension:addMultiTextOption(
+        frame, "onPaintMultiplierChanged", ranges.paintMultiplier,
+        g_i18n:getText("usedplus_setting_paintCost") or "Paint Cost Multiplier",
+        g_i18n:getText("usedplus_setting_paintCost_desc") or "Multiplier applied to repaint costs"
     )
 
     frame.usedplus_leaseMarkup = UsedPlusSettingsMenuExtension:addMultiTextOption(
@@ -225,17 +275,14 @@ function UsedPlusSettingsMenuExtension:addSettingsElements(frame)
         g_i18n:getText("usedplus_setting_latePenalty_desc") or "Credit score penalty for late payments"
     )
 
+    -- v2.0.0: Renamed to clarify tiers add bonuses
     frame.usedplus_searchSuccess = UsedPlusSettingsMenuExtension:addMultiTextOption(
         frame, "onSearchSuccessChanged", ranges.searchSuccess,
-        g_i18n:getText("usedplus_setting_searchSuccess") or "Search Success Rate %",
-        g_i18n:getText("usedplus_setting_searchSuccess_desc") or "Base chance of finding used equipment"
+        g_i18n:getText("usedplus_setting_searchSuccess") or "Base Search Success %",
+        g_i18n:getText("usedplus_setting_searchSuccess_desc") or "Base chance to find used vehicles. Tiers add bonuses: Economy +0%, Standard +10%, Premium +20%, Elite +30%"
     )
 
-    frame.usedplus_maxListings = UsedPlusSettingsMenuExtension:addMultiTextOption(
-        frame, "onMaxListingsChanged", ranges.maxListings,
-        g_i18n:getText("usedplus_setting_maxListings") or "Max Listings Per Farm",
-        g_i18n:getText("usedplus_setting_maxListings_desc") or "Maximum active sale listings per farm"
-    )
+    -- v2.0.0: REMOVED - maxListings (kept internal, not user-configurable)
 
     frame.usedplus_offerExpiry = UsedPlusSettingsMenuExtension:addMultiTextOption(
         frame, "onOfferExpiryChanged", ranges.offerExpiry,
@@ -271,6 +318,13 @@ function UsedPlusSettingsMenuExtension:addSettingsElements(frame)
         frame, "onBrandBonusChanged", ranges.brandBonus,
         g_i18n:getText("usedplus_setting_brandBonus") or "Brand Loyalty Bonus",
         g_i18n:getText("usedplus_setting_brandBonus_desc") or "Extra trade-in value for same brand"
+    )
+
+    -- v2.0.0: NEW - Bank Interest Rate dropdown
+    frame.usedplus_bankInterestRate = UsedPlusSettingsMenuExtension:addMultiTextOption(
+        frame, "onBankInterestRateChanged", ranges.bankInterestRate,
+        g_i18n:getText("usedplus_setting_bankInterestRate") or "Interest Rate (APY)",
+        g_i18n:getText("usedplus_setting_bankInterestRate_desc") or "Annual interest rate on positive cash balances"
     )
 
     print("[UsedPlus] addSettingsElements: ALL ELEMENTS ADDED SUCCESSFULLY!")
@@ -435,24 +489,30 @@ function UsedPlusSettingsMenuExtension:updateSettingsUI(frame)
     setChecked(frame.usedplus_creditToggle, "enableCreditSystem")
     setChecked(frame.usedplus_tirewearToggle, "enableTireWearSystem")
     setChecked(frame.usedplus_malfunctionsToggle, "enableMalfunctionsSystem")
+    setChecked(frame.usedplus_partialRepairToggle, "enablePartialRepair")   -- v2.0.0
+    setChecked(frame.usedplus_partialRepaintToggle, "enablePartialRepaint") -- v2.0.0
+    setChecked(frame.usedplus_farmlandDifficultyToggle, "enableFarmlandDifficultyScaling") -- v2.0.0
+    setChecked(frame.usedplus_bankInterestToggle, "enableBankInterest") -- v2.0.0
 
     -- Update economic parameters
     setState(frame.usedplus_interestRate, ranges.interestRateValues, "baseInterestRate")
     setState(frame.usedplus_tradeInPercent, ranges.tradeInPercentValues, "baseTradeInPercent")
     setState(frame.usedplus_repairMultiplier, ranges.repairMultiplierValues, "repairCostMultiplier")
+    setState(frame.usedplus_paintMultiplier, ranges.paintMultiplierValues, "paintCostMultiplier")  -- v2.0.0
     setState(frame.usedplus_leaseMarkup, ranges.leaseMarkupValues, "leaseMarkupPercent")
     setState(frame.usedplus_missedPayments, ranges.missedPaymentsValues, "missedPaymentsToDefault")
     setState(frame.usedplus_downPayment, ranges.downPaymentValues, "minDownPaymentPercent")
     setState(frame.usedplus_startingCredit, ranges.startingCreditValues, "startingCreditScore")
     setState(frame.usedplus_latePenalty, ranges.latePenaltyValues, "latePaymentPenalty")
-    setState(frame.usedplus_searchSuccess, ranges.searchSuccessValues, "searchSuccessPercent")
-    setState(frame.usedplus_maxListings, ranges.maxListingsValues, "maxListingsPerFarm")
+    setState(frame.usedplus_searchSuccess, ranges.searchSuccessValues, "baseSearchSuccessPercent")  -- v2.0.0: renamed
+    -- v2.0.0: maxListings removed from UI
     setState(frame.usedplus_offerExpiry, ranges.offerExpiryValues, "offerExpirationHours")
     setState(frame.usedplus_commission, ranges.commissionValues, "agentCommissionPercent")
     setState(frame.usedplus_conditionMin, ranges.conditionMinValues, "usedConditionMin")
     setState(frame.usedplus_conditionMax, ranges.conditionMaxValues, "usedConditionMax")
     setState(frame.usedplus_conditionMultiplier, ranges.conditionMultiplierValues, "conditionPriceMultiplier")
     setState(frame.usedplus_brandBonus, ranges.brandBonusValues, "brandLoyaltyBonus")
+    setState(frame.usedplus_bankInterestRate, ranges.bankInterestRateValues, "bankInterestRate") -- v2.0.0
 
     -- Preset selector defaults to first option
     if frame.usedplus_presetOption then
@@ -535,6 +595,34 @@ function UsedPlusSettingsMenuExtension:onMalfunctionsToggleChanged(state)
     end
 end
 
+-- v2.0.0: NEW - Partial Repair toggle
+function UsedPlusSettingsMenuExtension:onPartialRepairToggleChanged(state)
+    if UsedPlusSettings then
+        UsedPlusSettings:set("enablePartialRepair", state == BinaryOptionElement.STATE_RIGHT)
+    end
+end
+
+-- v2.0.0: NEW - Partial Repaint toggle
+function UsedPlusSettingsMenuExtension:onPartialRepaintToggleChanged(state)
+    if UsedPlusSettings then
+        UsedPlusSettings:set("enablePartialRepaint", state == BinaryOptionElement.STATE_RIGHT)
+    end
+end
+
+-- v2.0.0: NEW - Farmland Difficulty Scaling toggle
+function UsedPlusSettingsMenuExtension:onFarmlandDifficultyToggleChanged(state)
+    if UsedPlusSettings then
+        UsedPlusSettings:set("enableFarmlandDifficultyScaling", state == BinaryOptionElement.STATE_RIGHT)
+    end
+end
+
+-- v2.0.0: NEW - Bank Interest toggle
+function UsedPlusSettingsMenuExtension:onBankInterestToggleChanged(state)
+    if UsedPlusSettings then
+        UsedPlusSettings:set("enableBankInterest", state == BinaryOptionElement.STATE_RIGHT)
+    end
+end
+
 --[[
     Callback handlers for economic parameter changes
 ]]
@@ -556,6 +644,14 @@ function UsedPlusSettingsMenuExtension:onRepairMultiplierChanged(state)
     if UsedPlusSettings then
         local value = UsedPlusSettingsMenuExtension.ranges.repairMultiplierValues[state]
         UsedPlusSettings:set("repairCostMultiplier", value)
+    end
+end
+
+-- v2.0.0: NEW - Paint Cost Multiplier
+function UsedPlusSettingsMenuExtension:onPaintMultiplierChanged(state)
+    if UsedPlusSettings then
+        local value = UsedPlusSettingsMenuExtension.ranges.paintMultiplierValues[state]
+        UsedPlusSettings:set("paintCostMultiplier", value)
     end
 end
 
@@ -594,19 +690,15 @@ function UsedPlusSettingsMenuExtension:onLatePenaltyChanged(state)
     end
 end
 
+-- v2.0.0: Updated to use renamed setting key
 function UsedPlusSettingsMenuExtension:onSearchSuccessChanged(state)
     if UsedPlusSettings then
         local value = UsedPlusSettingsMenuExtension.ranges.searchSuccessValues[state]
-        UsedPlusSettings:set("searchSuccessPercent", value)
+        UsedPlusSettings:set("baseSearchSuccessPercent", value)
     end
 end
 
-function UsedPlusSettingsMenuExtension:onMaxListingsChanged(state)
-    if UsedPlusSettings then
-        local value = UsedPlusSettingsMenuExtension.ranges.maxListingsValues[state]
-        UsedPlusSettings:set("maxListingsPerFarm", value)
-    end
-end
+-- v2.0.0: REMOVED - maxListings handler (setting removed from UI)
 
 function UsedPlusSettingsMenuExtension:onOfferExpiryChanged(state)
     if UsedPlusSettings then
@@ -647,6 +739,14 @@ function UsedPlusSettingsMenuExtension:onBrandBonusChanged(state)
     if UsedPlusSettings then
         local value = UsedPlusSettingsMenuExtension.ranges.brandBonusValues[state]
         UsedPlusSettings:set("brandLoyaltyBonus", value)
+    end
+end
+
+-- v2.0.0: NEW - Bank Interest Rate
+function UsedPlusSettingsMenuExtension:onBankInterestRateChanged(state)
+    if UsedPlusSettings then
+        local value = UsedPlusSettingsMenuExtension.ranges.bankInterestRateValues[state]
+        UsedPlusSettings:set("bankInterestRate", value)
     end
 end
 

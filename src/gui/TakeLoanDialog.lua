@@ -309,8 +309,19 @@ function TakeLoanDialog:recalculateSelectedCollateral()
 end
 
 --[[
+    v2.0.0: Helper function to check if credit system is enabled
+]]
+function TakeLoanDialog.isCreditSystemEnabled()
+    if UsedPlusSettings and UsedPlusSettings.get then
+        return UsedPlusSettings:get("enableCreditSystem") ~= false
+    end
+    return true  -- Default to enabled
+end
+
+--[[
      Calculate credit-based parameters
      Uses UsedPlus CreditScore system with stricter loan limits
+     v2.0.0: Respects enableCreditSystem setting - uses defaults when disabled
 
      Credit affects:
      1. Interest rate (higher rate for lower scores)
@@ -320,7 +331,9 @@ end
 function TakeLoanDialog:calculateCreditParameters()
     -- Get credit score and tier level
     local creditLevel = 3  -- Default to Fair
-    if CreditScore then
+    local creditEnabled = TakeLoanDialog.isCreditSystemEnabled()
+
+    if creditEnabled and CreditScore then
         self.creditScore = CreditScore.calculate(self.farmId)
         self.creditRating, creditLevel = CreditScore.getRating(self.creditScore)
 
@@ -332,6 +345,7 @@ function TakeLoanDialog:calculateCreditParameters()
         -- Clamp interest rate (cash loans are riskier, so higher floor)
         self.interestRate = math.max(0.05, math.min(0.18, self.interestRate))
     else
+        -- Credit system disabled - use defaults
         self.creditScore = 650
         self.creditRating = "Fair"
         self.interestRate = 0.08
@@ -451,13 +465,22 @@ end
 --[[
      Update all UI elements
      Refactored to use UIHelper for consistent formatting and color coding
+     v2.0.0: Respects enableCreditSystem setting - hides credit section when disabled
 ]]
 function TakeLoanDialog:updateDisplay()
-    -- Credit info - score only (rating shown in table with highlighting)
-    UIHelper.Credit.display(self.creditScoreText, nil, self.creditScore)
+    local creditEnabled = TakeLoanDialog.isCreditSystemEnabled()
 
-    -- Highlight the user's current credit tier in the rating table
-    self:highlightCreditTier()
+    -- v2.0.0: Hide credit section when credit system disabled
+    if self.creditSection then
+        self.creditSection:setVisible(creditEnabled)
+    end
+
+    -- Credit info - score only (rating shown in table with highlighting)
+    if creditEnabled then
+        UIHelper.Credit.display(self.creditScoreText, nil, self.creditScore)
+        -- Highlight the user's current credit tier in the rating table
+        self:highlightCreditTier()
+    end
 
     -- Interest rate (orange = cost)
     UIHelper.Finance.displayInterestRate(self.interestRateText, self.interestRate)

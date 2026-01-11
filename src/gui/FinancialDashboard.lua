@@ -33,6 +33,16 @@ function FinancialDashboard.new(target, custom_mt, i18n)
 end
 
 --[[
+    v2.0.0: Helper function to check if credit system is enabled
+]]
+function FinancialDashboard.isCreditSystemEnabled()
+    if UsedPlusSettings and UsedPlusSettings.get then
+        return UsedPlusSettings:get("enableCreditSystem") ~= false
+    end
+    return true  -- Default to enabled
+end
+
+--[[
      Called when dialog opens
 ]]
 function FinancialDashboard:onOpen()
@@ -60,7 +70,17 @@ function FinancialDashboard:updateDashboard()
         return
     end
 
-    self:updateCreditScoreSection(farm)
+    -- v2.0.0: Hide credit section when credit system is disabled
+    local creditEnabled = FinancialDashboard.isCreditSystemEnabled()
+    if self.creditScoreSection then
+        self.creditScoreSection:setVisible(creditEnabled)
+    end
+
+    -- Only update credit section if enabled
+    if creditEnabled then
+        self:updateCreditScoreSection(farm)
+    end
+
     self:updateObligationsSection(farm)
     self:updateDebtRatioSection(farm)
     self:updateUpcomingPayments(farm)
@@ -269,8 +289,10 @@ end
 --[[
      Update lifetime statistics
      Refactored to use UIHelper for formatting and colors
+     v2.0.0: Credit history stats only shown when credit system enabled
 ]]
 function FinancialDashboard:updateStatistics(farm)
+    local creditEnabled = FinancialDashboard.isCreditSystemEnabled()
     local lifetimeFinancedTotal = 0
     local lifetimeInterestTotal = 0
     local completedDeals = 0
@@ -289,10 +311,10 @@ function FinancialDashboard:updateStatistics(farm)
         end
     end
 
-    -- Credit history summary
+    -- Credit history summary (only if credit system enabled)
     local onTime = 0
     local missed = 0
-    if CreditHistory then
+    if creditEnabled and CreditHistory then
         local summary = CreditHistory.getSummary(self.farmId)
         onTime = summary.paymentsOnTime or 0
         missed = summary.paymentsMissed or 0
@@ -305,11 +327,16 @@ function FinancialDashboard:updateStatistics(farm)
 
     -- Display counts
     UIHelper.Element.setText(self.dealsCompleted, tostring(completedDeals))
-    UIHelper.Element.setTextWithColor(self.onTimePayments, tostring(onTime), UIHelper.Colors.MONEY_GREEN)
 
-    -- Missed payments: red if any, green if none
-    local missedColor = missed > 0 and UIHelper.Colors.CREDIT_POOR or UIHelper.Colors.CREDIT_EXCELLENT
-    UIHelper.Element.setTextWithColor(self.missedPayments, tostring(missed), missedColor)
+    -- v2.0.0: Only show payment stats if credit system enabled
+    if creditEnabled then
+        UIHelper.Element.setTextWithColor(self.onTimePayments, tostring(onTime), UIHelper.Colors.MONEY_GREEN)
+        local missedColor = missed > 0 and UIHelper.Colors.CREDIT_POOR or UIHelper.Colors.CREDIT_EXCELLENT
+        UIHelper.Element.setTextWithColor(self.missedPayments, tostring(missed), missedColor)
+    else
+        UIHelper.Element.setText(self.onTimePayments, "-")
+        UIHelper.Element.setText(self.missedPayments, "-")
+    end
 end
 
 --[[

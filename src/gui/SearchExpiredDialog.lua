@@ -13,6 +13,7 @@ local SearchExpiredDialog_mt = Class(SearchExpiredDialog, MessageDialog)
 SearchExpiredDialog.CONTROLS = {
     "titleText",
     "vehicleNameText",
+    "vehicleImage",  -- v2.1.2: Added vehicle preview image
     "searchTierText",
     "qualityTierText",
     "durationText",
@@ -92,6 +93,8 @@ end
 
 --[[
     Update display with current data
+    v2.1.2: Fixed property names (searchLevel not tier, qualityLevel not qualityTier)
+            Added vehicle preview image
 ]]
 function SearchExpiredDialog:updateDisplay()
     if self.searchData == nil then
@@ -105,21 +108,32 @@ function SearchExpiredDialog:updateDisplay()
         self.vehicleNameText:setText(search.storeItemName or "Unknown Vehicle")
     end
 
-    -- Search tier
+    -- v2.1.2: Vehicle preview image
+    if self.vehicleImage then
+        local storeItem = g_storeManager:getItemByXMLFilename(search.storeItemIndex)
+        if storeItem and storeItem.imageFilename then
+            self.vehicleImage:setImageFilename(storeItem.imageFilename)
+            self.vehicleImage:setVisible(true)
+        else
+            self.vehicleImage:setVisible(false)
+        end
+    end
+
+    -- Search tier (FIXED: search.searchLevel not search.tier)
     if self.searchTierText then
-        local tierInfo = UsedVehicleSearch.SEARCH_TIERS[search.tier] or {}
+        local tierInfo = UsedVehicleSearch.SEARCH_TIERS[search.searchLevel] or {}
         self.searchTierText:setText(tierInfo.name or "Unknown")
     end
 
-    -- Quality tier
+    -- Quality tier (FIXED: search.qualityLevel not search.qualityTier)
     if self.qualityTierText then
-        local qualityInfo = UsedVehicleSearch.QUALITY_TIERS[search.qualityTier] or {}
+        local qualityInfo = UsedVehicleSearch.QUALITY_TIERS[search.qualityLevel] or {}
         self.qualityTierText:setText(qualityInfo.name or "Any")
     end
 
-    -- Duration
+    -- Duration (FIXED: search.searchLevel not search.tier)
     if self.durationText then
-        local tierInfo = UsedVehicleSearch.SEARCH_TIERS[search.tier] or {}
+        local tierInfo = UsedVehicleSearch.SEARCH_TIERS[search.searchLevel] or {}
         local months = tierInfo.maxMonths or 1
         self.durationText:setText(string.format("%d month%s", months, months == 1 and "" or "s"))
     end

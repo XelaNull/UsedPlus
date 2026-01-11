@@ -54,6 +54,16 @@ RepairFinanceDialog.TERM_OPTIONS = {3, 6, 12, 18, 24}
 RepairFinanceDialog.DOWN_PAYMENT_OPTIONS = {0, 5, 10, 15, 20, 25, 30, 40, 50}
 
 --[[
+    v2.0.0: Helper function to check if credit system is enabled
+]]
+function RepairFinanceDialog.isCreditSystemEnabled()
+    if UsedPlusSettings and UsedPlusSettings.get then
+        return UsedPlusSettings:get("enableCreditSystem") ~= false
+    end
+    return true  -- Default to enabled
+end
+
+--[[
     Get available down payment options based on settings minimum
     @return filtered table of down payment percentages
 ]]
@@ -156,9 +166,11 @@ function RepairFinanceDialog:setData(vehicle, farmId, repairCost, repairPercent,
         and g_i18n:getText("usedplus_rf_repaintCost") or g_i18n:getText("usedplus_rf_repairCost")
     UIHelper.Element.setText(self.repairCostText, costLabel .. " " .. UIHelper.Text.formatMoney(self.repairCost))
 
-    -- Get credit score
-    if CreditScore then
+    -- Get credit score (only if credit system enabled)
+    if RepairFinanceDialog.isCreditSystemEnabled() and CreditScore then
         self.creditScore = CreditScore.calculate(farmId)
+    else
+        self.creditScore = 650  -- Default
     end
 
     self.isDataSet = true
@@ -167,10 +179,12 @@ end
 
 --[[
      Check credit qualification and minimum amount, update UI
+     v2.0.0: Respects enableCreditSystem setting
 ]]
 function RepairFinanceDialog:updateCreditStatus()
     self.canFinanceRepair = true
     local warningMsg = nil
+    local creditEnabled = RepairFinanceDialog.isCreditSystemEnabled()
 
     -- Check minimum financing amount first
     if FinanceCalculations and FinanceCalculations.meetsMinimumAmount then
@@ -182,8 +196,8 @@ function RepairFinanceDialog:updateCreditStatus()
         end
     end
 
-    -- Then check credit score (only if amount check passed)
-    if self.canFinanceRepair and CreditScore and CreditScore.canFinance then
+    -- Then check credit score (only if credit system enabled and amount check passed)
+    if creditEnabled and self.canFinanceRepair and CreditScore and CreditScore.canFinance then
         local canFinance, minRequired, currentScore = CreditScore.canFinance(self.farmId, "REPAIR")
         if not canFinance then
             self.canFinanceRepair = false
@@ -246,7 +260,7 @@ function RepairFinanceDialog:updatePreview()
     -- Calculate interest rate based on credit score
     local baseRate = 0.08  -- 8% base
     local rateAdj = 0
-    if CreditScore then
+    if RepairFinanceDialog.isCreditSystemEnabled() and CreditScore then
         rateAdj = CreditScore.getInterestAdjustment(self.creditScore) or 0
     end
     self.interestRate = (baseRate + (rateAdj / 100)) * 100  -- Convert to percentage display
@@ -271,8 +285,19 @@ function RepairFinanceDialog:updatePreview()
     UIHelper.Element.setText(self.downPaymentDisplayText, UIHelper.Text.formatMoney(downPayment))
     UIHelper.Element.setText(self.dueTodayText, UIHelper.Text.formatMoney(downPayment))
 
-    -- Credit score with color
-    UIHelper.Credit.display(self.creditScoreText, self.creditRatingText, self.creditScore)
+    -- v2.0.0: Credit score display (only if credit system enabled)
+    if RepairFinanceDialog.isCreditSystemEnabled() then
+        UIHelper.Credit.display(self.creditScoreText, self.creditRatingText, self.creditScore)
+        UIHelper.Element.setVisible(self.creditScoreText, true)
+        if self.creditRatingText then
+            UIHelper.Element.setVisible(self.creditRatingText, true)
+        end
+    else
+        UIHelper.Element.setVisible(self.creditScoreText, false)
+        if self.creditRatingText then
+            UIHelper.Element.setVisible(self.creditRatingText, false)
+        end
+    end
 end
 
 --[[

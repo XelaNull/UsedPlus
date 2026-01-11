@@ -29,7 +29,7 @@
                 <!-- Two-column container: image left, text right -->
                 <GuiElement profile="rfVehiclePreviewContainer" position="0px -28px">
                     <!-- IMAGE: Centered in left half, Y=42px moves up for proper display -->
-                    <Bitmap profile="rfVehicleImage" id="vehicleImageElement" position="-185px 42px"/>
+                    <Bitmap profile="rfVehicleImage" id="vehicleImageElement" position="-185px 75px"/>
 
                     <!-- TEXT: Left-aligned in right half -->
                     <Text profile="rfVehicleName" id="vehicleNameText" position="175px -15px" text=""/>
@@ -177,9 +177,10 @@
         </Profile>
 
         <!-- ========== VEHICLE IMAGE ========== -->
-        <!-- EMPIRICALLY TESTED: 210x140px displays store images without stretching -->
-        <Profile name="rfVehicleImage" extends="fs25_vehiclesDetailsImage" with="anchorTopCenter">
-            <size value="210px 140px"/>
+        <!-- Following RVB pattern: baseReference + square size + noSlice -->
+        <Profile name="rfVehicleImage" extends="baseReference" with="anchorTopCenter">
+            <size value="180px 180px"/>
+            <imageSliceId value="noSlice"/>
         </Profile>
 
         <!-- ========== VEHICLE INFO (right column) ========== -->

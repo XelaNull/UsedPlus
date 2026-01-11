@@ -21,6 +21,14 @@
 
             <!-- HEADER - Centered -->
             <Text profile="fs25_dialogTitle" position="0px -20px" text="$l10n_usedplus_cr_title"/>
+
+            <!-- v2.0.0: Disabled message when credit system is off -->
+            <GuiElement id="disabledMessageContainer" position="0px -300px">
+                <Text profile="crDisabledMessage" id="disabledMessageText" position="0px 0px" text="$l10n_usedplus_cr_creditDisabled"/>
+                <Text profile="crDisabledHint" id="disabledHintText" position="0px -40px" text="$l10n_usedplus_cr_creditDisabledHint"/>
+            </GuiElement>
+            <!-- v2.0.0: All credit content wrapped in container for show/hide -->
+            <GuiElement id="creditContentContainer" position="0px 0px">
             <Text profile="crFarmName" id="farmNameText" position="0px -50px" text=""/>
             <Text profile="crReportDate" id="reportDateText" position="0px -72px" text=""/>
 
@@ -144,6 +152,7 @@
                 <Text profile="crTipText" id="tipText2" position="0px -46px" text="$l10n_usedplus_cr_tip2"/>
                 <Text profile="crTipText" id="tipText3" position="0px -64px" text="$l10n_usedplus_cr_tip3"/>
             </GuiElement>
+            </GuiElement><!-- End creditContentContainer -->
 
         </GuiElement>
 
@@ -154,6 +163,22 @@
     </GuiElement>
 
     <GUIProfiles>
+        <!-- ========== DISABLED MESSAGE PROFILES ========== -->
+        <Profile name="crDisabledMessage" extends="fs25_textDefault" with="anchorTopCenter">
+            <size value="700px 40px"/>
+            <textSize value="24px"/>
+            <textBold value="true"/>
+            <textColor value="0.8 0.6 0.2 1"/>
+            <textAlignment value="center"/>
+        </Profile>
+
+        <Profile name="crDisabledHint" extends="fs25_textDefault" with="anchorTopCenter">
+            <size value="700px 24px"/>
+            <textSize value="14px"/>
+            <textColor value="0.5 0.5 0.5 1"/>
+            <textAlignment value="center"/>
+        </Profile>
+
         <!-- ========== SECTION CONTAINERS ========== -->
         <!-- Left Column Sections (380px wide) -->
         <Profile name="crScoreSection" extends="emptyPanel" with="anchorTopCenter">

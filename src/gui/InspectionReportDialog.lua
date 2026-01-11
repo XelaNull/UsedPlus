@@ -8,6 +8,8 @@
     Responsibilities:
     - Display vehicle info and price
     - Show reliability ratings (engine, hydraulic, electrical)
+    - v2.1.0: Show RVB parts breakdown when data available
+    - v2.1.0: Show UYT tire conditions when data available
     - Display inspector notes based on condition
     - Allow player to proceed with purchase or cancel
 ]]
@@ -187,6 +189,13 @@ function InspectionReportDialog:updateDisplay()
             self.mechanicQuoteText:setText('"' .. g_i18n:getText("usedplus_inspection_noData") .. '"')
         end
     end
+
+    -- v2.1.2: Integrate RVB parts INTO mechanical assessment (not separate section)
+    -- If RVB data exists, show detailed breakdown under Engine/Electrical
+    self:displayIntegratedRVBData(listing)
+
+    -- v2.1.0: Display tire conditions if data exists
+    self:displayTireConditions(listing)
 
     -- Calculate overall condition and costs
     local avgReliability = (engineRel + hydraulicRel + electricalRel) / 3
@@ -382,4 +391,168 @@ function InspectionReportDialog:onClickCancel()
     self:onClickDecline()
 end
 
-UsedPlus.logInfo("InspectionReportDialog loaded")
+--[[
+    v2.1.2: Display INTEGRATED RVB data within Mechanical Assessment
+    Instead of a separate section, shows RVB parts as sub-components under Engine/Electrical
+
+    Layout when RVB data exists:
+    - Engine section shows: Engine Core, Thermostat
+    - Electrical section shows: Generator, Battery, Starter, Glow Plug
+    - Hydraulic remains as-is (RVB doesn't track it)
+
+    The main Engine/Hydraulic/Electrical percentages are now DERIVED from RVB parts
+    (see UsedVehicleManager.generateUsedVehicleListingFromData)
+]]
+function InspectionReportDialog:displayIntegratedRVBData(listing)
+    local rvbData = listing.rvbPartsData
+    local hasRvbData = rvbData ~= nil and next(rvbData) ~= nil
+
+    -- Hide the old separate RVB section (if it exists in XML)
+    if self.rvbSectionContainer then
+        self.rvbSectionContainer:setVisible(false)
+    end
+
+    -- Show/hide the integrated sub-component elements
+    if self.engineSubComponentsContainer then
+        self.engineSubComponentsContainer:setVisible(hasRvbData)
+    end
+    if self.electricalSubComponentsContainer then
+        self.electricalSubComponentsContainer:setVisible(hasRvbData)
+    end
+
+    if not hasRvbData then
+        return
+    end
+
+    -- Display Engine sub-components (Engine Core + Thermostat)
+    local engineParts = {
+        { key = "ENGINE", element = "engineCoreText", label = "engineCoreLabel" },
+        { key = "THERMOSTAT", element = "thermostatText", label = "thermostatLabel" }
+    }
+    for _, part in ipairs(engineParts) do
+        local element = self[part.element]
+        if element then
+            local partData = rvbData[part.key]
+            if partData then
+                local life = partData.life or 1.0
+                local lifePercent = math.floor(life * 100)
+                local r, g, b = self:getConditionColor(life)
+                element:setText(string.format("%d%%", lifePercent))
+                element:setTextColor(r, g, b, 1)
+            else
+                element:setText("--")
+                element:setTextColor(0.5, 0.5, 0.5, 1)
+            end
+        end
+    end
+
+    -- Display Electrical sub-components (Generator, Battery, Starter, Glow Plug)
+    local electricalParts = {
+        { key = "GENERATOR", element = "generatorText" },
+        { key = "BATTERY", element = "batteryText" },
+        { key = "SELFSTARTER", element = "starterText" },
+        { key = "GLOWPLUG", element = "glowPlugText" }
+    }
+    for _, part in ipairs(electricalParts) do
+        local element = self[part.element]
+        if element then
+            local partData = rvbData[part.key]
+            if partData then
+                local life = partData.life or 1.0
+                local lifePercent = math.floor(life * 100)
+                local r, g, b = self:getConditionColor(life)
+                element:setText(string.format("%d%%", lifePercent))
+                element:setTextColor(r, g, b, 1)
+            else
+                element:setText("--")
+                element:setTextColor(0.5, 0.5, 0.5, 1)
+            end
+        end
+    end
+
+    UsedPlus.logDebug("InspectionReportDialog: Displayed integrated RVB component data")
+end
+
+--[[
+    DEPRECATED: Old separate RVB section display
+    Kept for backwards compatibility but now hidden - use displayIntegratedRVBData instead
+]]
+function InspectionReportDialog:displayRVBPartsData(listing)
+    -- Redirect to integrated display
+    self:displayIntegratedRVBData(listing)
+end
+
+--[[
+    v2.1.0: Display tire conditions
+    Shows per-wheel conditions when tireConditions exists in listing
+]]
+function InspectionReportDialog:displayTireConditions(listing)
+    -- Check if listing has tire data
+    local tireData = listing.tireConditions
+    local hasTireData = tireData ~= nil and (tireData.FL or tireData.FR or tireData.RL or tireData.RR)
+
+    -- Toggle visibility of tire section
+    if self.tireSectionContainer then
+        self.tireSectionContainer:setVisible(hasTireData)
+    end
+
+    if not hasTireData then
+        return
+    end
+
+    -- Display each tire
+    local tireElements = {
+        { key = "FL", element = "tireFLText" },
+        { key = "FR", element = "tireFRText" },
+        { key = "RL", element = "tireRLText" },
+        { key = "RR", element = "tireRRText" }
+    }
+
+    local worstCondition = 1.0
+    local worstTire = nil
+
+    for _, tireInfo in ipairs(tireElements) do
+        local element = self[tireInfo.element]
+        if element then
+            local condition = tireData[tireInfo.key] or 1.0
+            local conditionPercent = math.floor(condition * 100)
+            local r, g, b = self:getConditionColor(condition)
+
+            element:setText(string.format("%d%%", conditionPercent))
+            element:setTextColor(r, g, b, 1)
+
+            if condition < worstCondition then
+                worstCondition = condition
+                worstTire = tireInfo.key
+            end
+        end
+    end
+
+    -- Display worst tire indicator
+    if self.tireWorstText and worstTire then
+        local worstPercent = math.floor(worstCondition * 100)
+        local r, g, b = self:getConditionColor(worstCondition)
+        self.tireWorstText:setText(string.format("%s: %d%%", worstTire, worstPercent))
+        self.tireWorstText:setTextColor(r, g, b, 1)
+    end
+
+    UsedPlus.logDebug("InspectionReportDialog: Displayed tire conditions")
+end
+
+--[[
+    Helper: Get color based on condition value
+    Green (good) -> Yellow -> Orange -> Red (critical)
+]]
+function InspectionReportDialog:getConditionColor(condition)
+    if condition >= 0.75 then
+        return 0.3, 1, 0.4  -- Green
+    elseif condition >= 0.50 then
+        return 1, 0.85, 0.2  -- Gold/Yellow
+    elseif condition >= 0.30 then
+        return 1, 0.6, 0.3  -- Orange
+    else
+        return 1, 0.4, 0.4  -- Red
+    end
+end
+
+UsedPlus.logInfo("InspectionReportDialog loaded (v2.1.0 - RVB/UYT holistic inspection)")

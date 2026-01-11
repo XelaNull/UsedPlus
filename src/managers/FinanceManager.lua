@@ -33,6 +33,10 @@ function FinanceManager.new()
     -- Statistics tracking per farm
     self.statisticsByFarm = {}
 
+    -- Vanilla bank loan multipliers per farm (bridges vanilla loan system with UsedPlus)
+    -- Allows players to pay extra toward vanilla loan principal each month
+    self.vanillaLoanMultipliers = {}
+
     -- ID generation
     self.nextDealId = 1
 
@@ -104,6 +108,28 @@ function FinanceManager:getStatistic(farmId, statName)
 end
 
 --[[
+    Get vanilla loan payment multiplier for a farm
+    @param farmId - Farm ID
+    @return multiplier value (defaults to 1.0)
+]]
+function FinanceManager:getVanillaLoanMultiplier(farmId)
+    return self.vanillaLoanMultipliers[farmId] or 1.0
+end
+
+--[[
+    Set vanilla loan payment multiplier for a farm
+    When > 1.0, extra payment goes toward principal each month
+    @param farmId - Farm ID
+    @param multiplier - Payment multiplier (1.0 to 5.0)
+]]
+function FinanceManager:setVanillaLoanMultiplier(farmId, multiplier)
+    if multiplier and multiplier >= 1.0 and multiplier <= 5.0 then
+        self.vanillaLoanMultipliers[farmId] = multiplier
+        UsedPlus.logDebug(string.format("Set vanilla loan multiplier for farm %d to %.1fx", farmId, multiplier))
+    end
+end
+
+--[[
     Initialize manager after mission loads
     Subscribe to game events
 ]]
@@ -130,6 +156,67 @@ function FinanceManager:onPeriodChanged()
     -- Process payments for each farm
     for farmId, deals in pairs(self.dealsByFarm) do
         self:processMonthlyPaymentsForFarm(farmId, deals)
+    end
+
+    -- Process vanilla bank loan extra payments (bridges vanilla loan system)
+    self:processVanillaLoanExtraPayments()
+end
+
+--[[
+    Process extra payments for vanilla bank loans
+    When a player sets a multiplier > 1.0 on the vanilla loan, we pay the extra toward principal.
+    The vanilla game handles its normal interest payment - we just add the principal acceleration.
+]]
+function FinanceManager:processVanillaLoanExtraPayments()
+    local vanillaInterestRate = 0.10  -- Vanilla uses ~10% APY
+
+    -- Process for each farm that has a vanilla loan multiplier set
+    for farmId, multiplier in pairs(self.vanillaLoanMultipliers) do
+        if multiplier > 1.0 then
+            local farm = g_farmManager:getFarmById(farmId)
+            if farm and farm.loan and farm.loan > 0 then
+                -- Calculate what vanilla's monthly interest cost would be
+                local monthlyInterestCost = farm.loan * vanillaInterestRate / 12
+
+                -- Calculate extra payment based on multiplier
+                -- Extra = monthlyInterest * (multiplier - 1.0)
+                local extraPayment = math.floor(monthlyInterestCost * (multiplier - 1.0))
+
+                -- Don't pay more than the remaining balance
+                extraPayment = math.min(extraPayment, farm.loan)
+
+                -- Check if player can afford the extra payment
+                if farm.money >= extraPayment and extraPayment > 0 then
+                    -- Deduct from player's account
+                    g_currentMission:addMoney(-extraPayment, farmId, MoneyType.OTHER, true, true)
+
+                    -- Reduce loan principal
+                    local oldBalance = farm.loan
+                    farm.loan = farm.loan - extraPayment
+
+                    UsedPlus.logDebug(string.format(
+                        "Vanilla loan extra payment: Farm %d paid %d toward principal (%.1fx). Balance: %d -> %d",
+                        farmId, extraPayment, multiplier, oldBalance, farm.loan
+                    ))
+
+                    -- Notify player if loan is now paid off
+                    if farm.loan <= 0 then
+                        farm.loan = 0
+                        g_currentMission:addIngameNotification(
+                            FSBaseMission.INGAME_NOTIFICATION_OK,
+                            g_i18n:getText("usedplus_notification_vanillaLoanPaidOff") or "Bank loan paid off!"
+                        )
+                        -- Clear multiplier since loan is gone
+                        self.vanillaLoanMultipliers[farmId] = nil
+                    end
+                else
+                    UsedPlus.logDebug(string.format(
+                        "Vanilla loan extra payment skipped: Farm %d has insufficient funds (%d needed, %d available)",
+                        farmId, extraPayment, farm.money or 0
+                    ))
+                end
+            end
+        end
     end
 end
 
@@ -699,6 +786,17 @@ function FinanceManager:saveToXMLFile(missionInfo)
             statsIndex = statsIndex + 1
         end
 
+        -- Save vanilla loan multipliers (bridge to vanilla loan system)
+        local vanillaIndex = 0
+        for farmId, multiplier in pairs(self.vanillaLoanMultipliers) do
+            if multiplier > 1.0 then  -- Only save non-default multipliers
+                local vanillaKey = string.format("usedPlus.vanillaLoanMultipliers.farm(%d)", vanillaIndex)
+                xmlFile:setInt(vanillaKey .. "#farmId", farmId)
+                xmlFile:setFloat(vanillaKey .. "#multiplier", multiplier)
+                vanillaIndex = vanillaIndex + 1
+            end
+        end
+
         xmlFile:save()
         xmlFile:delete()
 
@@ -789,6 +887,16 @@ function FinanceManager:loadFromXMLFile(missionInfo)
                 stats.dealsCompleted = xmlFile:getInt(statsKey .. "#dealsCompleted", 0)
                 stats.totalAmountFinanced = xmlFile:getFloat(statsKey .. "#totalAmountFinanced", 0)
                 stats.totalInterestPaid = xmlFile:getFloat(statsKey .. "#totalInterestPaid", 0)
+            end
+        end)
+
+        -- Load vanilla loan multipliers (bridge to vanilla loan system)
+        xmlFile:iterate("usedPlus.vanillaLoanMultipliers.farm", function(_, vanillaKey)
+            local farmId = xmlFile:getInt(vanillaKey .. "#farmId")
+            local multiplier = xmlFile:getFloat(vanillaKey .. "#multiplier", 1.0)
+            if farmId and multiplier > 1.0 then
+                self.vanillaLoanMultipliers[farmId] = multiplier
+                UsedPlus.logDebug(string.format("Loaded vanilla loan multiplier for farm %d: %.1fx", farmId, multiplier))
             end
         end)
 

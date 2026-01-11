@@ -22,10 +22,36 @@ function CreditReportDialog.new(target, custom_mt, i18n)
 end
 
 --[[
+    v2.0.0: Helper function to check if credit system is enabled
+]]
+function CreditReportDialog.isCreditSystemEnabled()
+    if UsedPlusSettings and UsedPlusSettings.get then
+        return UsedPlusSettings:get("enableCreditSystem") ~= false
+    end
+    return true  -- Default to enabled
+end
+
+--[[
      Called when dialog opens
 ]]
 function CreditReportDialog:onOpen()
     CreditReportDialog:superClass().onOpen(self)
+
+    -- v2.0.0: Check if credit system is enabled
+    local creditEnabled = CreditReportDialog.isCreditSystemEnabled()
+
+    -- Toggle visibility between credit content and disabled message
+    if self.creditContentContainer then
+        self.creditContentContainer:setVisible(creditEnabled)
+    end
+    if self.disabledMessageContainer then
+        self.disabledMessageContainer:setVisible(not creditEnabled)
+    end
+
+    -- If disabled, no need to update report content
+    if not creditEnabled then
+        return
+    end
 
     -- Get current farm
     local farm = g_farmManager:getFarmByUserId(g_currentMission.playerUserId)

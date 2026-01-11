@@ -28,7 +28,7 @@
                 <!-- Flat layout: image left, text right (matching UsedSearchDialog pattern) -->
                 <GuiElement profile="rpVehicleRow" position="0px -28px">
                     <!-- IMAGE: Centered in left half, Y=42px moves up for proper display -->
-                    <Bitmap profile="rpVehicleImage" id="vehicleImageElement" position="-185px 42px"/>
+                    <Bitmap profile="rpVehicleImage" id="vehicleImageElement" position="-185px 75px"/>
 
                     <!-- TEXT: Right half -->
                     <Text profile="rpVehicleName" id="vehicleNameText" position="120px -10px" text=""/>
@@ -194,9 +194,10 @@
         </Profile>
 
         <!-- ========== VEHICLE IMAGE (centered in left column) ========== -->
-        <!-- EMPIRICALLY TESTED: 210x140px displays store images without stretching -->
-        <Profile name="rpVehicleImage" extends="fs25_vehiclesDetailsImage" with="anchorTopCenter">
-            <size value="210px 140px"/>
+        <!-- Following RVB pattern: baseReference + square size + noSlice -->
+        <Profile name="rpVehicleImage" extends="baseReference" with="anchorTopCenter">
+            <size value="180px 180px"/>
+            <imageSliceId value="noSlice"/>
         </Profile>
 
         <!-- ========== VEHICLE NAME (left-aligned in right column) ========== -->

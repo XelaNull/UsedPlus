@@ -1117,4 +1117,334 @@ function ModCompatibility.getFarmlandCount(farmId)
     return count
 end
 
-UsedPlus.logInfo("ModCompatibility utility loaded (v1.8.1 - Extended compatibility + Integration)")
+--============================================================================
+-- USED VEHICLE SPAWN INITIALIZATION
+-- Apply pre-generated RVB/UYT data to newly spawned used vehicles
+--============================================================================
+
+--[[
+    Initialize RVB parts data on a spawned used vehicle
+    Called after vehicle purchase to apply the inspection-revealed part conditions
+
+    @param vehicle - The spawned vehicle
+    @param rvbPartsData - Table with part data from listing.rvbPartsData
+    @return boolean - true if initialization successful
+]]
+function ModCompatibility.initializeRVBPartsFromListing(vehicle, rvbPartsData)
+    if not ModCompatibility.rvbInstalled then
+        UsedPlus.logDebug("initializeRVBPartsFromListing: RVB not installed, skipping")
+        return false
+    end
+
+    if vehicle == nil or rvbPartsData == nil then
+        UsedPlus.logWarn("initializeRVBPartsFromListing: Invalid vehicle or data")
+        return false
+    end
+
+    local rvb = vehicle.spec_faultData
+    if not rvb or not rvb.parts then
+        UsedPlus.logDebug("initializeRVBPartsFromListing: Vehicle has no RVB spec_faultData")
+        return false
+    end
+
+    -- Apply each part's operating hours from the listing data
+    -- RVB calculates life from: 1 - (operatingHours / tmp_lifetime)
+    local partsApplied = 0
+
+    for partKey, partData in pairs(rvbPartsData) do
+        local rvbPart = rvb.parts[partKey]
+        if rvbPart then
+            -- Set the operating hours to match the pre-generated life
+            -- If RVB's lifetime differs from ours, recalculate hours
+            local rvbLifetime = rvbPart.tmp_lifetime or partData.lifetime or 1000
+            local targetLife = partData.life or 1.0
+
+            -- hours = (1 - life) * lifetime
+            local targetHours = math.floor((1 - targetLife) * rvbLifetime)
+            rvbPart.operatingHours = targetHours
+
+            UsedPlus.logDebug(string.format("  RVB %s: Set hours to %d (life %.0f%%)",
+                partKey, targetHours, targetLife * 100))
+
+            partsApplied = partsApplied + 1
+        end
+    end
+
+    UsedPlus.logInfo(string.format("initializeRVBPartsFromListing: Applied %d RVB parts to vehicle",
+        partsApplied))
+
+    return partsApplied > 0
+end
+
+--[[
+    Initialize UYT tire conditions on a spawned used vehicle
+    Called after vehicle purchase to apply the inspection-revealed tire conditions
+
+    @param vehicle - The spawned vehicle
+    @param tireConditions - Table with conditions from listing.tireConditions (FL, FR, RL, RR)
+    @return boolean - true if initialization successful
+]]
+function ModCompatibility.initializeTiresFromListing(vehicle, tireConditions)
+    if vehicle == nil or tireConditions == nil then
+        UsedPlus.logWarn("initializeTiresFromListing: Invalid vehicle or data")
+        return false
+    end
+
+    -- Apply to UsedPlus native tire tracking
+    local spec = vehicle.spec_usedPlusMaintenance
+    if spec and spec.tires then
+        local tireMapping = { "FL", "FR", "RL", "RR" }
+        for i, tireKey in ipairs(tireMapping) do
+            if spec.tires[i] and tireConditions[tireKey] then
+                spec.tires[i].condition = tireConditions[tireKey]
+                UsedPlus.logDebug(string.format("  Tire %d (%s): Set condition to %.0f%%",
+                    i, tireKey, tireConditions[tireKey] * 100))
+            end
+        end
+    end
+
+    -- If UYT is installed, try to set tire wear there too
+    if ModCompatibility.uytInstalled and UseYourTyres then
+        -- UYT stores wear (inverse of condition) per wheel
+        if vehicle.spec_wheels and vehicle.spec_wheels.wheels then
+            local wheelCount = #vehicle.spec_wheels.wheels
+            local tireKeys = { "FL", "FR", "RL", "RR" }
+
+            for i = 1, math.min(wheelCount, 4) do
+                local wheel = vehicle.spec_wheels.wheels[i]
+                local condition = tireConditions[tireKeys[i]] or 1.0
+                local wear = 1.0 - condition
+
+                -- Try to set UYT wear if the API is available
+                if wheel and UseYourTyres.setWearAmount then
+                    UseYourTyres.setWearAmount(wheel, wear)
+                    UsedPlus.logDebug(string.format("  UYT wheel %d: Set wear to %.0f%%",
+                        i, wear * 100))
+                end
+            end
+        end
+    end
+
+    UsedPlus.logInfo("initializeTiresFromListing: Applied tire conditions to vehicle")
+    return true
+end
+
+--[[
+    Apply all listing data to a spawned used vehicle
+    Master function that applies RVB parts, tires, and UsedPlus maintenance data
+
+    @param vehicle - The spawned vehicle
+    @param listing - The listing data with rvbPartsData, tireConditions, usedPlusData
+]]
+function ModCompatibility.applyListingDataToVehicle(vehicle, listing)
+    if vehicle == nil or listing == nil then
+        UsedPlus.logWarn("applyListingDataToVehicle: Invalid vehicle or listing")
+        return
+    end
+
+    UsedPlus.logInfo(string.format("Applying listing data to spawned vehicle: %s",
+        listing.storeItemName or "Unknown"))
+
+    -- v2.1.0: ALWAYS store the data on the vehicle for persistence and deferred sync
+    -- This ensures the data survives saves and can be synced when RVB/UYT is installed later
+    local spec = vehicle.spec_usedPlusMaintenance
+    if spec and (listing.rvbPartsData or listing.tireConditions) then
+        if vehicle.storeListingData then
+            vehicle:storeListingData(listing.rvbPartsData, listing.tireConditions)
+        else
+            -- Fallback: directly store on spec
+            if listing.rvbPartsData then
+                spec.storedRvbPartsData = listing.rvbPartsData
+                spec.rvbDataSynced = ModCompatibility.rvbInstalled
+            end
+            if listing.tireConditions then
+                spec.storedTireConditions = listing.tireConditions
+                spec.tireDataSynced = ModCompatibility.uytInstalled
+            end
+        end
+        UsedPlus.logDebug("  Stored RVB/tire data on vehicle for persistence")
+    end
+
+    -- Apply RVB parts data if present (only if RVB installed)
+    if listing.rvbPartsData then
+        ModCompatibility.initializeRVBPartsFromListing(vehicle, listing.rvbPartsData)
+    end
+
+    -- Apply tire conditions if present
+    if listing.tireConditions then
+        ModCompatibility.initializeTiresFromListing(vehicle, listing.tireConditions)
+    end
+
+    -- Apply UsedPlus maintenance data if present
+    if listing.usedPlusData then
+        local spec = vehicle.spec_usedPlusMaintenance
+        if spec then
+            spec.engineReliability = listing.usedPlusData.engineReliability or spec.engineReliability
+            spec.hydraulicReliability = listing.usedPlusData.hydraulicReliability or spec.hydraulicReliability
+            spec.electricalReliability = listing.usedPlusData.electricalReliability or spec.electricalReliability
+            spec.workhorseLemonScale = listing.usedPlusData.workhorseLemonScale or spec.workhorseLemonScale
+
+            UsedPlus.logDebug(string.format("  UsedPlus maintenance: Engine=%.0f%%, Hydraulic=%.0f%%, Electrical=%.0f%%",
+                spec.engineReliability * 100,
+                spec.hydraulicReliability * 100,
+                spec.electricalReliability * 100))
+        end
+    end
+
+    -- Apply basic wear/damage from listing
+    if listing.damage and listing.damage > 0 then
+        if vehicle.setDamageAmount then
+            vehicle:setDamageAmount(listing.damage)
+            UsedPlus.logDebug(string.format("  Damage: Set to %.0f%%", listing.damage * 100))
+        end
+    end
+
+    if listing.wear and listing.wear > 0 then
+        if vehicle.setWearAmount then
+            vehicle:setWearAmount(listing.wear)
+            UsedPlus.logDebug(string.format("  Wear: Set to %.0f%%", listing.wear * 100))
+        end
+    end
+
+    if listing.operatingHours and listing.operatingHours > 0 then
+        if vehicle.setOperatingTime then
+            -- FS25 uses milliseconds for operating time
+            vehicle:setOperatingTime(listing.operatingHours * 3600 * 1000)
+            UsedPlus.logDebug(string.format("  Operating hours: Set to %d", listing.operatingHours))
+        end
+    end
+
+    UsedPlus.logInfo("applyListingDataToVehicle: Complete")
+
+    -- v2.2.0: Apply DNA-based lifetime multiplier to RVB parts
+    ModCompatibility.applyDNAToRVBLifetimes(vehicle)
+end
+
+--[[
+    v2.2.0: Apply initial DNA-based lifetime multiplier to all RVB parts
+    Called at vehicle purchase to set starting lifetimes based on workhorse/lemon DNA
+
+    DNA 0.0 (lemon):     0.6x lifetime = starts weaker, breaks down faster
+    DNA 0.5 (average):   1.0x lifetime = normal
+    DNA 1.0 (workhorse): 1.4x lifetime = starts stronger, lasts longer
+
+    @param vehicle - The vehicle to apply multiplier to
+    @return boolean - True if applied successfully
+]]
+function ModCompatibility.applyDNAToRVBLifetimes(vehicle)
+    if not vehicle then return false end
+    if not vehicle.isServer then return false end
+    if not ModCompatibility.rvbInstalled then return false end
+
+    local spec = vehicle.spec_usedPlusMaintenance
+    local rvb = vehicle.spec_faultData
+    if not spec or not rvb or not rvb.parts then return false end
+
+    local dna = spec.workhorseLemonScale or 0.5
+    local multiplier = 0.6 + (dna * 0.8)  -- Range: 0.6 to 1.4
+
+    spec.rvbLifetimeMultiplier = multiplier
+    spec.rvbLifetimesApplied = true
+
+    for partKey, part in pairs(rvb.parts) do
+        if part.tmp_lifetime then
+            part.tmp_lifetime = part.tmp_lifetime * multiplier
+        end
+    end
+
+    UsedPlus.logDebug(string.format("Applied DNA %.2f -> RVB lifetime multiplier %.2fx to %s",
+        dna, multiplier, vehicle:getName()))
+    return true
+end
+
+--[[
+    v2.2.0: Apply repair degradation to RVB parts
+    Called when RVB repair/service completes
+    Lemons lose more lifetime per repair, workhorses lose little/none
+
+    Legendary workhorses (DNA >= 0.90) are IMMUNE to repair degradation
+
+    @param vehicle - The vehicle being repaired
+]]
+function ModCompatibility.applyRVBRepairDegradation(vehicle)
+    if not vehicle then return end
+    if not vehicle.isServer then return end
+    if not ModCompatibility.rvbInstalled then return end
+
+    local spec = vehicle.spec_usedPlusMaintenance
+    local rvb = vehicle.spec_faultData
+    if not spec or not rvb or not rvb.parts then return end
+
+    local dna = spec.workhorseLemonScale or 0.5
+
+    -- Legendary workhorses (DNA >= 0.90) are immune to repair degradation
+    if dna >= 0.90 then
+        UsedPlus.logDebug(string.format("Legendary workhorse - no repair degradation for %s (DNA %.2f)",
+            vehicle:getName(), dna))
+        return
+    end
+
+    -- Degradation formula: 0-2% per repair based on DNA
+    local degradation = (1 - dna) * 0.02
+
+    for partKey, part in pairs(rvb.parts) do
+        if part.tmp_lifetime then
+            part.tmp_lifetime = part.tmp_lifetime * (1 - degradation)
+        end
+    end
+
+    -- Track cumulative degradation
+    spec.rvbTotalDegradation = (spec.rvbTotalDegradation or 0) + degradation
+    spec.rvbRepairCount = (spec.rvbRepairCount or 0) + 1
+
+    UsedPlus.logDebug(string.format("RVB repair degradation %.1f%% applied to %s (DNA %.2f, total %.1f%%)",
+        degradation * 100, vehicle:getName(), dna, spec.rvbTotalDegradation * 100))
+end
+
+--[[
+    v2.2.0: Apply breakdown degradation to RVB parts
+    Called when RVB fault/breakdown occurs
+    Everyone loses lifetime on breakdown, but lemons lose MORE
+
+    Legendary workhorses (DNA >= 0.95) take only 30% breakdown damage
+
+    @param vehicle - The vehicle with the breakdown
+    @param partKey - The RVB part that broke (ENGINE, BATTERY, etc.)
+]]
+function ModCompatibility.applyRVBBreakdownDegradation(vehicle, partKey)
+    if not vehicle then return end
+    if not vehicle.isServer then return end
+    if not ModCompatibility.rvbInstalled then return end
+
+    local spec = vehicle.spec_usedPlusMaintenance
+    local rvb = vehicle.spec_faultData
+    if not spec or not rvb or not rvb.parts then return end
+
+    local dna = spec.workhorseLemonScale or 0.5
+
+    -- Base degradation: 3% for everyone
+    -- Lemon bonus: 0-5% extra based on DNA
+    local baseDegradation = 0.03
+    local lemonBonus = (1 - dna) * 0.05
+    local totalDegradation = baseDegradation + lemonBonus
+
+    -- Legendary workhorses (DNA >= 0.95) take only 30% breakdown damage
+    if dna >= 0.95 then
+        totalDegradation = totalDegradation * 0.3
+    end
+
+    -- Apply to the specific RVB part that broke down
+    local part = rvb.parts[partKey]
+    if part and part.tmp_lifetime then
+        part.tmp_lifetime = part.tmp_lifetime * (1 - totalDegradation)
+    end
+
+    -- Track cumulative degradation
+    spec.rvbTotalDegradation = (spec.rvbTotalDegradation or 0) + totalDegradation
+    spec.rvbBreakdownCount = (spec.rvbBreakdownCount or 0) + 1
+
+    UsedPlus.logDebug(string.format("RVB breakdown degradation %.1f%% on %s for %s (DNA %.2f)",
+        totalDegradation * 100, partKey or "unknown", vehicle:getName(), dna))
+end
+
+UsedPlus.logInfo("ModCompatibility utility loaded (v2.2.0 - RVB/UYT Used Vehicle Integration + DNA Degradation)")

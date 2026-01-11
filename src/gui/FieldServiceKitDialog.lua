@@ -1,5 +1,5 @@
 --[[
-    FS25_UsedPlus - Field Service Kit Dialog
+    FS25_UsedPlus - Field Service Kit Dialog (OBD Scanner)
 
     Multi-step diagnosis minigame dialog for emergency field repairs.
     Steps:
@@ -8,10 +8,47 @@
     3. Results - Shows repair outcome and applies to vehicle
 
     v1.8.0 - Field Service Kit System
+    v2.0.0 - Full RVB/UYT cross-mod integration
+            - Shows individual RVB part statuses (Engine, Thermostat, Generator, etc.)
+            - Shows UYT tire wear breakdown per wheel
+            - Color-coded health indicators with fault/prefault warnings
+    v2.3.0 - Fixed button styling to use triple-element pattern (Bitmap + invisible Button + Text)
+            - Matches mod's perfected custom button style
+            - All dialogs now use consistent button pattern
+            - Added hover effect for diagnosis buttons
+            - Removed [A] [B] [C] [D] prefixes from options
+            - Redesigned results screen with prominent success/failure display
 ]]
 
 FieldServiceKitDialog = {}
 local FieldServiceKitDialog_mt = Class(FieldServiceKitDialog, MessageDialog)
+
+-- Registration pattern (same as other dialogs)
+FieldServiceKitDialog.instance = nil
+FieldServiceKitDialog.xmlPath = nil
+
+--[[
+    Register the dialog with g_gui
+    Must be called before the dialog can be shown
+]]
+function FieldServiceKitDialog.register()
+    if FieldServiceKitDialog.instance == nil then
+        UsedPlus.logInfo("FieldServiceKitDialog: Registering dialog")
+
+        -- Set XML path - use UsedPlus.MOD_DIR which persists after mod load
+        if FieldServiceKitDialog.xmlPath == nil then
+            FieldServiceKitDialog.xmlPath = UsedPlus.MOD_DIR .. "gui/FieldServiceKitDialog.xml"
+        end
+
+        UsedPlus.logInfo("FieldServiceKitDialog: Loading XML from: " .. tostring(FieldServiceKitDialog.xmlPath))
+
+        -- Create instance and load GUI
+        FieldServiceKitDialog.instance = FieldServiceKitDialog.new()
+        g_gui:loadGui(FieldServiceKitDialog.xmlPath, "FieldServiceKitDialog", FieldServiceKitDialog.instance)
+
+        UsedPlus.logInfo("FieldServiceKitDialog: Registration complete")
+    end
+end
 
 FieldServiceKitDialog.STEP_SYSTEM_SELECT = 1
 FieldServiceKitDialog.STEP_DIAGNOSIS = 2
@@ -60,6 +97,8 @@ function FieldServiceKitDialog:setData(vehicle, kit, kitTier)
     self.repairResult = nil
 
     -- Determine actual failed system from vehicle maintenance spec
+    -- Uses lastFailedSystem if a real failure was recorded, otherwise falls back to lowest reliability
+    -- Player must use scanner hints to deduce the correct system (not just pick lowest %)
     local maintSpec = vehicle.spec_usedPlusMaintenance
     if maintSpec ~= nil then
         self.actualFailedSystem = maintSpec.lastFailedSystem or self:determineFailedSystem(maintSpec)
@@ -127,6 +166,7 @@ end
 --[[
     Display Step 1: System Selection
     v1.8.0: Uses ModCompatibility to show RVB part details when available
+    v2.0.0: Shows detailed RVB part status and UYT tire wear in dedicated sections
 ]]
 function FieldServiceKitDialog:displaySystemSelection(vehicleName, maintSpec)
     -- v1.8.0: Get diagnostic data from ModCompatibility (includes RVB data if available)
@@ -137,7 +177,7 @@ function FieldServiceKitDialog:displaySystemSelection(vehicleName, maintSpec)
     local elecRel = math.floor(diagData.electrical.reliability * 100)
     local hydRel = math.floor(diagData.hydraulic.reliability * 100)
 
-    local isDisabled = maintSpec.isDisabled or false
+    local isDisabled = maintSpec and maintSpec.isDisabled or false
     local statusText = isDisabled and g_i18n:getText("usedplus_fsk_status_disabled") or g_i18n:getText("usedplus_fsk_status_needs_service")
 
     -- v1.8.0: Store diagnostic data for later steps (RVB repair integration)
@@ -173,12 +213,214 @@ function FieldServiceKitDialog:displaySystemSelection(vehicleName, maintSpec)
         self:setReliabilityColor(self.hydraulicRelText, hydRel)
     end
 
+    -- v2.1.0: Display scanner readout hints for the actual failed system
+    -- These help the player deduce which system to select
+    self:displayScannerHints()
+
+    -- v2.0.0: Display RVB part details if RVB is installed
+    self:displayRVBDetails(diagData)
+
+    -- v2.0.0: Display UYT tire details if UYT is installed
+    self:displayUYTDetails(diagData)
+
     -- Show/hide step containers
     self:setStepVisibility(FieldServiceKitDialog.STEP_SYSTEM_SELECT)
 
     -- Show tire button if flat tire detected
     if self.tireButton ~= nil then
         self.tireButton:setVisible(self.hasFlatTire)
+    end
+end
+
+--[[
+    v2.1.0: Display scanner readout hints
+    Shows 2 diagnostic hints based on the actual failed system
+    Player uses these to deduce which system to select
+]]
+function FieldServiceKitDialog:displayScannerHints()
+    if self.actualFailedSystem == nil then
+        -- No failure detected, show generic message
+        if self.scannerHint1Text ~= nil then
+            self.scannerHint1Text:setText(g_i18n:getText("usedplus_fsk_hint_no_faults") or "No critical faults detected")
+        end
+        if self.scannerHint2Text ~= nil then
+            self.scannerHint2Text:setText(g_i18n:getText("usedplus_fsk_hint_preventive") or "Preventive maintenance recommended")
+        end
+        return
+    end
+
+    -- Get 2 random hints for the actual failed system
+    local hints = DiagnosisData.getSystemHints(self.actualFailedSystem, 2)
+
+    -- Display hint 1
+    if self.scannerHint1Text ~= nil then
+        if hints[1] ~= nil then
+            local hintText = g_i18n:getText(hints[1])
+            self.scannerHint1Text:setText(">> " .. (hintText or hints[1]))
+        else
+            self.scannerHint1Text:setText("")
+        end
+    end
+
+    -- Display hint 2
+    if self.scannerHint2Text ~= nil then
+        if hints[2] ~= nil then
+            local hintText = g_i18n:getText(hints[2])
+            self.scannerHint2Text:setText(">> " .. (hintText or hints[2]))
+        else
+            self.scannerHint2Text:setText("")
+        end
+    end
+
+    UsedPlus.logInfo(string.format("Scanner hints displayed for system: %s", self.actualFailedSystem))
+end
+
+--[[
+    v2.0.0: Display RVB part details in dedicated section
+    Shows individual part life percentages and fault indicators
+]]
+function FieldServiceKitDialog:displayRVBDetails(diagData)
+    -- Show/hide RVB container based on whether RVB data is available
+    if self.rvbDetailContainer ~= nil then
+        self.rvbDetailContainer:setVisible(diagData.hasRVBData)
+    end
+
+    if not diagData.hasRVBData then
+        return
+    end
+
+    local faultCount = 0
+
+    -- Display engine parts
+    for _, part in ipairs(diagData.engine.rvbParts or {}) do
+        local elementId = "rvb" .. part.name:gsub(" ", "") .. "Text"
+        local element = self[elementId]
+        if element ~= nil then
+            local lifePercent = math.floor(part.life * 100)
+            local statusStr = string.format("%d%%", lifePercent)
+
+            -- Add fault/prefault indicator
+            if part.fault then
+                statusStr = statusStr .. " FAULT"
+                faultCount = faultCount + 1
+            elseif part.prefault then
+                statusStr = statusStr .. " !"
+            end
+
+            element:setText(statusStr)
+            self:setRVBPartColor(element, part.life, part.fault, part.prefault)
+        end
+    end
+
+    -- Display electrical parts
+    for _, part in ipairs(diagData.electrical.rvbParts or {}) do
+        local elementId = "rvb" .. part.name:gsub(" ", "") .. "Text"
+        local element = self[elementId]
+        if element ~= nil then
+            local lifePercent = math.floor(part.life * 100)
+            local statusStr = string.format("%d%%", lifePercent)
+
+            if part.fault then
+                statusStr = statusStr .. " FAULT"
+                faultCount = faultCount + 1
+            elseif part.prefault then
+                statusStr = statusStr .. " !"
+            end
+
+            element:setText(statusStr)
+            self:setRVBPartColor(element, part.life, part.fault, part.prefault)
+        end
+    end
+
+    -- Display fault count
+    if self.rvbFaultCountText ~= nil then
+        if faultCount > 0 then
+            self.rvbFaultCountText:setText(tostring(faultCount))
+            self.rvbFaultCountText:setTextColor(1, 0.3, 0.3, 1)  -- Red
+        else
+            self.rvbFaultCountText:setText("None")
+            self.rvbFaultCountText:setTextColor(0.4, 0.8, 0.4, 1)  -- Green
+        end
+    end
+end
+
+--[[
+    v2.0.0: Display UYT tire wear details in dedicated section
+]]
+function FieldServiceKitDialog:displayUYTDetails(diagData)
+    -- Show/hide UYT container based on whether UYT data is available
+    if self.uytTireContainer ~= nil then
+        self.uytTireContainer:setVisible(diagData.hasUYTData)
+    end
+
+    if not diagData.hasUYTData then
+        return
+    end
+
+    local worstWear = 0
+    local tirePositions = {"FL", "FR", "RL", "RR"}
+
+    for i, tire in ipairs(diagData.tires or {}) do
+        local position = tirePositions[i] or tostring(i)
+        local elementId = "uytTire" .. position .. "Text"
+        local element = self[elementId]
+
+        if element ~= nil then
+            local wearPercent = math.floor(tire.wear * 100)
+            local conditionPercent = math.floor(tire.condition * 100)
+            element:setText(string.format("%d%%", conditionPercent))
+            self:setTireConditionColor(element, tire.condition)
+
+            if tire.wear > worstWear then
+                worstWear = tire.wear
+            end
+        end
+    end
+
+    -- Display worst tire status
+    if self.uytWorstTireText ~= nil then
+        local worstCondition = 1 - worstWear
+        local worstPercent = math.floor(worstCondition * 100)
+        self.uytWorstTireText:setText(string.format("%d%%", worstPercent))
+        self:setTireConditionColor(self.uytWorstTireText, worstCondition)
+    end
+end
+
+--[[
+    v2.0.0: Set color for RVB part status based on life and fault state
+]]
+function FieldServiceKitDialog:setRVBPartColor(element, life, hasFault, hasPrefault)
+    if element == nil then return end
+
+    if hasFault then
+        element:setTextColor(1, 0.2, 0.2, 1)  -- Red for fault
+    elseif hasPrefault then
+        element:setTextColor(1, 0.6, 0, 1)  -- Orange for prefault
+    elseif life >= 0.7 then
+        element:setTextColor(0.4, 0.8, 0.4, 1)  -- Green
+    elseif life >= 0.4 then
+        element:setTextColor(1, 0.8, 0.2, 1)  -- Yellow
+    elseif life >= 0.2 then
+        element:setTextColor(1, 0.5, 0, 1)  -- Orange
+    else
+        element:setTextColor(1, 0.3, 0.3, 1)  -- Red
+    end
+end
+
+--[[
+    v2.0.0: Set color for tire condition
+]]
+function FieldServiceKitDialog:setTireConditionColor(element, condition)
+    if element == nil then return end
+
+    if condition >= 0.7 then
+        element:setTextColor(0.4, 0.8, 0.4, 1)  -- Green
+    elseif condition >= 0.4 then
+        element:setTextColor(1, 0.8, 0.2, 1)  -- Yellow
+    elseif condition >= 0.2 then
+        element:setTextColor(1, 0.5, 0, 1)  -- Orange
+    else
+        element:setTextColor(1, 0.3, 0.3, 1)  -- Red
     end
 end
 
@@ -215,25 +457,26 @@ function FieldServiceKitDialog:displayDiagnosis()
         self.symptom3Text:setText("* " .. g_i18n:getText(self.currentScenario.symptoms[3]))
     end
 
-    -- Display diagnosis options
+    -- Display diagnosis options (no letter prefix - hover effect shows selection)
     if self.diagButton1 ~= nil and self.currentScenario.diagnoses[1] then
-        self.diagButton1:setText("[A] " .. g_i18n:getText(self.currentScenario.diagnoses[1]))
+        self.diagButton1:setText(g_i18n:getText(self.currentScenario.diagnoses[1]))
     end
     if self.diagButton2 ~= nil and self.currentScenario.diagnoses[2] then
-        self.diagButton2:setText("[B] " .. g_i18n:getText(self.currentScenario.diagnoses[2]))
+        self.diagButton2:setText(g_i18n:getText(self.currentScenario.diagnoses[2]))
     end
     if self.diagButton3 ~= nil and self.currentScenario.diagnoses[3] then
-        self.diagButton3:setText("[C] " .. g_i18n:getText(self.currentScenario.diagnoses[3]))
+        self.diagButton3:setText(g_i18n:getText(self.currentScenario.diagnoses[3]))
     end
     if self.diagButton4 ~= nil and self.currentScenario.diagnoses[4] then
-        self.diagButton4:setText("[D] " .. g_i18n:getText(self.currentScenario.diagnoses[4]))
+        self.diagButton4:setText(g_i18n:getText(self.currentScenario.diagnoses[4]))
     end
 
     self:setStepVisibility(FieldServiceKitDialog.STEP_DIAGNOSIS)
 end
 
 --[[
-    Display Step 3: Results
+    Display Step 3: Results (Redesigned v2.3.0)
+    Prominent success/failure display with diagnosis details
 ]]
 function FieldServiceKitDialog:displayResults()
     if self.repairResult == nil then
@@ -241,27 +484,101 @@ function FieldServiceKitDialog:displayResults()
     end
 
     local maintSpec = self.vehicle.spec_usedPlusMaintenance
+    local isCorrect = self.repairResult.wasCorrectSystem and self.repairResult.wasCorrectDiagnosis
+    local isPartial = self.repairResult.wasCorrectSystem and not self.repairResult.wasCorrectDiagnosis
 
-    -- Result title based on outcome
-    local titleKey = "usedplus_fsk_result_title_" .. self.repairResult.outcome
-    if self.resultTitleText ~= nil then
-        self.resultTitleText:setText(g_i18n:getText(titleKey) or "REPAIR COMPLETE")
-
-        if self.repairResult.outcome == DiagnosisData.OUTCOME_PERFECT then
-            self.resultTitleText:setTextColor(0.2, 0.8, 0.2, 1)  -- Green
-        elseif self.repairResult.outcome == DiagnosisData.OUTCOME_GOOD then
-            self.resultTitleText:setTextColor(1, 0.7, 0, 1)  -- Orange
+    -- ========== OUTCOME HEADER ==========
+    -- Set icon and background color based on outcome
+    if self.outcomeIcon ~= nil then
+        if isCorrect then
+            self.outcomeIcon:setText("✓")
+            self.outcomeIcon:setTextColor(0.3, 1, 0.4, 1)
+        elseif isPartial then
+            self.outcomeIcon:setText("~")
+            self.outcomeIcon:setTextColor(1, 0.7, 0.2, 1)
         else
-            self.resultTitleText:setTextColor(1, 0.4, 0.4, 1)  -- Red-ish
+            self.outcomeIcon:setText("✗")
+            self.outcomeIcon:setTextColor(1, 0.4, 0.4, 1)
         end
     end
 
-    -- Result message
-    if self.resultMessageText ~= nil then
-        self.resultMessageText:setText(g_i18n:getText(self.repairResult.messageKey) or "Repairs applied.")
+    if self.outcomeBg ~= nil then
+        if isCorrect then
+            -- Green success background
+            self.outcomeBg:setImageColor(nil, 0.08, 0.22, 0.08, 0.95)
+        elseif isPartial then
+            -- Orange partial background
+            self.outcomeBg:setImageColor(nil, 0.22, 0.16, 0.06, 0.95)
+        else
+            -- Red failure background
+            self.outcomeBg:setImageColor(nil, 0.22, 0.08, 0.08, 0.95)
+        end
     end
 
-    -- Show before/after values
+    -- Outcome title
+    if self.resultTitleText ~= nil then
+        if isCorrect then
+            self.resultTitleText:setText("CORRECT DIAGNOSIS!")
+            self.resultTitleText:setTextColor(0.4, 1, 0.5, 1)
+        elseif isPartial then
+            self.resultTitleText:setText("PARTIAL MATCH")
+            self.resultTitleText:setTextColor(1, 0.8, 0.3, 1)
+        else
+            self.resultTitleText:setText("WRONG DIAGNOSIS")
+            self.resultTitleText:setTextColor(1, 0.5, 0.5, 1)
+        end
+    end
+
+    -- Outcome subtitle
+    if self.resultMessageText ~= nil then
+        if isCorrect then
+            self.resultMessageText:setText("Excellent work! Full repair bonus applied.")
+        elseif isPartial then
+            self.resultMessageText:setText("Right system, but incorrect cause identified.")
+        else
+            self.resultMessageText:setText("General maintenance applied with reduced effect.")
+        end
+    end
+
+    -- ========== DIAGNOSIS DETAILS ==========
+    -- Show what the player diagnosed
+    if self.playerDiagnosisText ~= nil and self.currentScenario ~= nil then
+        local playerDiag = self.currentScenario.diagnoses[self.selectedDiagnosis]
+        if playerDiag ~= nil then
+            self.playerDiagnosisText:setText(g_i18n:getText(playerDiag) or "Unknown")
+        end
+    end
+
+    -- Show correct answer (only if wrong)
+    if self.correctDiagLabel ~= nil then
+        self.correctDiagLabel:setVisible(not isCorrect)
+    end
+    if self.correctDiagnosisText ~= nil then
+        self.correctDiagnosisText:setVisible(not isCorrect)
+        if not isCorrect and self.currentScenario ~= nil then
+            local correctDiag = self.currentScenario.diagnoses[self.currentScenario.correctDiagnosis]
+            if correctDiag ~= nil then
+                self.correctDiagnosisText:setText(g_i18n:getText(correctDiag) or "Unknown")
+            end
+        end
+    end
+
+    -- ========== RELIABILITY SECTION ==========
+    -- Update header based on outcome
+    if self.reliabilityHeader ~= nil then
+        if isCorrect then
+            self.reliabilityHeader:setText("RELIABILITY RESTORED")
+            self.reliabilityHeader:setTextColor(0.3, 1, 0.4, 1)
+        elseif isPartial then
+            self.reliabilityHeader:setText("PARTIAL RESTORATION")
+            self.reliabilityHeader:setTextColor(1, 0.8, 0.3, 1)
+        else
+            self.reliabilityHeader:setText("MINIMAL IMPROVEMENT")
+            self.reliabilityHeader:setTextColor(1, 0.5, 0.5, 1)
+        end
+    end
+
+    -- Calculate before/after values
     local systemKey = self.selectedSystem or self.actualFailedSystem
     local beforeRel = 0
     local afterRel = 0
@@ -284,24 +601,17 @@ function FieldServiceKitDialog:displayResults()
     end
     if self.afterRelText ~= nil then
         self.afterRelText:setText(string.format("%d%%", afterRel))
-        self:setReliabilityColor(self.afterRelText, afterRel)
     end
     if self.boostText ~= nil then
-        self.boostText:setText(string.format("+%d%%", math.floor(self.repairResult.reliabilityBoost * 100)))
-        self.boostText:setTextColor(0.2, 0.8, 0.2, 1)  -- Green
-    end
-
-    -- Diagnosis feedback
-    if self.diagnosisFeedbackText ~= nil then
-        if self.repairResult.wasCorrectSystem and self.repairResult.wasCorrectDiagnosis then
-            self.diagnosisFeedbackText:setText(g_i18n:getText("usedplus_fsk_feedback_perfect") or "Correct diagnosis!")
-            self.diagnosisFeedbackText:setTextColor(0.2, 0.8, 0.2, 1)
-        elseif self.repairResult.wasCorrectSystem then
-            self.diagnosisFeedbackText:setText(g_i18n:getText("usedplus_fsk_feedback_partial") or "Right system, but diagnosis was off.")
-            self.diagnosisFeedbackText:setTextColor(1, 0.7, 0, 1)
+        local boostPercent = math.floor(self.repairResult.reliabilityBoost * 100)
+        self.boostText:setText(string.format("+%d%%", boostPercent))
+        -- Color based on boost amount
+        if boostPercent >= 30 then
+            self.boostText:setTextColor(0.3, 1, 0.4, 1)  -- Green for big boost
+        elseif boostPercent >= 15 then
+            self.boostText:setTextColor(1, 0.8, 0.3, 1)  -- Yellow for medium
         else
-            self.diagnosisFeedbackText:setText(g_i18n:getText("usedplus_fsk_feedback_wrong") or "Wrong system - general maintenance applied.")
-            self.diagnosisFeedbackText:setTextColor(1, 0.4, 0.4, 1)
+            self.boostText:setTextColor(1, 0.5, 0.5, 1)  -- Red-ish for small
         end
     end
 
@@ -332,10 +642,11 @@ function FieldServiceKitDialog:setStepVisibility(activeStep)
         self.tireRepairContainer:setVisible(activeStep == FieldServiceKitDialog.STEP_TIRE_REPAIR)
     end
 
-    -- Update button text based on step
+    -- Update button visibility based on step
     if self.okButton ~= nil then
         if activeStep == FieldServiceKitDialog.STEP_RESULTS then
             self.okButton:setText(g_i18n:getText("button_ok") or "OK")
+            self.okButton:setVisible(true)  -- Show OK button on results screen
         else
             self.okButton:setVisible(false)
         end
@@ -360,6 +671,8 @@ function FieldServiceKitDialog:setReliabilityColor(element, value)
         element:setTextColor(1, 0.2, 0.2, 1)  -- Red
     end
 end
+
+-- v2.2.1: Removed custom hover effect code - buttonActivate profile provides built-in hover styling
 
 --[[
     System selection button handlers
@@ -404,6 +717,34 @@ end
 
 function FieldServiceKitDialog:onDiagnosis4Click()
     self:applyRepair(4)
+end
+
+--[[
+    Hover effect handlers for diagnosis buttons
+    Changes background color when mouse hovers over button
+]]
+function FieldServiceKitDialog:onDiagBtnHighlight(element)
+    -- Derive background ID from button ID (diagBtn1 -> diagBtn1Bg)
+    if element ~= nil and element.id ~= nil then
+        local bgId = element.id .. "Bg"
+        local bg = self[bgId]
+        if bg ~= nil then
+            -- Highlight color: lighter blue-ish
+            bg:setImageColor(nil, 0.22, 0.28, 0.38, 1)
+        end
+    end
+end
+
+function FieldServiceKitDialog:onDiagBtnUnhighlight(element)
+    -- Restore normal background color
+    if element ~= nil and element.id ~= nil then
+        local bgId = element.id .. "Bg"
+        local bg = self[bgId]
+        if bg ~= nil then
+            -- Normal color (matches fskDiagBtnBg profile)
+            bg:setImageColor(nil, 0.12, 0.12, 0.16, 1)
+        end
+    end
 end
 
 --[[
@@ -512,38 +853,40 @@ end
 
 --[[
     OK button - close and consume kit
+    Note: Button callback from XML onClick="onOkClick"
 ]]
 function FieldServiceKitDialog:onOkClick()
+    UsedPlus.logInfo("FieldServiceKitDialog: OK button clicked")
     self:consumeAndClose()
 end
 
 --[[
-    Cancel button - close without consuming (only in system select step)
+    Cancel button - close dialog
+    Note: Kit is only consumed when repair is actually completed via OK button
 ]]
 function FieldServiceKitDialog:onCancelClick()
-    if self.currentStep == FieldServiceKitDialog.STEP_SYSTEM_SELECT then
-        -- Allow cancel only before starting repair
-        self:close()
-    else
-        -- Once repair started, must complete
-        g_gui:showInfoDialog({
-            text = g_i18n:getText("usedplus_fsk_cannot_cancel") or "Repair in progress - cannot cancel."
-        })
-    end
+    UsedPlus.logInfo("FieldServiceKitDialog: Cancel clicked, currentStep=" .. tostring(self.currentStep))
+    self:close()
 end
 
 --[[
     Consume the kit and close dialog
 ]]
 function FieldServiceKitDialog:consumeAndClose()
+    UsedPlus.logInfo("FieldServiceKitDialog: consumeAndClose called")
+
     -- Tell kit to consume itself
     if self.kit ~= nil then
+        UsedPlus.logInfo("FieldServiceKitDialog: Consuming kit")
         self.kit:consumeKit()
+    else
+        UsedPlus.logInfo("FieldServiceKitDialog: No kit reference to consume")
     end
 
     self:close()
 end
 
 function FieldServiceKitDialog:close()
+    UsedPlus.logInfo("FieldServiceKitDialog: Closing dialog")
     g_gui:closeDialogByName("FieldServiceKitDialog")
 end

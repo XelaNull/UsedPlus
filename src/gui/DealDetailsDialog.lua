@@ -291,8 +291,16 @@ function DealDetailsDialog:updateMultiplierDisplay()
     if self.deal == nil then return end
 
     local deal = self.deal
-    local currentMultiplier = deal.paymentMultiplier or 1.0
     local basePayment = deal.monthlyPayment or 0
+
+    -- For vanilla loans, get multiplier from FinanceManager instead of the pseudo-deal
+    local currentMultiplier
+    if deal.isVanillaLoan and g_financeManager then
+        local farmId = deal.farmId or g_currentMission:getFarmId()
+        currentMultiplier = g_financeManager:getVanillaLoanMultiplier(farmId)
+    else
+        currentMultiplier = deal.paymentMultiplier or 1.0
+    end
 
     -- Find and set the dropdown state based on current multiplier
     if self.multiplierSelector then
@@ -381,7 +389,40 @@ function DealDetailsDialog:onMultiplierChanged()
     local stateIndex = self.multiplierSelector:getState()
     local newMultiplier = DealDetailsDialog.MULTIPLIER_OPTIONS[stateIndex] or 1.0
 
-    -- Update the deal's multiplier
+    -- Handle vanilla loan multiplier specially - store in FinanceManager
+    if deal.isVanillaLoan then
+        local farmId = deal.farmId or g_currentMission:getFarmId()
+        if g_financeManager then
+            g_financeManager:setVanillaLoanMultiplier(farmId, newMultiplier)
+        end
+
+        -- Update display
+        if self.adjustedPaymentText then
+            local basePayment = deal.monthlyPayment or 0
+            local adjustedPayment = basePayment * newMultiplier
+            self.adjustedPaymentText:setText(g_i18n:formatMoney(adjustedPayment, 0, true, true))
+        end
+
+        -- Update savings display
+        self:updateSavingsDisplay()
+
+        -- Show notification for vanilla loan
+        local notificationText
+        if newMultiplier > 1.0 then
+            local extraPercent = math.floor((newMultiplier - 1.0) * 100)
+            notificationText = string.format(
+                "Bank loan payment: %s (+%d%% extra toward principal)",
+                DealDetailsDialog.MULTIPLIER_TEXTS[stateIndex],
+                extraPercent
+            )
+        else
+            notificationText = "Bank loan payment: Standard (interest only)"
+        end
+        g_currentMission:addIngameNotification(FSBaseMission.INGAME_NOTIFICATION_OK, notificationText)
+        return
+    end
+
+    -- Regular UsedPlus deal - update the deal's multiplier
     if deal.setPaymentMultiplier then
         deal:setPaymentMultiplier(newMultiplier)
     else
@@ -398,7 +439,7 @@ function DealDetailsDialog:onMultiplierChanged()
     -- Update savings display
     self:updateSavingsDisplay()
 
-    -- Send network event to sync in multiplayer
+    -- Send network event to sync in multiplayer (only for real UsedPlus deals)
     if SetPaymentConfigEvent then
         local paymentMode = deal.paymentMode or 2  -- Default to STANDARD
         local customAmount = deal.configuredPayment or 0

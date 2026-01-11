@@ -408,4 +408,74 @@ function DiagnosisData.calculateTireOutcome(repairType, kitTier)
     }
 end
 
+--[[
+    SCANNER READOUT HINTS
+    These appear in Step 1 to help the player deduce which system failed.
+    Hints are designed to be interpretable but require thought:
+    - ENGINE hints reference: powertrain, combustion, fuel, exhaust, P-codes
+    - ELECTRICAL hints reference: voltage, signals, communication, B/U-codes
+    - HYDRAULIC hints reference: pressure, implements, hitch, actuators, flow
+]]
+DiagnosisData.SYSTEM_HINTS = {
+    [DiagnosisData.SYSTEM_ENGINE] = {
+        "usedplus_fsk_hint_engine_dtc",           -- "DTC P0xxx: Powertrain fault codes stored"
+        "usedplus_fsk_hint_engine_combustion",    -- "Irregular combustion cycle patterns logged"
+        "usedplus_fsk_hint_engine_airfuel",       -- "Air-fuel mixture readings out of specification"
+        "usedplus_fsk_hint_engine_exhaust",       -- "Exhaust gas sensor readings abnormal"
+        "usedplus_fsk_hint_engine_throttle",      -- "Throttle response deviation detected"
+        "usedplus_fsk_hint_engine_timing"         -- "Crankshaft timing variance recorded"
+    },
+    [DiagnosisData.SYSTEM_ELECTRICAL] = {
+        "usedplus_fsk_hint_elec_dtc",             -- "DTC B/U codes: Network communication faults"
+        "usedplus_fsk_hint_elec_voltage",         -- "Voltage regulation outside normal parameters"
+        "usedplus_fsk_hint_elec_signal",          -- "Intermittent sensor signal dropouts detected"
+        "usedplus_fsk_hint_elec_canbus",          -- "CAN bus communication errors logged"
+        "usedplus_fsk_hint_elec_timeout",         -- "Module response timeouts recorded"
+        "usedplus_fsk_hint_elec_ground"           -- "Ground fault indicators triggered"
+    },
+    [DiagnosisData.SYSTEM_HYDRAULIC] = {
+        "usedplus_fsk_hint_hyd_response",         -- "Implement response time exceeds threshold"
+        "usedplus_fsk_hint_hyd_pressure",         -- "Hydraulic pressure fluctuations detected"
+        "usedplus_fsk_hint_hyd_hitch",            -- "Three-point hitch position sensor drift"
+        "usedplus_fsk_hint_hyd_actuator",         -- "Actuator cycle time degradation noted"
+        "usedplus_fsk_hint_hyd_flow",             -- "Flow rate irregularities in aux circuits"
+        "usedplus_fsk_hint_hyd_temp"              -- "Hydraulic fluid temperature warnings logged"
+    }
+}
+
+--[[
+    Get random hints for a system to display in scanner readout
+    @param systemType string - SYSTEM_ENGINE, SYSTEM_ELECTRICAL, or SYSTEM_HYDRAULIC
+    @param count number - How many hints to return (default 2)
+    @return table - Array of hint translation keys
+]]
+function DiagnosisData.getSystemHints(systemType, count)
+    count = count or 2
+    local hints = DiagnosisData.SYSTEM_HINTS[systemType]
+
+    if hints == nil then
+        return {}
+    end
+
+    -- Create a shuffled copy to pick random hints
+    local available = {}
+    for i, hint in ipairs(hints) do
+        available[i] = hint
+    end
+
+    -- Fisher-Yates shuffle
+    for i = #available, 2, -1 do
+        local j = math.random(1, i)
+        available[i], available[j] = available[j], available[i]
+    end
+
+    -- Return first 'count' hints
+    local result = {}
+    for i = 1, math.min(count, #available) do
+        result[i] = available[i]
+    end
+
+    return result
+end
+
 UsedPlus.logInfo("DiagnosisData loaded - Field Service Kit diagnosis system ready")

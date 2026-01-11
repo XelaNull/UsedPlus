@@ -65,8 +65,8 @@
 
                 <!-- Two-column container: image left, text right -->
                 <GuiElement profile="usVehiclePreviewContainer" position="0px -28px">
-                    <!-- IMAGE: Centered in left half of container, moved up 42px -->
-                    <Bitmap profile="usItemImage" id="itemImage" position="-185px 42px"/>
+                    <!-- IMAGE: Centered in left half, Y=75px with 180x180 element -->
+                    <Bitmap profile="usItemImage" id="itemImage" position="-185px 75px"/>
 
                     <!-- TEXT: Left-aligned in right half of container -->
                     <Text profile="usItemNameLeft" id="itemNameText" position="175px -15px" text=""/>
@@ -276,12 +276,13 @@
             REUSABLE: Vehicle preview image profile
             - Extends fs25_vehiclesDetailsImage for proper image loading
             - EMPIRICALLY TESTED: 210x140px displays store images without stretching
-              (Theoretical calculations were wrong - trust visual testing!)
             - Position at X=-185px centers in 350px left cell
             - Position at Y=42px (POSITIVE) moves up from container baseline
         -->
-        <Profile name="usItemImage" extends="fs25_vehiclesDetailsImage" with="anchorTopCenter">
-            <size value="210px 140px"/>
+        <!-- Following RVB pattern: baseReference + square size + noSlice (180px = 10% smaller than RVB's 200px) -->
+        <Profile name="usItemImage" extends="baseReference" with="anchorTopCenter">
+            <size value="180px 180px"/>
+            <imageSliceId value="noSlice"/>
         </Profile>
 
         <!-- ========== VEHICLE INFO TEXT ========== -->

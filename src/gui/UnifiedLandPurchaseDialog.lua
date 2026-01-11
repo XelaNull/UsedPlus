@@ -256,12 +256,24 @@ function UnifiedLandPurchaseDialog:setInitialMode(mode)
 end
 
 --[[
+    v2.0.0: Helper function to check if credit system is enabled
+]]
+function UnifiedLandPurchaseDialog.isCreditSystemEnabled()
+    if UsedPlusSettings and UsedPlusSettings.get then
+        return UsedPlusSettings:get("enableCreditSystem") ~= false
+    end
+    return true  -- Default to enabled
+end
+
+--[[
     Calculate credit parameters and adjusted land price
+    v2.0.0: Respects enableCreditSystem setting
 ]]
 function UnifiedLandPurchaseDialog:calculateCreditParameters()
     local farmId = g_currentMission:getFarmId()
+    local creditEnabled = UnifiedLandPurchaseDialog.isCreditSystemEnabled()
 
-    if CreditScore then
+    if creditEnabled and CreditScore then
         self.creditScore = CreditScore.calculate(farmId)
         self.creditRating = CreditScore.getRating(self.creditScore)
 
@@ -270,13 +282,14 @@ function UnifiedLandPurchaseDialog:calculateCreditParameters()
         local adjustment = CreditScore.getInterestAdjustment(self.creditScore) or 0
         self.interestRate = math.max(0.025, math.min(0.12, baseRate + adjustment))
     else
+        -- Credit system disabled - use defaults
         self.creditScore = 650
         self.creditRating = "Fair"
         self.interestRate = 0.06
     end
 
-    -- Calculate credit-adjusted land price
-    if FinanceCalculations and self.baseLandPrice > 0 then
+    -- Calculate credit-adjusted land price (only if credit enabled)
+    if creditEnabled and FinanceCalculations and self.baseLandPrice > 0 then
         self.landPrice, self.creditAdjustment, self.creditModifierPct, _ =
             FinanceCalculations.calculateAdjustedLandPrice(self.baseLandPrice, self.creditScore)
 
@@ -285,7 +298,7 @@ function UnifiedLandPurchaseDialog:calculateCreditParameters()
             self.baseLandPrice, self.landPrice, self.creditModifierPct,
             self.creditScore, self.creditRating))
     else
-        -- Fallback: no adjustment
+        -- No credit adjustment
         self.landPrice = self.baseLandPrice
         self.creditAdjustment = 0
         self.creditModifierPct = 0
@@ -461,7 +474,14 @@ function UnifiedLandPurchaseDialog:updateFinanceDisplay()
     UIHelper.Element.setTextWithColor(self.financeTotalInterestText,
         UIHelper.Text.formatMoney(math.max(0, totalInterest)), UIHelper.Colors.COST_ORANGE)
     UIHelper.Element.setText(self.financeDueTodayText, UIHelper.Text.formatMoney(downPayment))
-    UIHelper.Element.setText(self.financeCreditText, UIHelper.Text.formatCreditScore(self.creditScore, self.creditRating))
+
+    -- v2.0.0: Only show credit score if credit system enabled
+    if UnifiedLandPurchaseDialog.isCreditSystemEnabled() then
+        UIHelper.Element.setText(self.financeCreditText, UIHelper.Text.formatCreditScore(self.creditScore, self.creditRating))
+        UIHelper.Element.setVisible(self.financeCreditText, true)
+    else
+        UIHelper.Element.setVisible(self.financeCreditText, false)
+    end
 end
 
 --[[
@@ -613,8 +633,13 @@ function UnifiedLandPurchaseDialog:updateLeaseDisplay()
     -- Buyout price to own the land (formatted as full sentence)
     UIHelper.Element.setText(self.leaseBuyoutText, string.format(g_i18n:getText("usedplus_land_buyoutAnytime"), UIHelper.Text.formatMoney(buyoutPrice)))
 
-    -- Credit info
-    UIHelper.Element.setText(self.leaseCreditText, UIHelper.Text.formatCreditScore(self.creditScore, self.creditRating))
+    -- v2.0.0: Only show credit score if credit system enabled
+    if UnifiedLandPurchaseDialog.isCreditSystemEnabled() then
+        UIHelper.Element.setText(self.leaseCreditText, UIHelper.Text.formatCreditScore(self.creditScore, self.creditRating))
+        UIHelper.Element.setVisible(self.leaseCreditText, true)
+    else
+        UIHelper.Element.setVisible(self.leaseCreditText, false)
+    end
 
     -- Signing bonus display (for 12+ month leases with standing crops)
     if self.signingBonusSection then

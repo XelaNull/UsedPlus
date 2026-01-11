@@ -1,7 +1,7 @@
 # FS25_UsedPlus - Cross-Mod Compatibility Guide
 
-**Last Updated:** 2025-12-28
-**Version:** 1.8.2 (Deep Integration)
+**Last Updated:** 2026-01-10
+**Version:** 2.1.0 (RVB Workshop Integration)
 
 This document analyzes compatibility between UsedPlus and popular FS25 mods that players commonly run together.
 
@@ -67,7 +67,7 @@ This document analyzes compatibility between UsedPlus and popular FS25 mods that
 ### Real Vehicle Breakdowns (RVB)
 **Author:** MathiasHun
 
-**Status:** INTEGRATED (v1.8.0+)
+**Status:** INTEGRATED (v2.1.0+)
 
 **What it does:** Comprehensive vehicle breakdown simulation tracking 10+ parts with operating hours and failure states.
 
@@ -76,6 +76,41 @@ This document analyzes compatibility between UsedPlus and popular FS25 mods that
 - **Reliability Derivation** - UsedPlus reads RVB part health to calculate symptom severity
 - **OBD Repair Integration** - Field Service Kit successful diagnoses reduce RVB operating hours
 - **Unique Features Preserved** - Hydraulic drift and steering pull remain unique to UsedPlus (RVB doesn't track hydraulics)
+
+**v2.1.0 Workshop Dialog Integration:**
+- **Unified Workshop Experience** - When RVB is installed, UsedPlus hides its own Inspect button from the vanilla workshop screen (RVB replaces it with their Workshop button)
+- **Data Injection** - UsedPlus injects its unique data into RVB's Workshop Dialog left pane, appearing seamlessly alongside RVB's vehicle info
+- **Displayed in RVB Dialog:**
+  - "— UsedPlus —" section divider
+  - Hydraulic System: XX% (unique to UsedPlus - RVB doesn't track hydraulics)
+  - Maintenance Grade: Excellent/Good/Fair/Poor/Critical
+  - Service History: X repairs, Y breakdowns (if notable)
+- **Visual Consistency** - Uses RVB's row templates for matching fonts, colors, and alternating row backgrounds
+
+**v2.0.0 OBD Scanner Enhancement:**
+- **Activation Prompt** - When OBD Scanner is near a vehicle with RVB issues, prompt shows "Use OBD Scanner - Tractor (RVB)" to indicate external mod problems detected
+- **Part Status Display** - OBD Scanner dialog shows individual RVB part statuses:
+  - Engine, Thermostat (engine system)
+  - Generator, Battery, Starter, Glow Plug (electrical system)
+- **Fault Indicators** - Parts showing "FAULT" (red) or "!" prefault warning (orange)
+- **Fault Counter** - Shows total number of active faults across all RVB parts
+
+**v2.1.0 Holistic Used Vehicle Inspection:**
+- **Pre-Generated Part Data** - When UsedPlus agent finds a used vehicle, RVB-compatible part data is generated:
+  - Engine, Thermostat, Generator, Battery, Starter, Glow Plug
+  - Each part has a "life" percentage based on vehicle's overall condition with realistic variance
+  - Higher quality tier searches produce vehicles with better part conditions
+- **Inspection Report Display** - InspectionReportDialog shows "COMPONENT STATUS" section when RVB data exists:
+  - 6 parts displayed in 3 columns (Engine/Thermo, Gen/Battery, Starter/Glow)
+  - Color-coded: green (>75%) → yellow (>50%) → orange (>30%) → red (critical)
+- **Purchase Initialization** - When player buys the used vehicle:
+  - RVB's `spec_faultData.parts` operating hours are set to match generated life percentages
+  - This ensures the inspection report accurately reflects the vehicle's RVB state after purchase
+- **Backwards Compatible** - Old saves without RVB data simply don't show the section
+- **Deferred Sync** - If player buys used vehicle WITHOUT RVB, then later installs RVB:
+  - RVB parts data is stored on the vehicle's `spec_usedPlusMaintenance`
+  - On next vehicle load after RVB installation, data is automatically synced
+  - Prevents mismatch between UsedPlus showing "Engine 72%" while RVB shows "Engine 100%"
 
 **What happens with both installed:**
 | Feature | Who Handles It |
@@ -87,13 +122,17 @@ This document analyzes compatibility between UsedPlus and popular FS25 mods that
 | Final engine failure | RVB (7 km/h cap when part exhausted) |
 | Final electrical failure | RVB (lights/starter fail) |
 | Flat tire trigger | RVB (via UYT integration) |
+| Workshop Inspect button | RVB (UsedPlus hides its button) |
+| **RVB Workshop vehicle info** | **UsedPlus injects (v2.1.0+)** |
+| **OBD Part Detail Display** | **UsedPlus (v2.0.0+)** |
+| **OBD Fault Warnings** | **UsedPlus (v2.0.0+)** |
 
 ---
 
 ### Use Up Your Tyres (UYT)
 **Author:** 50keda
 
-**Status:** INTEGRATED (v1.8.0+)
+**Status:** INTEGRATED (v2.0.0+)
 
 **What it does:** Distance-based tire wear system with visual progression and friction reduction.
 
@@ -101,6 +140,31 @@ This document analyzes compatibility between UsedPlus and popular FS25 mods that
 - **Tire Condition Sync** - UsedPlus reads UYT wear data to update tire condition displays
 - **Flat Tire Deferral** - UsedPlus skips its own flat tire trigger when UYT is installed
 - **Low Traction Warnings** - UsedPlus still shows traction warnings based on synced condition
+
+**v2.0.0 OBD Scanner Enhancement:**
+- **Activation Prompt** - When OBD Scanner is near a vehicle with >80% tire wear, prompt shows "Use OBD Scanner - Tractor (Tires)" to warn of worn tires
+- **Tire Wear Display** - OBD Scanner dialog shows individual wheel conditions:
+  - FL (Front Left), FR (Front Right), RL (Rear Left), RR (Rear Right)
+  - "Worst" indicator showing the most worn tire
+- **Color-Coded Wear** - Green (good) → Yellow → Orange → Red (critical)
+
+**v2.1.0 Holistic Used Vehicle Inspection:**
+- **Pre-Generated Tire Data** - When UsedPlus agent finds a used vehicle, UYT-compatible tire conditions are generated:
+  - FL (Front Left), FR (Front Right), RL (Rear Left), RR (Rear Right)
+  - Front tires generated with higher wear bias (simulate steering wear)
+  - Per-tire variance creates realistic non-uniform wear patterns
+- **Inspection Report Display** - InspectionReportDialog shows "TIRE CONDITION" section when tire data exists:
+  - 4 tires displayed in a row with individual percentages
+  - "Worst" indicator highlights the tire needing attention
+  - Color-coded: green (>75%) → yellow (>50%) → orange (>30%) → red (critical)
+- **Purchase Initialization** - When player buys the used vehicle:
+  - UYT wheel wear is set to match generated conditions (if UYT API available)
+  - UsedPlus native tire tracking is also initialized
+- **Backwards Compatible** - Old saves without tire data simply don't show the section
+- **Deferred Sync** - If player buys used vehicle WITHOUT UYT, then later installs UYT:
+  - Tire data is stored on the vehicle's `spec_usedPlusMaintenance`
+  - On next vehicle load after UYT installation, data is automatically synced
+  - Prevents mismatch between UsedPlus showing "FL: 65%" while UYT shows "FL: 100%"
 
 **What happens with both installed:**
 | Feature | Who Handles It |
@@ -111,6 +175,8 @@ This document analyzes compatibility between UsedPlus and popular FS25 mods that
 | Flat tire trigger | UYT/RVB |
 | Low traction warning | UsedPlus |
 | Tire replacement | UYT (workshop button) |
+| **OBD Tire Detail Display** | **UsedPlus (v2.0.0+)** |
+| **OBD Worst Tire Indicator** | **UsedPlus (v2.0.0+)** |
 
 ---
 
@@ -357,6 +423,34 @@ You can now run any combination:
 ---
 
 ## Version History
+
+**2026-01-10 (v2.1.0)** - RVB Workshop & Holistic Inspection Integration
+- NEW: UsedPlus data now appears in RVB's Workshop Dialog
+- Injects Hydraulic System status, Maintenance Grade, and Service History into RVB's left pane
+- Hides UsedPlus Inspect button when RVB installed (RVB Workshop button replaces it)
+- Uses RVB's row templates for seamless visual integration
+- Added l10n strings for maintenance grades (Excellent/Good/Fair/Poor/Critical)
+- NEW: **Holistic Used Vehicle Inspection**
+  - Used vehicle searches now generate RVB-compatible part data (Engine, Thermostat, Generator, Battery, Starter, Glow Plug)
+  - Used vehicle searches now generate UYT-compatible tire conditions (FL, FR, RL, RR)
+  - InspectionReportDialog displays "COMPONENT STATUS" section with individual part life percentages
+  - InspectionReportDialog displays "TIRE CONDITION" section with per-wheel conditions
+  - When purchasing used vehicles, RVB operating hours and UYT tire wear are initialized from inspection data
+  - Color-coded part/tire conditions: green (good) → yellow → orange → red (critical)
+  - Sections only appear when data exists (backwards compatible with old saves)
+
+**2026-01-05 (v2.0.0)** - OBD Scanner Enhancement
+- OBD Scanner now detects RVB part issues in activation prompt
+- OBD Scanner now detects UYT tire wear (>80%) in activation prompt
+- OBD Scanner dialog shows detailed RVB part status section:
+  - Engine, Thermostat, Generator, Battery, Starter, Glow Plug
+  - Color-coded life percentages (green/yellow/orange/red)
+  - FAULT and prefault (!) indicators
+  - Total fault counter
+- OBD Scanner dialog shows UYT tire breakdown:
+  - Per-wheel condition (FL, FR, RL, RR)
+  - Worst tire indicator
+- Activation text now shows specific warnings: "Use OBD Scanner - Tractor (RVB, Tires)"
 
 **2025-12-28 (v1.8.2)** - Deep Integration
 - ELS loans now display in Finance Manager with "ELS" type marker

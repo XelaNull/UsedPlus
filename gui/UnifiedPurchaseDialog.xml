@@ -44,7 +44,7 @@
                 <!-- Two-column container: image left, text right -->
                 <GuiElement profile="upVehiclePreviewContainer" position="0px -28px">
                     <!-- IMAGE: Centered in left half of container, moved up 42px (matches UsedSearchDialog) -->
-                    <Bitmap profile="upItemImage" id="itemImage" position="-185px 42px"/>
+                    <Bitmap profile="upItemImage" id="itemImage" position="-185px 75px"/>
 
                     <!-- TEXT: Left-aligned in right half of container -->
                     <Text profile="upItemName" id="itemNameText" position="175px -15px" text=""/>
@@ -72,35 +72,34 @@
 
             <!-- ========== SECTION 3: Trade-In (Always Visible) ========== -->
             <!-- 10px gap after Mode Section (120px) = -210 - 120 - 10 = -340 -->
+            <!-- TWO-COLUMN LAYOUT: Left 30% = image, Right 70% = dropdown + info -->
             <GuiElement profile="upTradeInSection" id="tradeInSection" position="0px -340px">
                 <Bitmap profile="upTradeInSectionBg" position="0px 0px"/>
                 <Text profile="upSectionHeader" position="0px -5px" text="$l10n_usedplus_up_sectionTradeIn"/>
                 <Text profile="upHelpText" id="tradeInHelpText" position="0px -22px" text="$l10n_usedplus_up_tradeInHelp"/>
 
-                <!-- Trade-In Vehicle Selector Row - safe positions -->
-                <Text profile="upTradeInLabel" position="-150px -42px" text="$l10n_usedplus_up_tradeInVehicle"/>
-                <MultiTextOption profile="upTradeInSelector" id="tradeInVehicleSelector" position="80px -40px" onClick="onTradeInVehicleChanged"/>
+                <!-- Dropdown in RIGHT column (70%), centered at +108px - always visible -->
+                <MultiTextOption profile="upTradeInSelector" id="tradeInVehicleSelector" position="108px -42px" onClick="onTradeInVehicleChanged"/>
 
-                <!-- Trade-In Vehicle Details (expands when vehicle selected) -->
-                <!-- Three-column layout: Image at -250px, Info at -50px, Value at +180px -->
-                <!-- Image moved down 5px, text moved up 5px for better balance -->
-                <GuiElement profile="upTradeInDetailsContainer" id="tradeInDetailsContainer" position="0px -35px" visible="false">
-                    <!-- Trade-In Vehicle Image (left column) - 120px wide at -250px, moved down 15px -->
-                    <Bitmap profile="upTradeInImage" id="tradeInImage" position="-250px -20px"/>
+                <!-- Trade-In Details (visible when vehicle selected) -->
+                <!-- Two-column layout: 30% left (image), 70% right (info grid) -->
+                <GuiElement profile="upTradeInDetailsContainer" id="tradeInDetailsContainer" position="0px -70px" visible="false">
 
-                    <!-- Trade-In Vehicle Info (center column) -->
-                    <Text profile="upTradeInName" id="tradeInNameText" position="-50px -45px" text=""/>
-                    <Text profile="upTradeInCondition" id="tradeInConditionText" position="-50px -63px" text=""/>
-                    <Text profile="upTradeInCondition2" id="tradeInCondition2Text" position="-50px -79px" text=""/>
-                    <!-- Hours shifted left 15px to align with Repair/Paint (compensates for narrower profile width) -->
-                    <Text profile="upTradeInHours" id="tradeInHoursText" position="-65px -95px" text=""/>
+                    <!-- LEFT COLUMN (30%): Vehicle image, centered at -252px, bottom-aligned -->
+                    <Bitmap profile="upTradeInImage" id="tradeInImage" position="-252px 100px"/>
 
-                    <!-- Trade-In Value breakdown (right column) -->
-                    <Text profile="upTradeInValueLabel" position="180px -45px" text="$l10n_usedplus_up_tradeInValue"/>
-                    <Text profile="upTradeInValue" id="tradeInValueText" position="180px -65px" text=""/>
-                    <!-- Percent and Credit indented 25px right for visual hierarchy -->
-                    <Text profile="upTradeInPercent" id="tradeInPercentText" position="205px -85px" text=""/>
-                    <Text profile="upTradeInCreditImpact" id="tradeInCreditText" position="205px -103px" text=""/>
+                    <!-- RIGHT COLUMN (70%): Two-column info grid -->
+                    <!-- Left sub-column (vehicle info) - adjusted X for left-edge alignment -->
+                    <Text profile="upTradeInName" id="tradeInNameText" position="20px -5px" text=""/>
+                    <Text profile="upTradeInCondition" id="tradeInConditionText" position="20px -23px" text=""/>
+                    <Text profile="upTradeInCondition2" id="tradeInCondition2Text" position="20px -39px" text=""/>
+                    <Text profile="upTradeInHours" id="tradeInHoursText" position="5px -55px" text=""/>
+
+                    <!-- Right sub-column (value info) - adjusted X for left-edge alignment -->
+                    <Text profile="upTradeInValueLabel" position="200px -5px" text="$l10n_usedplus_up_tradeInValue"/>
+                    <Text profile="upTradeInValue" id="tradeInValueText" position="200px -23px" text=""/>
+                    <Text profile="upTradeInPercent" id="tradeInPercentText" position="215px -39px" text=""/>
+                    <Text profile="upTradeInCreditImpact" id="tradeInCreditText" position="215px -55px" text=""/>
                 </GuiElement>
             </GuiElement>
 
@@ -156,9 +155,9 @@
                 <Text profile="upInterestCost" id="financeTotalInterestText" position="-20px -166px" text=""/>
 
                 <Text profile="upTotalLabel" position="210px -105px" text="$l10n_usedplus_up_dueToday"/>
-                <Text profile="upTotalValue" id="financeDueTodayText" position="210px -128px" text=""/>
+                <Text profile="upTotalValue" id="financeDueTodayText" position="210px -123px" text=""/>
 
-                <Text profile="upCreditScore" id="financeCreditText" position="210px -160px" text=""/>
+                <Text profile="upCreditScore" id="financeCreditText" position="210px -148px" text=""/>
             </GuiElement>
 
             <!-- ========== SECTION 4C: Lease Mode ========== -->
@@ -193,9 +192,9 @@
                 <Text profile="upBuyoutValue" id="leaseBuyoutText" position="-20px -166px" text=""/>
 
                 <Text profile="upTotalLabel" position="210px -105px" text="$l10n_usedplus_up_dueToday"/>
-                <Text profile="upTotalValue" id="leaseDueTodayText" position="210px -128px" text=""/>
+                <Text profile="upTotalValue" id="leaseDueTodayText" position="210px -123px" text=""/>
 
-                <Text profile="upCreditScore" id="leaseCreditText" position="210px -160px" text=""/>
+                <Text profile="upCreditScore" id="leaseCreditText" position="210px -148px" text=""/>
             </GuiElement>
 
         </GuiElement>
@@ -301,12 +300,12 @@
         <!-- ========== VEHICLE PREVIEW (matches UsedSearchDialog pattern) ========== -->
         <!--
             REUSABLE: Vehicle preview image profile
-            - EMPIRICALLY TESTED: 210x140px displays store images without stretching
-              (Theoretical calculations were wrong - trust visual testing!)
+            - Following RVB pattern: baseReference + square size + noSlice
             - Position at X=-185px centers in left cell, Y=17px moves up from baseline
         -->
-        <Profile name="upItemImage" extends="fs25_vehiclesDetailsImage" with="anchorTopCenter">
-            <size value="210px 140px"/>
+        <Profile name="upItemImage" extends="baseReference" with="anchorTopCenter">
+            <size value="180px 180px"/>
+            <imageSliceId value="noSlice"/>
         </Profile>
 
         <!--
@@ -364,10 +363,11 @@
             <size value="720px 80px"/>
         </Profile>
 
-        <!-- Trade-in image with 3:2 aspect ratio (standard photo ratio) -->
-        <Profile name="upTradeInImage" extends="fs25_vehiclesDetailsImage" with="anchorTopCenter">
-            <size value="120px 80px"/>
-            <imageKeepAspect value="true"/>
+        <!-- Trade-in image: Left column (30%) of two-column layout -->
+        <!-- Centered at -252px (left 30% center), bottom-aligned with Y=100px -->
+        <Profile name="upTradeInImage" extends="baseReference" with="anchorTopCenter">
+            <size value="180px 180px"/>
+            <imageSliceId value="noSlice"/>
         </Profile>
 
         <Profile name="upTradeInName" extends="fs25_textDefault" with="anchorTopCenter">
@@ -452,7 +452,7 @@
         </Profile>
 
         <Profile name="upTotalValue" extends="fs25_textDefault" with="anchorTopCenter">
-            <size value="150px 24px"/>
+            <size value="130px 24px"/>
             <textSize value="18px"/>
             <textBold value="true"/>
             <textColor value="0.3 1 0.3 1"/>
@@ -487,7 +487,7 @@
         </Profile>
 
         <Profile name="upCreditScore" extends="fs25_textDefault" with="anchorTopCenter">
-            <size value="180px 16px"/>
+            <size value="130px 16px"/>
             <textSize value="11px"/>
             <textColor value="0.5 0.8 0.5 1"/>
         </Profile>

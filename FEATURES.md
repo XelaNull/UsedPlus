@@ -70,11 +70,21 @@ A comprehensive finance, maintenance, and marketplace overhaul for Farming Simul
 * **Electrical Health**: Impacts lights, gauges, and electronic systems
 * **Hydraulic Health**: Controls implement lift, steering assist, and attachments
 
-### Hidden Reliability Trait
-* Each vehicle has a hidden "lemon or workhorse" trait assigned at spawn
-* Lemons experience more frequent breakdowns and faster wear
-* Workhorses are more reliable with slower degradation
-* Mechanic inspection hints at vehicle's reliability class
+### Hidden "DNA" Reliability Trait (Workhorse/Lemon Scale)
+* Each vehicle has a hidden "DNA" score (0.0-1.0) assigned at spawn
+* **Lemons (low DNA)**: Experience more frequent breakdowns, faster wear, and progressive degradation
+* **Workhorses (high DNA)**: More reliable with slower degradation
+* **Legendary Workhorses (DNA ≥ 0.90)**: IMMUNE to repair degradation - can last forever if maintained!
+* Mechanic inspection hints at vehicle's reliability class via colorful quotes
+* DNA affects initial RVB part lifetimes (0.6x-1.4x multiplier when RVB installed)
+
+### Progressive Degradation System (v2.2.0)
+* **Each repair permanently reduces max component durability** (lemons lose 0-2% per repair)
+* **Each breakdown causes larger permanent damage** (3-8% depending on DNA)
+* **Legendary workhorses are immune to repair degradation** - only breakdowns wear them down
+* **Legendary workhorses (DNA ≥ 0.95) take only 30% breakdown damage**
+* Creates a "death spiral" for lemons: more breakdowns → faster degradation → even more breakdowns
+* Creates "immortality" for well-maintained workhorses: prevent breakdowns → zero degradation
 
 ### Tire System
 * Three tire quality tiers: Retread, Normal, Quality
@@ -281,8 +291,13 @@ Emergency repair system for disabled vehicles in the field.
 * UsedPlus calls ELS payment API for seamless integration
 
 ### Maintenance Integration
-* **Real Vehicle Breakdowns**: UsedPlus provides "symptoms before failure" using RVB part health
-* **Use Up Your Tyres**: Tire condition syncs from UYT wear data
+* **Real Vehicle Breakdowns**: Deep integration with UsedPlus Workhorse/Lemon DNA system
+  - DNA affects initial RVB part lifetimes (0.6x-1.4x multiplier)
+  - Repair degradation applied when using RVB Workshop Service button
+  - Breakdown degradation applied when RVB parts fail
+  - OBD Scanner shows RVB part health: Engine, Thermostat, Generator, Battery, Starter, Glow Plug
+  - Legendary workhorses immune to RVB repair degradation
+* **Use Up Your Tyres**: Tire condition syncs from UYT wear data, OBD Scanner shows per-wheel condition
 * **AdvancedMaintenance**: Both systems work together via function chaining
 
 ### Financial Visibility

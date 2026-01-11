@@ -120,7 +120,10 @@
         <e k="usedplus_manager_actions" v="Actions" />
         <e k="usedplus_manager_noDeals" v="No active finance or lease deals." />
         <e k="usedplus_manager_helpText" v="Finance vehicles from the shop (F key). Search for used equipment (V key). Payments are automatically deducted monthly." />
-        <e k="usedplus_vanillaLoan" v="Bank Loan (Vanilla)" />
+        <e k="usedplus_vanillaLoan" v="Bank Credit Line" />
+        <e k="usedplus_loanOpen" v="Open" />
+        <e k="usedplus_loanNoTerm" v="No Term" />
+        <e k="usedplus_loanInterestOnly" v="Interest" />
 
         <!--  Finance Detail Frame -->
         <e k="usedplus_detail_dealInfo" v="Deal Information" />
@@ -249,6 +252,7 @@
         <e k="input_USEDPLUS_OPEN_FINANCE_MANAGER" v="Open Finance Manager" />
         <e k="input_USEDPLUS_SEARCH_USED" v="Search Used Equipment" />
         <e k="input_USEDPLUS_INSPECT_VEHICLE" v="Inspect Vehicle" />
+        <e k="input_USEDPLUS_ACTIVATE_OBD" v="Use OBD Scanner" />
 
         <!--  Tooltips for Finance Dialog -->
         <e k="usedplus_finance_loanTerm_tooltip" v="Spread payments over 1-20 years. Longer terms = smaller monthly payments but more total interest paid." />
@@ -321,6 +325,7 @@
         <e k="usedplus_repaint_slider" v="Repaint Amount" />
         <e k="usedplus_repaint_cost" v="Repaint Cost" />
         <e k="usedplus_button_repairVehicle" v="Repair Vehicle" />
+        <e k="usedplus_button_repaint" v="Repaint" />
         <e k="usedplus_button_tradeIn" v="Trade-In" />
         <e k="usedplus_repair_financeSuccess" v="Repair financed! %s over %d months at %s/month" />
         <e k="usedplus_repair_noRepairsNeeded" v="This vehicle does not need repairs." />
@@ -793,6 +798,19 @@
         <e k="usedplus_irp_postRepairValue" v="Post-Repair Value:" />
         <e k="usedplus_irp_priceNote" v="Prices reflect seller's asking price. Negotiate based on inspection findings." />
 
+        <!-- v2.1.0: RVB Parts Breakdown (Inspection Report) -->
+        <e k="usedplus_irp_sectionRvbParts" v="COMPONENT STATUS" />
+        <e k="usedplus_irp_part_engine" v="Engine" />
+        <e k="usedplus_irp_part_thermostat" v="Thermostat" />
+        <e k="usedplus_irp_part_generator" v="Generator" />
+        <e k="usedplus_irp_part_battery" v="Battery" />
+        <e k="usedplus_irp_part_starter" v="Starter" />
+        <e k="usedplus_irp_part_glowplug" v="Glow Plug" />
+
+        <!-- v2.1.0: Tire Conditions (Inspection Report) -->
+        <e k="usedplus_irp_sectionTires" v="TIRE CONDITION" />
+        <e k="usedplus_irp_worstTire" v="Worst:" />
+
         <!-- Maintenance Report Dialog -->
         <e k="usedplus_mrp_title" v="MAINTENANCE REPORT" />
         <e k="usedplus_mrp_sectionReliability" v="RELIABILITY RATINGS" />
@@ -1163,6 +1181,9 @@
         <e k="usedplus_cr_tip1" v="Pay on time to build credit" />
         <e k="usedplus_cr_tip2" v="Keep debt below 50% of assets" />
         <e k="usedplus_cr_tip3" v="Build history with small loans" />
+        <!-- v2.0.0: Credit system disabled messages -->
+        <e k="usedplus_cr_creditDisabled" v="Credit Scoring is Disabled" />
+        <e k="usedplus_cr_creditDisabledHint" v="Enable credit scoring in UsedPlus settings to view your credit report." />
         <!-- REMOVED: usedplus_button_close - duplicate, use Common Button Labels -->
 
         <!-- Search Details Dialog -->
@@ -1238,6 +1259,7 @@
         <e k="usedplus_fmf_sectionFinances" v="FINANCES" />
         <e k="usedplus_fmf_sectionMarketplace" v="USED MARKETPLACE" />
         <e k="usedplus_fmf_sectionCredit" v="CREDIT &amp; STATISTICS" />
+        <e k="usedplus_fmf_sectionStatistics" v="STATISTICS" />
         <e k="usedplus_fmf_noActiveDeals" v="No active finance deals" />
         <e k="usedplus_fmf_headerType" v="TYPE" />
         <e k="usedplus_fmf_headerItem" v="ITEM" />
@@ -1538,8 +1560,11 @@
         <e k="usedplus_tires_normalInfo" v="100% traction, baseline" />
         <e k="usedplus_tires_qualityInfo" v="110% traction, 0.5x failure" />
         <e k="usedplus_tires_selectedTire" v="Selected Tire:" />
+        <e k="usedplus_tires_selectedQuality" v="Selected Quality:" />
         <e k="usedplus_tires_totalCost" v="Total Cost:" />
         <e k="usedplus_tires_selectOne" v="Select a tire..." />
+        <e k="usedplus_tires_selectQuality" v="Select quality" />
+        <e k="usedplus_tires_selectAbove" v="Select above" />
         <e k="usedplus_tires_infoText" v="New tires restore 100% condition. Retreads are recycled casings." />
         <e k="usedplus_tires_flatWarning" v="FLAT TIRE - Replacement Required!" />
         <e k="usedplus_tires_selectFirst" v="Please select a tire quality first." />
@@ -1614,8 +1639,8 @@
         <e k="usedplus_fluid_fuelLeak" v="CAUTION: Fuel leak detected - fire hazard, needs repair." />
         <e k="usedplus_fluid_allClear" v="All fluid systems appear normal." />
 
-        <!-- v1.8.0: Field Service Kit with OBD Scanner -->
-        <e k="usedplus_fsk_name" v="Field Service Kit (OBD Scanner)" />
+        <!-- v1.8.0: OBD Scanner (portable diagnostic tool) -->
+        <e k="usedplus_fsk_name" v="OBD Scanner" />
         <e k="usedplus_fsk_function" v="Portable OBD diagnostic scanner for emergency field repairs. Connects to vehicle diagnostics port to read fault codes and sensor data. Consumable - single use." />
         <e k="usedplus_fsk_tier_basic" v="Basic OBD" />
         <e k="usedplus_fsk_activate" v="Connect OBD Scanner" />
@@ -1723,8 +1748,9 @@
         <e k="usedplus_fsk_feedback_wrong" v="The actual problem was in a different system." />
         <e k="usedplus_fsk_temp_repair" v="TEMPORARY FIELD REPAIR" />
         <e k="usedplus_fsk_temp_repair_desc" v="This is an emergency fix. Visit a proper workshop for full service." />
-        <e k="usedplus_fsk_kit_consumed" v="Field Service Kit has been used up." />
+        <e k="usedplus_fsk_kit_consumed" v="OBD Scanner has been consumed." />
         <e k="usedplus_fsk_cannot_cancel" v="Repair in progress - cannot cancel at this stage." />
+        <e k="usedplus_fsk_noVehicle" v="No vehicle detected within range. Move the scanner closer to a vehicle." />
 
         <!-- Tire repair -->
         <e k="usedplus_fsk_tire_repair" v="FLAT TIRE DETECTED - Click to Repair" />
@@ -1736,6 +1762,35 @@
         <e k="usedplus_fsk_tire_plug" v="PLUG" />
         <e k="usedplus_fsk_tire_plug_desc" v="Better emergency repair" />
         <e k="usedplus_fsk_tire_plug_result" v="Restores to 50% condition" />
+
+        <!-- v2.1.0: Scanner Readout Hints (Step 1 hints to deduce failed system) -->
+        <e k="usedplus_fsk_scanner_readout" v="OBD SCANNER READOUT" />
+        <e k="usedplus_fsk_hint_no_faults" v="No critical fault codes stored" />
+        <e k="usedplus_fsk_hint_preventive" v="Preventive maintenance recommended" />
+
+        <!-- ENGINE hints (keywords: powertrain, combustion, fuel, exhaust, P-codes) -->
+        <e k="usedplus_fsk_hint_engine_dtc" v="DTC P0xxx: Powertrain fault codes stored" />
+        <e k="usedplus_fsk_hint_engine_combustion" v="Irregular combustion cycle patterns logged" />
+        <e k="usedplus_fsk_hint_engine_airfuel" v="Air-fuel mixture readings out of specification" />
+        <e k="usedplus_fsk_hint_engine_exhaust" v="Exhaust gas sensor readings abnormal" />
+        <e k="usedplus_fsk_hint_engine_throttle" v="Throttle response deviation detected" />
+        <e k="usedplus_fsk_hint_engine_timing" v="Crankshaft timing variance recorded" />
+
+        <!-- ELECTRICAL hints (keywords: voltage, signal, communication, B/U-codes) -->
+        <e k="usedplus_fsk_hint_elec_dtc" v="DTC B/U codes: Network communication faults" />
+        <e k="usedplus_fsk_hint_elec_voltage" v="Voltage regulation outside normal parameters" />
+        <e k="usedplus_fsk_hint_elec_signal" v="Intermittent sensor signal dropouts detected" />
+        <e k="usedplus_fsk_hint_elec_canbus" v="CAN bus communication errors logged" />
+        <e k="usedplus_fsk_hint_elec_timeout" v="Module response timeouts recorded" />
+        <e k="usedplus_fsk_hint_elec_ground" v="Ground fault indicators triggered" />
+
+        <!-- HYDRAULIC hints (keywords: pressure, implement, hitch, flow, actuator) -->
+        <e k="usedplus_fsk_hint_hyd_response" v="Implement response time exceeds threshold" />
+        <e k="usedplus_fsk_hint_hyd_pressure" v="Hydraulic pressure fluctuations detected" />
+        <e k="usedplus_fsk_hint_hyd_hitch" v="Three-point hitch position sensor drift" />
+        <e k="usedplus_fsk_hint_hyd_actuator" v="Actuator cycle time degradation noted" />
+        <e k="usedplus_fsk_hint_hyd_flow" v="Flow rate irregularities in aux circuits" />
+        <e k="usedplus_fsk_hint_hyd_temp" v="Hydraulic fluid temperature warnings logged" />
 
         <!-- v1.9.9: Settings System -->
         <e k="usedplus_settings_header" v="UsedPlus Settings" />
@@ -1764,6 +1819,18 @@
         <e k="usedplus_setting_tirewear_desc" v="Enable realistic tire degradation over time" />
         <e k="usedplus_setting_malfunctions" v="Malfunctions" />
         <e k="usedplus_setting_malfunctions_desc" v="Enable random breakdowns and component failures" />
+        <!-- v2.0.0: NEW - Partial Repair/Repaint toggles -->
+        <e k="usedplus_setting_partialRepair" v="Partial Repair" />
+        <e k="usedplus_setting_partialRepair_desc" v="Enable partial repairs in vehicle shop (disabling hides repair button)" />
+        <e k="usedplus_setting_partialRepaint" v="Partial Repaint" />
+        <e k="usedplus_setting_partialRepaint_desc" v="Enable partial repaints in vehicle shop (disabling hides repaint button)" />
+        <!-- v2.0.0: NEW - Farmland Difficulty & Bank Interest (GMNGjoy & Evan Kirsch patterns) -->
+        <e k="usedplus_setting_farmlandDifficulty" v="Farmland Difficulty Scaling" />
+        <e k="usedplus_setting_farmlandDifficulty_desc" v="Scale land prices with game difficulty (like vehicles). Easy: 60%, Normal: 100%, Hard: 140%" />
+        <e k="usedplus_setting_bankInterest" v="Bank Interest" />
+        <e k="usedplus_setting_bankInterest_desc" v="Earn interest on positive cash balances (monthly, like a savings account)" />
+        <e k="usedplus_setting_bankInterestRate" v="Interest Rate (APY)" />
+        <e k="usedplus_setting_bankInterestRate_desc" v="Annual interest rate on cash. 1% = $10,000 annual on $1M balance" />
 
         <!-- Section Headers -->
         <e k="usedplus_settings_toggles" v="Feature Toggles" />
@@ -1773,12 +1840,16 @@
         <e k="usedplus_settings_condition" v="Condition &amp; Quality" />
 
         <!-- Economic Settings: Money & Rates -->
-        <e k="usedplus_setting_interestRate" v="Base Interest Rate" />
-        <e k="usedplus_setting_interestRate_desc" v="Base annual interest rate for loans (credit adjusts this)" />
+        <!-- v2.0.0: Updated description to clarify scope -->
+        <e k="usedplus_setting_interestRate" v="Financing Interest Rate" />
+        <e k="usedplus_setting_interestRate_desc" v="Base rate for all financing (vehicles, land, loans). Credit score modifies this." />
         <e k="usedplus_setting_tradeInValue" v="Trade-In Value %" />
         <e k="usedplus_setting_tradeInValue_desc" v="Base percentage of sell price for trade-ins" />
         <e k="usedplus_setting_repairCost" v="Repair Cost Multiplier" />
         <e k="usedplus_setting_repairCost_desc" v="Multiplier applied to all repair costs" />
+        <!-- v2.0.0: NEW - Paint Cost Multiplier (separate from repair) -->
+        <e k="usedplus_setting_paintCost" v="Paint Cost Multiplier" />
+        <e k="usedplus_setting_paintCost_desc" v="Multiplier applied to repaint costs (separate from repair)" />
         <e k="usedplus_setting_leaseMarkup" v="Lease Markup %" />
         <e k="usedplus_setting_leaseMarkup_desc" v="Percentage markup on monthly lease payments" />
 
@@ -1793,10 +1864,12 @@
         <e k="usedplus_setting_latePenalty_desc" v="Credit score points lost per late payment" />
 
         <!-- Economic Settings: Marketplace -->
-        <e k="usedplus_setting_searchSuccess" v="Search Success Rate %" />
-        <e k="usedplus_setting_searchSuccess_desc" v="Base chance of finding used equipment" />
+        <!-- v2.0.0: Renamed and clarified search success -->
+        <e k="usedplus_setting_searchSuccess" v="Base Search Success %" />
+        <e k="usedplus_setting_searchSuccess_desc" v="Base chance to find used vehicles. Tiers add bonuses: Economy +0%, Standard +10%, Premium +20%, Elite +30%" />
+        <!-- v2.0.0: maxListings REMOVED from UI, kept for backwards compatibility -->
         <e k="usedplus_setting_maxListings" v="Max Listings Per Farm" />
-        <e k="usedplus_setting_maxListings_desc" v="Maximum active sale listings per farm" />
+        <e k="usedplus_setting_maxListings_desc" v="Maximum active sale listings per farm (internal setting)" />
         <e k="usedplus_setting_offerExpiry" v="Offer Expiration" />
         <e k="usedplus_setting_offerExpiry_desc" v="Hours until sale offers expire" />
         <e k="usedplus_setting_commission" v="Agent Commission %" />
@@ -1812,18 +1885,42 @@
         <e k="usedplus_setting_brandBonus" v="Brand Loyalty Bonus" />
         <e k="usedplus_setting_brandBonus_desc" v="Extra trade-in value when buying same brand" />
 
-        <!-- Presets -->
+        <!-- v2.0.0: Expanded Presets (6 presets) -->
         <e k="usedplus_preset_title" v="Apply Preset" />
-        <e k="usedplus_preset_realistic" v="Realistic" />
-        <e k="usedplus_preset_casual" v="Casual" />
+        <!-- New presets -->
+        <e k="usedplus_preset_easy" v="Easy" />
+        <e k="usedplus_preset_easy_desc" v="Maximum forgiveness - focus on farming, not finance" />
+        <e k="usedplus_preset_balanced" v="Balanced" />
+        <e k="usedplus_preset_balanced_desc" v="Default balanced simulation - the intended experience" />
+        <e k="usedplus_preset_challenging" v="Challenging" />
+        <e k="usedplus_preset_challenging_desc" v="Real consequences - decisions matter" />
         <e k="usedplus_preset_hardcore" v="Hardcore" />
-        <e k="usedplus_preset_lite" v="Lite Mode" />
-        <e k="usedplus_preset_realistic_desc" v="Balanced simulation - the intended experience" />
-        <e k="usedplus_preset_casual_desc" v="Relaxed economics - focus on farming, not finance" />
-        <e k="usedplus_preset_hardcore_desc" v="Punishing economics - every dollar matters" />
-        <e k="usedplus_preset_lite_desc" v="Minimal systems - just finance and lease" />
+        <e k="usedplus_preset_hardcore_desc" v="Economic survival - every dollar counts" />
+        <e k="usedplus_preset_streamlined" v="Streamlined" />
+        <e k="usedplus_preset_streamlined_desc" v="Just finance and lease - no extras" />
+        <e k="usedplus_preset_immersive" v="Immersive" />
+        <e k="usedplus_preset_immersive_desc" v="Full simulation - best with RVB/UYT mods" />
+        <!-- Legacy aliases (for backwards compatibility) -->
+        <e k="usedplus_preset_realistic" v="Balanced" />
+        <e k="usedplus_preset_casual" v="Easy" />
+        <e k="usedplus_preset_lite" v="Streamlined" />
+        <e k="usedplus_preset_realistic_desc" v="Default balanced simulation - the intended experience" />
+        <e k="usedplus_preset_casual_desc" v="Maximum forgiveness - focus on farming, not finance" />
+        <e k="usedplus_preset_lite_desc" v="Just finance and lease - no extras" />
         <e k="usedplus_preset_apply" v="Apply" />
         <e k="usedplus_preset_reset" v="Reset to Defaults" />
+
+        <!-- v2.1.0: RVB Workshop Integration -->
+        <e k="usedplus_hydraulic_system" v="Hydraulic System" />
+        <e k="usedplus_maintenance_grade" v="Maintenance" />
+        <e k="usedplus_service_history" v="History" />
+        <e k="usedplus_mechanic_says" v="Mechanic" />
+        <e k="usedplus_mechanic_assessment" v="MECHANIC'S ASSESSMENT" />
+        <e k="usedplus_grade_excellent" v="Excellent" />
+        <e k="usedplus_grade_good" v="Good" />
+        <e k="usedplus_grade_fair" v="Fair" />
+        <e k="usedplus_grade_poor" v="Poor" />
+        <e k="usedplus_grade_critical" v="Critical" />
 
     </elements>
 </l10n>

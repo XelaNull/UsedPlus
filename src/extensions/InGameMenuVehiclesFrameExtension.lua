@@ -74,9 +74,13 @@ function InGameMenuVehiclesFrameExtension:hookYesNoDialog()
         local sellText1 = g_i18n:getText("ui_youWantToSellVehicle")
         local sellText2 = g_i18n:getText("shop_doYouWantToSellItem")
 
+        -- Safely convert text to string (may be table/localized text object)
+        local textStr = type(text) == "string" and text or tostring(text or "")
+        local textLower = textStr:lower()
+
         if text and (text == sellText1 or text == sellText2 or
-                     string.find(text:lower(), "sell") or
-                     string.find(text:lower(), "verkauf")) then
+                     string.find(textLower, "sell") or
+                     string.find(textLower, "verkauf")) then
             isSellConfirmation = true
         end
 

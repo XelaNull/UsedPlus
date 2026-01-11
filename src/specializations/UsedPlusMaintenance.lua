@@ -560,6 +560,18 @@ function UsedPlusMaintenance.initSpecialization()
     schemaSavegame:register(XMLValueType.FLOAT, key .. ".workhorseLemonScale", "Hidden quality DNA (0=lemon, 1=workhorse)", 0.5)
     schemaSavegame:register(XMLValueType.FLOAT, key .. ".maxReliabilityCeiling", "Current max achievable reliability", 1.0)
 
+    -- v2.2.0: Component Durability System (progressive degradation)
+    schemaSavegame:register(XMLValueType.FLOAT, key .. ".maxEngineDurability", "Max achievable engine durability (degrades over time)", 1.0)
+    schemaSavegame:register(XMLValueType.FLOAT, key .. ".maxHydraulicDurability", "Max achievable hydraulic durability (degrades over time)", 1.0)
+    schemaSavegame:register(XMLValueType.FLOAT, key .. ".maxElectricalDurability", "Max achievable electrical durability (degrades over time)", 1.0)
+
+    -- v2.2.0: RVB Integration Tracking
+    schemaSavegame:register(XMLValueType.FLOAT, key .. ".rvbLifetimeMultiplier", "Initial DNA-based RVB lifetime multiplier", 1.0)
+    schemaSavegame:register(XMLValueType.BOOL,  key .. ".rvbLifetimesApplied", "Whether RVB lifetimes have been modified by DNA", false)
+    schemaSavegame:register(XMLValueType.FLOAT, key .. ".rvbTotalDegradation", "Cumulative RVB lifetime degradation", 0)
+    schemaSavegame:register(XMLValueType.INT,   key .. ".rvbRepairCount", "Number of RVB repairs performed", 0)
+    schemaSavegame:register(XMLValueType.INT,   key .. ".rvbBreakdownCount", "Number of RVB breakdowns suffered", 0)
+
     -- Maintenance History
     schemaSavegame:register(XMLValueType.INT,   key .. ".repairCount", "Times repaired at shop", 0)
     schemaSavegame:register(XMLValueType.FLOAT, key .. ".totalRepairCost", "Lifetime repair spending", 0)
@@ -961,6 +973,19 @@ function UsedPlusMaintenance:onLoad(savegame)
     spec.workhorseLemonScale = 0.5   -- Default average, will be set properly on purchase
     spec.maxReliabilityCeiling = 1.0 -- Starts at 100%, degrades over repairs based on DNA
 
+    -- v2.2.0: Component Durability System (progressive degradation)
+    -- These represent the max achievable value for each component - degrades over time
+    spec.maxEngineDurability = 1.0
+    spec.maxHydraulicDurability = 1.0
+    spec.maxElectricalDurability = 1.0
+
+    -- v2.2.0: RVB Integration Tracking
+    spec.rvbLifetimeMultiplier = 1.0   -- DNA-based multiplier applied to RVB part lifetimes
+    spec.rvbLifetimesApplied = false   -- True once DNA multiplier has been applied to RVB
+    spec.rvbTotalDegradation = 0       -- Cumulative degradation from repairs/breakdowns
+    spec.rvbRepairCount = 0            -- Number of RVB repairs (for degradation tracking)
+    spec.rvbBreakdownCount = 0         -- Number of RVB breakdowns suffered
+
     -- Maintenance History
     spec.repairCount = 0
     spec.totalRepairCost = 0
@@ -972,6 +997,13 @@ function UsedPlusMaintenance:onLoad(savegame)
     spec.inspectionCacheHours = 0
     spec.inspectionCacheDamage = 0
     spec.inspectionCacheWear = 0
+
+    -- v2.1.0: RVB/UYT Deferred Sync System
+    -- Stores generated RVB/tire data for syncing when those mods are installed later
+    spec.storedRvbPartsData = nil      -- Table with ENGINE, BATTERY, etc. life values
+    spec.storedTireConditions = nil    -- Table with FL, FR, RL, RR conditions
+    spec.rvbDataSynced = false         -- True once we've synced to RVB
+    spec.tireDataSynced = false        -- True once we've synced to UYT
 
     -- Runtime State (not persisted)
     spec.updateTimer = 0
@@ -1106,6 +1138,18 @@ function UsedPlusMaintenance:onPostLoad(savegame)
         spec.workhorseLemonScale = xmlFile:getValue(key .. ".workhorseLemonScale", spec.workhorseLemonScale)
         spec.maxReliabilityCeiling = xmlFile:getValue(key .. ".maxReliabilityCeiling", spec.maxReliabilityCeiling)
 
+        -- v2.2.0: Load Component Durability System (with nil guards for old savegames)
+        spec.maxEngineDurability = xmlFile:getValue(key .. ".maxEngineDurability", spec.maxEngineDurability) or 1.0
+        spec.maxHydraulicDurability = xmlFile:getValue(key .. ".maxHydraulicDurability", spec.maxHydraulicDurability) or 1.0
+        spec.maxElectricalDurability = xmlFile:getValue(key .. ".maxElectricalDurability", spec.maxElectricalDurability) or 1.0
+
+        -- v2.2.0: Load RVB Integration Tracking (with nil guards for old savegames)
+        spec.rvbLifetimeMultiplier = xmlFile:getValue(key .. ".rvbLifetimeMultiplier", spec.rvbLifetimeMultiplier) or 1.0
+        spec.rvbLifetimesApplied = xmlFile:getValue(key .. ".rvbLifetimesApplied", spec.rvbLifetimesApplied) or false
+        spec.rvbTotalDegradation = xmlFile:getValue(key .. ".rvbTotalDegradation", spec.rvbTotalDegradation) or 0
+        spec.rvbRepairCount = xmlFile:getValue(key .. ".rvbRepairCount", spec.rvbRepairCount) or 0
+        spec.rvbBreakdownCount = xmlFile:getValue(key .. ".rvbBreakdownCount", spec.rvbBreakdownCount) or 0
+
         -- Load maintenance history
         spec.repairCount = xmlFile:getValue(key .. ".repairCount", spec.repairCount)
         spec.totalRepairCost = xmlFile:getValue(key .. ".totalRepairCost", spec.totalRepairCost)
@@ -1155,9 +1199,43 @@ function UsedPlusMaintenance:onPostLoad(savegame)
         spec.hasFuelLeak = xmlFile:getValue(key .. ".hasFuelLeak", spec.hasFuelLeak) or false
         spec.fuelLeakMultiplier = xmlFile:getValue(key .. ".fuelLeakMultiplier", spec.fuelLeakMultiplier) or 1.0
 
+        -- v2.1.0: Load RVB/UYT deferred sync data
+        spec.rvbDataSynced = xmlFile:getValue(key .. ".rvbDataSynced", spec.rvbDataSynced) or false
+        spec.tireDataSynced = xmlFile:getValue(key .. ".tireDataSynced", spec.tireDataSynced) or false
+
+        -- Load stored RVB parts data
+        local rvbKey = key .. ".storedRvbParts"
+        local rvbParts = { "ENGINE", "THERMOSTAT", "GENERATOR", "BATTERY", "SELFSTARTER", "GLOWPLUG" }
+        for _, partName in ipairs(rvbParts) do
+            local partKey = rvbKey .. "." .. partName
+            if xmlFile:hasProperty(partKey .. "#life") then
+                spec.storedRvbPartsData = spec.storedRvbPartsData or {}
+                spec.storedRvbPartsData[partName] = {
+                    life = xmlFile:getValue(partKey .. "#life", 1.0),
+                    operatingHours = xmlFile:getValue(partKey .. "#operatingHours", 0),
+                    lifetime = xmlFile:getValue(partKey .. "#lifetime", 1000)
+                }
+            end
+        end
+
+        -- Load stored tire conditions
+        local tireKey = key .. ".storedTires"
+        if xmlFile:hasProperty(tireKey .. "#FL") then
+            spec.storedTireConditions = {
+                FL = xmlFile:getValue(tireKey .. "#FL", 1.0),
+                FR = xmlFile:getValue(tireKey .. "#FR", 1.0),
+                RL = xmlFile:getValue(tireKey .. "#RL", 1.0),
+                RR = xmlFile:getValue(tireKey .. "#RR", 1.0)
+            }
+        end
+
         UsedPlus.logTrace(string.format("UsedPlusMaintenance loaded for %s: used=%s, engine=%.2f, repairs=%d, tires=%.0f%%, oil=%.0f%%",
             self:getName(), tostring(spec.purchasedUsed), spec.engineReliability, spec.repairCount,
             spec.tireCondition * 100, spec.oilLevel * 100))
+
+        -- v2.1.0: Check if we need to sync RVB/UYT data after load
+        -- Call as static function with self, not as instance method
+        UsedPlusMaintenance.checkAndSyncCrossModData(self)
     end
 end
 
@@ -1185,6 +1263,18 @@ function UsedPlusMaintenance:saveToXMLFile(xmlFile, key, usedModNames)
     -- Save Workhorse/Lemon Scale (v1.4.0+)
     xmlFile:setValue(key .. ".workhorseLemonScale", spec.workhorseLemonScale)
     xmlFile:setValue(key .. ".maxReliabilityCeiling", spec.maxReliabilityCeiling)
+
+    -- v2.2.0: Save Component Durability System
+    xmlFile:setValue(key .. ".maxEngineDurability", spec.maxEngineDurability)
+    xmlFile:setValue(key .. ".maxHydraulicDurability", spec.maxHydraulicDurability)
+    xmlFile:setValue(key .. ".maxElectricalDurability", spec.maxElectricalDurability)
+
+    -- v2.2.0: Save RVB Integration Tracking
+    xmlFile:setValue(key .. ".rvbLifetimeMultiplier", spec.rvbLifetimeMultiplier)
+    xmlFile:setValue(key .. ".rvbLifetimesApplied", spec.rvbLifetimesApplied)
+    xmlFile:setValue(key .. ".rvbTotalDegradation", spec.rvbTotalDegradation)
+    xmlFile:setValue(key .. ".rvbRepairCount", spec.rvbRepairCount)
+    xmlFile:setValue(key .. ".rvbBreakdownCount", spec.rvbBreakdownCount)
 
     -- Save maintenance history
     xmlFile:setValue(key .. ".repairCount", spec.repairCount)
@@ -1223,6 +1313,29 @@ function UsedPlusMaintenance:saveToXMLFile(xmlFile, key, usedModNames)
     xmlFile:setValue(key .. ".hasFuelLeak", spec.hasFuelLeak)
     xmlFile:setValue(key .. ".fuelLeakMultiplier", spec.fuelLeakMultiplier)
 
+    -- v2.1.0: Save RVB/UYT deferred sync data
+    xmlFile:setValue(key .. ".rvbDataSynced", spec.rvbDataSynced)
+    xmlFile:setValue(key .. ".tireDataSynced", spec.tireDataSynced)
+
+    -- Save stored RVB parts data (as individual values)
+    if spec.storedRvbPartsData then
+        local rvbKey = key .. ".storedRvbParts"
+        for partName, partData in pairs(spec.storedRvbPartsData) do
+            xmlFile:setValue(rvbKey .. "." .. partName .. "#life", partData.life or 1.0)
+            xmlFile:setValue(rvbKey .. "." .. partName .. "#operatingHours", partData.operatingHours or 0)
+            xmlFile:setValue(rvbKey .. "." .. partName .. "#lifetime", partData.lifetime or 1000)
+        end
+    end
+
+    -- Save stored tire conditions
+    if spec.storedTireConditions then
+        local tireKey = key .. ".storedTires"
+        xmlFile:setValue(tireKey .. "#FL", spec.storedTireConditions.FL or 1.0)
+        xmlFile:setValue(tireKey .. "#FR", spec.storedTireConditions.FR or 1.0)
+        xmlFile:setValue(tireKey .. "#RL", spec.storedTireConditions.RL or 1.0)
+        xmlFile:setValue(tireKey .. "#RR", spec.storedTireConditions.RR or 1.0)
+    end
+
     UsedPlus.logTrace(string.format("UsedPlusMaintenance saved for %s", self:getName()))
 end
 
@@ -1250,6 +1363,18 @@ function UsedPlusMaintenance:onReadStream(streamId, connection)
     -- Workhorse/Lemon Scale (v1.4.0+)
     spec.workhorseLemonScale = streamReadFloat32(streamId)
     spec.maxReliabilityCeiling = streamReadFloat32(streamId)
+
+    -- v2.2.0: Component Durability System
+    spec.maxEngineDurability = streamReadFloat32(streamId)
+    spec.maxHydraulicDurability = streamReadFloat32(streamId)
+    spec.maxElectricalDurability = streamReadFloat32(streamId)
+
+    -- v2.2.0: RVB Integration Tracking
+    spec.rvbLifetimeMultiplier = streamReadFloat32(streamId)
+    spec.rvbLifetimesApplied = streamReadBool(streamId)
+    spec.rvbTotalDegradation = streamReadFloat32(streamId)
+    spec.rvbRepairCount = streamReadInt32(streamId)
+    spec.rvbBreakdownCount = streamReadInt32(streamId)
 
     -- Maintenance history
     spec.repairCount = streamReadInt32(streamId)
@@ -1327,6 +1452,18 @@ function UsedPlusMaintenance:onWriteStream(streamId, connection)
     -- Workhorse/Lemon Scale (v1.4.0+)
     streamWriteFloat32(streamId, spec.workhorseLemonScale)
     streamWriteFloat32(streamId, spec.maxReliabilityCeiling)
+
+    -- v2.2.0: Component Durability System
+    streamWriteFloat32(streamId, spec.maxEngineDurability)
+    streamWriteFloat32(streamId, spec.maxHydraulicDurability)
+    streamWriteFloat32(streamId, spec.maxElectricalDurability)
+
+    -- v2.2.0: RVB Integration Tracking
+    streamWriteFloat32(streamId, spec.rvbLifetimeMultiplier)
+    streamWriteBool(streamId, spec.rvbLifetimesApplied)
+    streamWriteFloat32(streamId, spec.rvbTotalDegradation)
+    streamWriteInt32(streamId, spec.rvbRepairCount)
+    streamWriteInt32(streamId, spec.rvbBreakdownCount)
 
     -- Maintenance history
     streamWriteInt32(streamId, spec.repairCount)
@@ -1487,6 +1624,14 @@ function UsedPlusMaintenance:onUpdate(dt, isActiveForInput, isActiveForInputIgno
         UsedPlusMaintenance.applyTireWear(self)
         if malfunctionsEnabled then
             UsedPlusMaintenance.checkTireMalfunctions(self)
+        end
+    end
+
+    -- v2.2.0: RVB fault monitoring for breakdown degradation
+    -- Only check if RVB is installed and this vehicle has RVB data
+    if ModCompatibility and ModCompatibility.rvbInstalled and self.spec_faultData then
+        if RVBWorkshopIntegration and RVBWorkshopIntegration.checkForNewFaults then
+            RVBWorkshopIntegration:checkForNewFaults(self)
         end
     end
 
@@ -2724,14 +2869,110 @@ function UsedPlusMaintenance.getReliabilityData(vehicle)
 end
 
 --[[
+    v2.2.0: Apply repair degradation to UsedPlus systems
+    Called when ANY repair completes (shop, RVB, or vanilla)
+
+    Lemons lose more ceiling/durability per repair
+    Legendary workhorses (DNA >= 0.90) are IMMUNE to repair degradation
+
+    @param vehicle - The vehicle being repaired
+]]
+function UsedPlusMaintenance.applyRepairDegradation(vehicle)
+    local spec = vehicle.spec_usedPlusMaintenance
+    if not spec then return end
+
+    local dna = spec.workhorseLemonScale or 0.5
+
+    -- Legendary workhorses (DNA >= 0.90) are immune to repair degradation
+    if dna >= 0.90 then
+        UsedPlus.logDebug(string.format("Legendary workhorse - no repair degradation for %s (DNA %.2f)",
+            vehicle:getName(), dna))
+        return
+    end
+
+    -- Degradation formula: 0-2% ceiling loss per repair based on DNA
+    local ceilingDegradation = (1 - dna) * 0.02
+
+    -- Reduce max reliability ceiling (how high reliability can be restored)
+    spec.maxReliabilityCeiling = math.max(0.30,
+        (spec.maxReliabilityCeiling or 1.0) * (1 - ceilingDegradation))
+
+    -- Also slightly reduce max durability of each component: 0-1% per repair
+    local componentDegradation = (1 - dna) * 0.01
+    spec.maxEngineDurability = math.max(0.30,
+        (spec.maxEngineDurability or 1.0) * (1 - componentDegradation))
+    spec.maxHydraulicDurability = math.max(0.30,
+        (spec.maxHydraulicDurability or 1.0) * (1 - componentDegradation))
+    spec.maxElectricalDurability = math.max(0.30,
+        (spec.maxElectricalDurability or 1.0) * (1 - componentDegradation))
+
+    UsedPlus.logDebug(string.format("UsedPlus repair degradation: ceiling=%.1f%%, engine=%.1f%%, hydraulic=%.1f%%, electrical=%.1f%% (DNA %.2f)",
+        spec.maxReliabilityCeiling * 100,
+        spec.maxEngineDurability * 100,
+        spec.maxHydraulicDurability * 100,
+        spec.maxElectricalDurability * 100,
+        dna))
+end
+
+--[[
+    v2.2.0: Apply breakdown degradation to UsedPlus systems
+    Called when UsedPlus detects a failure event (stall, cutout, drift, etc.)
+
+    Everyone loses ceiling/durability on breakdown, but lemons lose MORE
+    Legendary workhorses (DNA >= 0.95) take only 30% breakdown damage
+
+    @param vehicle - The vehicle with the breakdown
+    @param component - The component that failed (Engine, Hydraulic, Electrical)
+]]
+function UsedPlusMaintenance.applyBreakdownDegradation(vehicle, component)
+    local spec = vehicle.spec_usedPlusMaintenance
+    if not spec then return end
+
+    local dna = spec.workhorseLemonScale or 0.5
+
+    -- Base: 3% ceiling loss, Lemon bonus: 0-5% extra
+    local baseDegradation = 0.03
+    local lemonBonus = (1 - dna) * 0.05
+    local totalDegradation = baseDegradation + lemonBonus
+
+    -- Legendary workhorses (DNA >= 0.95) take only 30% breakdown damage
+    if dna >= 0.95 then
+        totalDegradation = totalDegradation * 0.3
+    end
+
+    -- Reduce overall ceiling
+    spec.maxReliabilityCeiling = math.max(0.30,
+        (spec.maxReliabilityCeiling or 1.0) * (1 - totalDegradation))
+
+    -- Reduce max durability of the specific component that failed (extra 50% damage)
+    local componentExtraDamage = totalDegradation * 1.5
+    if component == "Engine" then
+        spec.maxEngineDurability = math.max(0.30,
+            (spec.maxEngineDurability or 1.0) * (1 - componentExtraDamage))
+    elseif component == "Hydraulic" then
+        spec.maxHydraulicDurability = math.max(0.30,
+            (spec.maxHydraulicDurability or 1.0) * (1 - componentExtraDamage))
+    elseif component == "Electrical" then
+        spec.maxElectricalDurability = math.max(0.30,
+            (spec.maxElectricalDurability or 1.0) * (1 - componentExtraDamage))
+    end
+
+    -- Increment breakdown counter
+    spec.failureCount = (spec.failureCount or 0) + 1
+
+    UsedPlus.logDebug(string.format("UsedPlus breakdown on %s: ceiling=%.1f%%, DNA=%.2f, degradation=%.1f%%",
+        component or "unknown", spec.maxReliabilityCeiling * 100, dna, totalDegradation * 100))
+end
+
+--[[
     PUBLIC API: Update reliability after repair
     Called from VehicleSellingPointExtension when repair completes
 
     v1.4.0: Now implements Workhorse/Lemon Scale system
-    - Each repair degrades the reliability CEILING based on vehicle DNA
-    - Lemons (0.0) lose 1% ceiling per repair
-    - Workhorses (1.0) lose 0% ceiling per repair
-    - Reliability scores are capped by the current ceiling, not a fixed 95%
+    v2.2.0: UNIFIED degradation - also degrades component durability and RVB parts
+    - Lemons (0.0) lose 2% ceiling per repair
+    - Workhorses (DNA >= 0.90) are IMMUNE to repair degradation
+    - Reliability scores are capped by BOTH overall ceiling AND component durability
 ]]
 function UsedPlusMaintenance.onVehicleRepaired(vehicle, repairCost)
     local spec = vehicle.spec_usedPlusMaintenance
@@ -2742,43 +2983,52 @@ function UsedPlusMaintenance.onVehicleRepaired(vehicle, repairCost)
     spec.totalRepairCost = spec.totalRepairCost + repairCost
     spec.lastRepairDate = g_currentMission.environment.dayTime or 0
 
-    -- v1.4.0: Calculate ceiling degradation based on vehicle DNA
+    -- v2.2.0: Apply UNIFIED degradation (ceiling + component durability)
+    -- This replaces the old v1.4.0 inline ceiling degradation
     if UsedPlusMaintenance.CONFIG.enableLemonScale then
-        -- Lemon (0.0) = 1% degradation per repair, Workhorse (1.0) = 0% degradation
-        local degradationRate = (1 - (spec.workhorseLemonScale or 0.5)) *
-            UsedPlusMaintenance.CONFIG.ceilingDegradationMax
-
-        -- Reduce the ceiling
-        spec.maxReliabilityCeiling = (spec.maxReliabilityCeiling or 1.0) - degradationRate
-
-        -- Ensure minimum ceiling (vehicle is never completely unrepairable)
-        spec.maxReliabilityCeiling = math.max(
-            UsedPlusMaintenance.CONFIG.minReliabilityCeiling,
-            spec.maxReliabilityCeiling
-        )
-
-        UsedPlus.logDebug(string.format("Ceiling degraded: DNA=%.2f, degradation=%.3f%%, newCeiling=%.1f%%",
-            spec.workhorseLemonScale or 0.5, degradationRate * 100, spec.maxReliabilityCeiling * 100))
+        UsedPlusMaintenance.applyRepairDegradation(vehicle)
     end
 
-    -- Apply repair bonus, capped by CURRENT ceiling (not fixed 95%)
+    -- v2.2.0: Apply repair bonus, capped by BOTH overall ceiling AND component durability
     local repairBonus = UsedPlusMaintenance.CONFIG.reliabilityRepairBonus
-    local ceiling = spec.maxReliabilityCeiling or UsedPlusMaintenance.CONFIG.maxReliabilityAfterRepair
 
-    spec.engineReliability = math.min(ceiling, spec.engineReliability + repairBonus)
-    spec.hydraulicReliability = math.min(ceiling, spec.hydraulicReliability + repairBonus)
-    spec.electricalReliability = math.min(ceiling, spec.electricalReliability + repairBonus)
+    -- Engine: capped by overall ceiling AND component durability
+    local engineCap = math.min(
+        spec.maxReliabilityCeiling or 1.0,
+        spec.maxEngineDurability or 1.0
+    )
+    spec.engineReliability = math.min(engineCap, spec.engineReliability + repairBonus)
 
-    -- v1.4.0: Reset warning flags so they can trigger again if problems return
-    -- Speed degradation warnings reset when damage drops below threshold (automatic)
-    -- But hydraulic warnings need manual reset since reliability might still be low
+    -- Hydraulic: capped by overall ceiling AND component durability
+    local hydraulicCap = math.min(
+        spec.maxReliabilityCeiling or 1.0,
+        spec.maxHydraulicDurability or 1.0
+    )
+    spec.hydraulicReliability = math.min(hydraulicCap, spec.hydraulicReliability + repairBonus)
+
+    -- Electrical: capped by overall ceiling AND component durability
+    local electricalCap = math.min(
+        spec.maxReliabilityCeiling or 1.0,
+        spec.maxElectricalDurability or 1.0
+    )
+    spec.electricalReliability = math.min(electricalCap, spec.electricalReliability + repairBonus)
+
+    -- v2.2.0: Also apply RVB degradation if RVB is installed
+    if ModCompatibility and ModCompatibility.rvbInstalled then
+        ModCompatibility.applyRVBRepairDegradation(vehicle)
+    end
+
+    -- Reset warning flags so they can trigger again if problems return
     spec.hasShownDriftWarning = false
     spec.hasShownDriftMidpointWarning = false
-    -- Speed warning will auto-reset when damage < threshold, but reset timer
     spec.speedWarningTimer = 0
 
-    UsedPlus.logDebug(string.format("Vehicle repaired: %s - ceiling=%.1f%%, engine=%.2f, hydraulic=%.2f, electrical=%.2f",
-        vehicle:getName(), ceiling * 100, spec.engineReliability, spec.hydraulicReliability, spec.electricalReliability))
+    UsedPlus.logDebug(string.format("Vehicle repaired: %s - ceiling=%.1f%%, engine=%.2f (cap %.2f), hydraulic=%.2f (cap %.2f), electrical=%.2f (cap %.2f)",
+        vehicle:getName(),
+        (spec.maxReliabilityCeiling or 1.0) * 100,
+        spec.engineReliability, engineCap,
+        spec.hydraulicReliability, hydraulicCap,
+        spec.electricalReliability, electricalCap))
 end
 
 --[[
@@ -3812,4 +4062,71 @@ else
     UsedPlus.logWarn("WheelPhysics not available - tire friction effects disabled")
 end
 
-UsedPlus.logInfo("UsedPlusMaintenance specialization loaded")
+--============================================================================
+-- v2.1.0: CROSS-MOD DEFERRED SYNC
+-- Syncs stored RVB/UYT data when those mods are installed after vehicle purchase
+--============================================================================
+
+--[[
+    Check if we have stored RVB/UYT data that needs to be synced
+    Called on vehicle load and periodically
+]]
+function UsedPlusMaintenance:checkAndSyncCrossModData()
+    local spec = self.spec_usedPlusMaintenance
+    if spec == nil then return end
+
+    -- Check if we need to sync RVB data
+    if spec.storedRvbPartsData and not spec.rvbDataSynced then
+        if ModCompatibility and ModCompatibility.rvbInstalled then
+            -- RVB is now installed! Sync the stored data
+            local success = ModCompatibility.initializeRVBPartsFromListing(self, spec.storedRvbPartsData)
+            if success then
+                spec.rvbDataSynced = true
+                UsedPlus.logInfo(string.format("Deferred RVB sync completed for %s", self:getName()))
+            end
+        end
+    end
+
+    -- Check if we need to sync tire data
+    if spec.storedTireConditions and not spec.tireDataSynced then
+        if ModCompatibility and ModCompatibility.uytInstalled then
+            -- UYT is now installed! Sync the stored data
+            local success = ModCompatibility.initializeTiresFromListing(self, spec.storedTireConditions)
+            if success then
+                spec.tireDataSynced = true
+                UsedPlus.logInfo(string.format("Deferred UYT tire sync completed for %s", self:getName()))
+            end
+        end
+    end
+end
+
+--[[
+    Store RVB/UYT data on the vehicle for persistence and deferred sync
+    Called from ModCompatibility.applyListingDataToVehicle
+]]
+function UsedPlusMaintenance:storeListingData(rvbPartsData, tireConditions)
+    local spec = self.spec_usedPlusMaintenance
+    if spec == nil then return end
+
+    if rvbPartsData then
+        spec.storedRvbPartsData = rvbPartsData
+        -- If RVB is installed now, mark as synced
+        if ModCompatibility and ModCompatibility.rvbInstalled then
+            spec.rvbDataSynced = true
+        end
+        UsedPlus.logDebug(string.format("Stored RVB parts data for %s (synced=%s)",
+            self:getName(), tostring(spec.rvbDataSynced)))
+    end
+
+    if tireConditions then
+        spec.storedTireConditions = tireConditions
+        -- If UYT is installed now, mark as synced
+        if ModCompatibility and ModCompatibility.uytInstalled then
+            spec.tireDataSynced = true
+        end
+        UsedPlus.logDebug(string.format("Stored tire conditions for %s (synced=%s)",
+            self:getName(), tostring(spec.tireDataSynced)))
+    end
+end
+
+UsedPlus.logInfo("UsedPlusMaintenance specialization loaded (v2.1.0 - RVB/UYT Deferred Sync)")

@@ -381,6 +381,32 @@ function UsedVehicleManager:generateUsedVehicleListingFromData(search, listingDa
         )
     end
 
+    -- v2.1.2: When RVB parts data exists, DERIVE our reliability values from it
+    -- This ensures consistency - our Engine/Electrical values match the RVB parts shown
+    if listingData.rvbPartsData and usedPlusData then
+        local rvbParts = listingData.rvbPartsData
+
+        -- Engine reliability = average of ENGINE + THERMOSTAT (cooling affects engine life)
+        local engineLife = (rvbParts.ENGINE and rvbParts.ENGINE.life) or usedPlusData.engineReliability
+        local thermoLife = (rvbParts.THERMOSTAT and rvbParts.THERMOSTAT.life) or engineLife
+        usedPlusData.engineReliability = (engineLife + thermoLife) / 2
+
+        -- Electrical reliability = average of GENERATOR, BATTERY, SELFSTARTER, GLOWPLUG
+        local genLife = (rvbParts.GENERATOR and rvbParts.GENERATOR.life) or 1.0
+        local battLife = (rvbParts.BATTERY and rvbParts.BATTERY.life) or 1.0
+        local startLife = (rvbParts.SELFSTARTER and rvbParts.SELFSTARTER.life) or 1.0
+        local glowLife = (rvbParts.GLOWPLUG and rvbParts.GLOWPLUG.life) or 1.0
+        usedPlusData.electricalReliability = (genLife + battLife + startLife + glowLife) / 4
+
+        -- Hydraulic reliability stays as generated (RVB doesn't track hydraulics)
+        -- usedPlusData.hydraulicReliability = usedPlusData.hydraulicReliability
+
+        UsedPlus.logDebug(string.format("Derived reliability from RVB parts: Engine=%.0f%%, Electrical=%.0f%%, Hydraulic=%.0f%%",
+            usedPlusData.engineReliability * 100,
+            usedPlusData.electricalReliability * 100,
+            usedPlusData.hydraulicReliability * 100))
+    end
+
     -- v1.5.0: Calculate commission and asking price
     local basePrice = listingData.basePrice or listingData.price or 0
     local commissionPercent = search.commissionPercent or 0.08
@@ -411,6 +437,10 @@ function UsedVehicleManager:generateUsedVehicleListingFromData(search, listingDa
 
         -- Hidden maintenance data
         usedPlusData = usedPlusData,
+
+        -- v2.1.0: RVB/UYT holistic data from generation
+        rvbPartsData = listingData.rvbPartsData,
+        tireConditions = listingData.tireConditions,
 
         -- Metadata
         generationName = listingData.generationName or "Unknown",
@@ -880,6 +910,12 @@ function UsedVehicleManager:applyUsedConditionToVehicle(vehicle, listing)
         }
         UsedPlusMaintenance.setUsedPurchaseData(vehicle, purchaseData)
         UsedPlus.logDebug("  Applied UsedPlus reliability data")
+    end
+
+    -- v2.1.0: Apply RVB parts data and tire conditions from listing
+    -- This initializes cross-mod compatibility data for used vehicles
+    if ModCompatibility and ModCompatibility.applyListingDataToVehicle then
+        ModCompatibility.applyListingDataToVehicle(vehicle, listing)
     end
 
     -- Apply dirt based on quality tier (v1.5.1)
@@ -1484,7 +1520,11 @@ function UsedVehicleManager:completePurchaseFromSearch(search, listing, farmId)
         configuration = listing.configuration or {},
 
         -- Reliability data
-        usedPlusData = listing.usedPlusData
+        usedPlusData = listing.usedPlusData,
+
+        -- v2.1.0: RVB/UYT holistic data
+        rvbPartsData = listing.rvbPartsData,
+        tireConditions = listing.tireConditions
     }
 
     -- Perform the purchase

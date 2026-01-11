@@ -29,7 +29,7 @@
                 <!-- Two-column layout: image left, info right -->
                 <GuiElement profile="fluidsVehicleRow" position="0px -28px">
                     <!-- Vehicle Image -->
-                    <Bitmap profile="fluidsVehicleImage" id="vehicleImageElement" position="-185px 42px"/>
+                    <Bitmap profile="fluidsVehicleImage" id="vehicleImageElement" position="-185px 75px"/>
 
                     <!-- Vehicle Info -->
                     <Text profile="fluidsVehicleName" id="vehicleNameText" position="120px -5px" text=""/>
@@ -145,8 +145,10 @@
             <size value="660px 100px"/>
         </Profile>
 
-        <Profile name="fluidsVehicleImage" extends="fs25_vehiclesDetailsImage" with="anchorTopCenter">
-            <size value="180px 120px"/>
+        <!-- Following RVB pattern: baseReference + square size + noSlice -->
+        <Profile name="fluidsVehicleImage" extends="baseReference" with="anchorTopCenter">
+            <size value="180px 180px"/>
+            <imageSliceId value="noSlice"/>
         </Profile>
 
         <Profile name="fluidsVehicleName" extends="fs25_textDefault" with="anchorTopCenter">
